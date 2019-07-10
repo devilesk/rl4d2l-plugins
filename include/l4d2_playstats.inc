@@ -197,6 +197,8 @@
 #define MAX_QUERY_SIZE          8192
 #define FILETABLEFLAGS          164532          // AUTO_ flags for what to print to a file automatically
 
+#define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
+#define MIN(%0,%1) (((%0) < (%1)) ? (%0) : (%1))
 
 // types of statistic table(sets)
 enum strStatType {
@@ -326,9 +328,12 @@ enum strPlayerData {
             plyTimeStartAlive,
             plyTimeStopAlive,		// time not capped
             plyTimeStartUpright,
-            plyTimeStopUpright
+            plyTimeStopUpright,
+            plyCurFlowDist,
+            plyFarFlowDist,
+            plyProtectAwards
 };
-#define MAXPLYSTATS                 85
+#define MAXPLYSTATS                 88
 
 // information per infected player (during other team's survivor round)
 enum strInfData {
@@ -367,7 +372,7 @@ enum strInfData {
             infJockeyRideDuration,		// in milliseconds
             infJockeyRideTotal,
             infTimeStartPresent,		// time present (on the team)
-            infTimeStopPresent,		// if stoptime is 0, then it's NOW, ongoing
+            infTimeStopPresent		// if stoptime is 0, then it's NOW, ongoing
 };
 #define MAXINFSTATS                 35
 

@@ -7,7 +7,7 @@
 #include <sourcemod>
 
 InitDatabase() {
-    db = SQL_DefConnect(errorBuffer, sizeof(errorBuffer));
+    db = SQL_Connect("l4d2_playstats", false, errorBuffer, sizeof(errorBuffer));
     if (db == INVALID_HANDLE) {
         PrintToServer("Could not connect: %s", errorBuffer);
     }
@@ -15,6 +15,7 @@ InitDatabase() {
         SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `round` ( \
         `id` INT NOT NULL auto_increment, \
         `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+        `matchId` INT, \
         `round` INT, \
         `team` INT, \
         `map` varchar(64), \
@@ -53,6 +54,7 @@ InitDatabase() {
         SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `survivor` ( \
         `id` INT NOT NULL auto_increment, \
         `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+        `matchId` INT, \
         `round` INT, \
         `team` INT, \
         `map` varchar(64), \
@@ -145,12 +147,16 @@ InitDatabase() {
         `plyTimeStopAlive` INT, \
         `plyTimeStartUpright` INT, \
         `plyTimeStopUpright` INT, \
+        `plyCurFlowDist` INT, \
+        `plyFarFlowDist` INT, \
+        `plyProtectAwards` INT, \
         PRIMARY KEY  (`id`) \
         );");
         
         SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `infected` ( \
         `id` INT NOT NULL auto_increment, \
         `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+        `matchId` INT, \
         `round` INT, \
         `team` INT, \
         `map` varchar(64), \
@@ -196,45 +202,28 @@ InitDatabase() {
         PRIMARY KEY  (`id`) \
         );");
         
-        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `progress` ( \
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `matchlog` ( \
         `id` INT NOT NULL auto_increment, \
         `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-        `round` INT, \
-        `team` INT, \
+        `matchId` INT, \
         `map` varchar(64), \
-        `steamid` varchar(32), \
         `deleted` BOOLEAN, \
-        `isSecondHalf` BOOLEAN, \
-        `curFlowDist` INT, \
-        `farFlowDist` INT, \
+        `result` INT, \
+        `steamid` varchar(32), \
+        `startedAt` INT, \
+        `endedAt` INT, \
+        `team` INT, \
         PRIMARY KEY  (`id`) \
         );");
     }
 }
 
-// write round stats to database
-stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
-    if ( g_bModeCampaign ) { return; }
-
-    if (db == INVALID_HANDLE) {
-        PrintToServer("[Stats] DB is null");
-        PrintDebug( 1, "[Stats] DB is null" );
-        return;
-    }
-    PrintToServer("[Stats] Saving to database");
-    PrintDebug( 1, "[Stats] Saving to database" );
-
-    decl String: sTmpMap[64];
-    GetCurrentMap( sTmpMap, sizeof(sTmpMap) );
-    decl String: sTmpTime[20];
-    FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
-    
-    // round data
-    new i;
+InitQueries() {
     if ( hRoundStmt == INVALID_HANDLE ) {
         hRoundStmt = SQL_PrepareQuery(db, "INSERT INTO round ( \
         id, \
         createdAt, \
+        matchId, \
         round, \
         team, \
         map, \
@@ -276,27 +265,252 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
 
         if ( hRoundStmt == INVALID_HANDLE ) {
             PrintDebug( 1, "[Stats] Prepare round query failed. %s", errorBuffer );
-            return;
+        }
+    }
+    
+    if ( hSurvivorStmt == INVALID_HANDLE ) {
+        hSurvivorStmt = SQL_PrepareQuery(db, "INSERT INTO survivor ( \
+        id, \
+        createdAt, \
+        matchId, \
+        round, \
+        team, \
+        map, \
+        steamid, \
+        deleted, \
+        isSecondHalf, \
+        plyShotsShotgun, \
+        plyShotsSmg, \
+        plyShotsSniper, \
+        plyShotsPistol, \
+        plyHitsShotgun, \
+        plyHitsSmg, \
+        plyHitsSniper, \
+        plyHitsPistol, \
+        plyHeadshotsSmg, \
+        plyHeadshotsSniper, \
+        plyHeadshotsPistol, \
+        plyHeadshotsSISmg, \
+        plyHeadshotsSISniper, \
+        plyHeadshotsSIPistol, \
+        plyHitsSIShotgun, \
+        plyHitsSISmg, \
+        plyHitsSISniper, \
+        plyHitsSIPistol, \
+        plyHitsTankShotgun, \
+        plyHitsTankSmg, \
+        plyHitsTankSniper, \
+        plyHitsTankPistol, \
+        plyCommon, \
+        plyCommonTankUp, \
+        plySIKilled, \
+        plySIKilledTankUp, \
+        plySIDamage, \
+        plySIDamageTankUp, \
+        plyIncaps, \
+        plyDied, \
+        plySkeets, \
+        plySkeetsHurt, \
+        plySkeetsMelee, \
+        plyLevels, \
+        plyLevelsHurt, \
+        plyPops, \
+        plyCrowns, \
+        plyCrownsHurt, \
+        plyShoves, \
+        plyDeadStops, \
+        plyTongueCuts, \
+        plySelfClears, \
+        plyFallDamage, \
+        plyDmgTaken, \
+        plyDmgTakenBoom, \
+        plyDmgTakenCommon, \
+        plyDmgTakenTank, \
+        plyBowls, \
+        plyCharges, \
+        plyDeathCharges, \
+        plyFFGiven, \
+        plyFFTaken, \
+        plyFFHits, \
+        plyTankDamage, \
+        plyWitchDamage, \
+        plyMeleesOnTank, \
+        plyRockSkeets, \
+        plyRockEats, \
+        plyFFGivenPellet, \
+        plyFFGivenBullet, \
+        plyFFGivenSniper, \
+        plyFFGivenMelee, \
+        plyFFGivenFire, \
+        plyFFGivenIncap, \
+        plyFFGivenOther, \
+        plyFFGivenSelf, \
+        plyFFTakenPellet, \
+        plyFFTakenBullet, \
+        plyFFTakenSniper, \
+        plyFFTakenMelee, \
+        plyFFTakenFire, \
+        plyFFTakenIncap, \
+        plyFFTakenOther, \
+        plyFFGivenTotal, \
+        plyFFTakenTotal, \
+        plyCarsTriggered, \
+        plyJockeyRideDuration, \
+        plyJockeyRideTotal, \
+        plyClears, \
+        plyAvgClearTime, \
+        plyTimeStartPresent, \
+        plyTimeStopPresent, \
+        plyTimeStartAlive, \
+        plyTimeStopAlive, \
+        plyTimeStartUpright, \
+        plyTimeStopUpright, \
+        plyCurFlowDist, \
+        plyFarFlowDist, \
+        plyProtectAwards \
+        ) VALUES ( NULL, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,? \
+        )", errorBuffer, sizeof(errorBuffer));
+
+        if ( hSurvivorStmt == INVALID_HANDLE ) {
+            PrintDebug( 1, "[Stats] Prepare survivor query failed. %s", errorBuffer );
         }
     }
 
+    if ( hInfectedStmt == INVALID_HANDLE ) {
+        hInfectedStmt = SQL_PrepareQuery(db, "INSERT INTO infected ( \
+        id, \
+        createdAt, \
+        matchId, \
+        round, \
+        team, \
+        map, \
+        steamid, \
+        deleted, \
+        isSecondHalf, \
+        infDmgTotal, \
+        infDmgUpright, \
+        infDmgTank, \
+        infDmgTankIncap, \
+        infDmgScratch, \
+        infDmgSpit, \
+        infDmgBoom, \
+        infDmgTankUp, \
+        infHunterDPs, \
+        infHunterDPDmg, \
+        infJockeyDPs, \
+        infDeathCharges, \
+        infCharges, \
+        infMultiCharges, \
+        infBoomsSingle, \
+        infBoomsDouble, \
+        infBoomsTriple, \
+        infBoomsQuad, \
+        infBooms, \
+        infBoomerPops, \
+        infLedged, \
+        infCommon, \
+        infSpawns, \
+        infSpawnSmoker, \
+        infSpawnBoomer, \
+        infSpawnHunter, \
+        infSpawnCharger, \
+        infSpawnSpitter, \
+        infSpawnJockey, \
+        infTankPasses, \
+        infTankRockHits, \
+        infCarsTriggered, \
+        infJockeyRideDuration, \
+        infJockeyRideTotal, \
+        infTimeStartPresent, \
+        infTimeStopPresent \
+        ) VALUES ( NULL, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,?,?,?,?,?,?,?,?, \
+            ?,?,? \
+        )", errorBuffer, sizeof(errorBuffer));
+
+        if ( hInfectedStmt == INVALID_HANDLE ) {
+            PrintDebug( 1, "[Stats] Prepare infected query failed. %s", errorBuffer );
+        }
+    }
+
+    if ( hMatchStmt == INVALID_HANDLE ) {
+        hMatchStmt = SQL_PrepareQuery(db, "INSERT INTO matchlog ( \
+        id, \
+        createdAt, \
+        matchId, \
+        map, \
+        deleted, \
+        result, \
+        steamid, \
+        startedAt, \
+        endedAt, \
+        team \
+        ) VALUES ( NULL, \
+            ?,?,?,?,?,?,?,? \
+        )", errorBuffer, sizeof(errorBuffer));
+
+        if ( hMatchStmt == INVALID_HANDLE ) {
+            PrintDebug( 1, "[Stats] Prepare match query failed. %s", errorBuffer );
+        }
+    }
+}
+
+// write round stats to database
+stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
+    if ( g_bModeCampaign ) { return; }
+
+    if (db == INVALID_HANDLE) {
+        PrintToServer("[Stats] DB is null");
+        PrintDebug( 1, "[Stats] DB is null" );
+        return;
+    }
+    PrintToServer("[Stats] Saving to database");
+    PrintDebug( 1, "[Stats] Saving to database" );
+
+    decl String: sTmpMap[64];
+    GetCurrentMap( sTmpMap, sizeof(sTmpMap) );
+    decl String: sTmpTime[20];
+    FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
+    
+    new matchId = g_strRoundData[0][0][rndStartTime];
+    new startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );
+    new endedAt = MAX( g_strRoundData[g_iRound][0][rndEndTime], g_strRoundData[g_iRound][1][rndEndTime] );
+    new result = 0;
+    
+    // round data
+    new i;
+
     SQL_BindParamString(hRoundStmt, 0, sTmpTime, false);
-    SQL_BindParamInt(hRoundStmt, 1, g_iRound, false);
-    SQL_BindParamInt(hRoundStmt, 2, iTeam, false);
-    SQL_BindParamString(hRoundStmt, 3, sTmpMap, false);
-    SQL_BindParamInt(hRoundStmt, 4, 0, false);
-    SQL_BindParamInt(hRoundStmt, 5, g_bSecondHalf, false);
-    SQL_BindParamInt(hRoundStmt, 6, iTeam == LTEAM_A, false);
-    SQL_BindParamInt(hRoundStmt, 7, g_iScores[LTEAM_A] - g_iFirstScoresSet[((g_bCMTSwapped)?1:0)], false);
-    SQL_BindParamInt(hRoundStmt, 8, g_iScores[LTEAM_A], false);
-    SQL_BindParamInt(hRoundStmt, 9, g_iScores[LTEAM_B] - g_iFirstScoresSet[((g_bCMTSwapped)?0:1)], false);
-    SQL_BindParamInt(hRoundStmt, 10, g_iScores[LTEAM_B], false);
-    SQL_BindParamInt(hRoundStmt, 11, g_iSurvived[iTeam], false);
-    SQL_BindParamInt(hRoundStmt, 12, L4D_GetVersusMaxCompletionScore(), false);
-    SQL_BindParamInt(hRoundStmt, 13, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), false);
+    SQL_BindParamInt(hRoundStmt, 1, matchId, false);
+    SQL_BindParamInt(hRoundStmt, 2, g_iRound, false);
+    SQL_BindParamInt(hRoundStmt, 3, iTeam, false);
+    SQL_BindParamString(hRoundStmt, 4, sTmpMap, false);
+    SQL_BindParamInt(hRoundStmt, 5, 0, false);
+    SQL_BindParamInt(hRoundStmt, 6, g_bSecondHalf, false);
+    SQL_BindParamInt(hRoundStmt, 7, iTeam == LTEAM_A, false);
+    SQL_BindParamInt(hRoundStmt, 8, g_iScores[LTEAM_A] - g_iFirstScoresSet[((g_bCMTSwapped)?1:0)], false);
+    SQL_BindParamInt(hRoundStmt, 9, g_iScores[LTEAM_A], false);
+    SQL_BindParamInt(hRoundStmt, 10, g_iScores[LTEAM_B] - g_iFirstScoresSet[((g_bCMTSwapped)?0:1)], false);
+    SQL_BindParamInt(hRoundStmt, 11, g_iScores[LTEAM_B], false);
+    SQL_BindParamInt(hRoundStmt, 12, g_iSurvived[iTeam], false);
+    SQL_BindParamInt(hRoundStmt, 13, L4D_GetVersusMaxCompletionScore(), false);
+    SQL_BindParamInt(hRoundStmt, 14, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), false);
 
     for ( i = 0; i <= MAXRNDSTATS; i++ ) {
-        SQL_BindParamInt(hRoundStmt, i+14, g_strRoundData[g_iRound][iTeam][i], false);
+        SQL_BindParamInt(hRoundStmt, i+15, g_strRoundData[g_iRound][iTeam][i], false);
     }
     if (!SQL_Execute(hRoundStmt)) {
         PrintToChatAll("[Stats] Failed to save round stats.");
@@ -312,137 +526,33 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         if ( g_iPlayerRoundTeam[iTeam][j] != iTeam ) { continue; }
         iPlayerCount++;
 
-        if ( hSurvivorStmt == INVALID_HANDLE ) {
-            hSurvivorStmt = SQL_PrepareQuery(db, "INSERT INTO survivor ( \
-            id, \
-            createdAt, \
-            round, \
-            team, \
-            map, \
-            steamid, \
-            deleted, \
-            isSecondHalf, \
-            plyShotsShotgun, \
-            plyShotsSmg, \
-            plyShotsSniper, \
-            plyShotsPistol, \
-            plyHitsShotgun, \
-            plyHitsSmg, \
-            plyHitsSniper, \
-            plyHitsPistol, \
-            plyHeadshotsSmg, \
-            plyHeadshotsSniper, \
-            plyHeadshotsPistol, \
-            plyHeadshotsSISmg, \
-            plyHeadshotsSISniper, \
-            plyHeadshotsSIPistol, \
-            plyHitsSIShotgun, \
-            plyHitsSISmg, \
-            plyHitsSISniper, \
-            plyHitsSIPistol, \
-            plyHitsTankShotgun, \
-            plyHitsTankSmg, \
-            plyHitsTankSniper, \
-            plyHitsTankPistol, \
-            plyCommon, \
-            plyCommonTankUp, \
-            plySIKilled, \
-            plySIKilledTankUp, \
-            plySIDamage, \
-            plySIDamageTankUp, \
-            plyIncaps, \
-            plyDied, \
-            plySkeets, \
-            plySkeetsHurt, \
-            plySkeetsMelee, \
-            plyLevels, \
-            plyLevelsHurt, \
-            plyPops, \
-            plyCrowns, \
-            plyCrownsHurt, \
-            plyShoves, \
-            plyDeadStops, \
-            plyTongueCuts, \
-            plySelfClears, \
-            plyFallDamage, \
-            plyDmgTaken, \
-            plyDmgTakenBoom, \
-            plyDmgTakenCommon, \
-            plyDmgTakenTank, \
-            plyBowls, \
-            plyCharges, \
-            plyDeathCharges, \
-            plyFFGiven, \
-            plyFFTaken, \
-            plyFFHits, \
-            plyTankDamage, \
-            plyWitchDamage, \
-            plyMeleesOnTank, \
-            plyRockSkeets, \
-            plyRockEats, \
-            plyFFGivenPellet, \
-            plyFFGivenBullet, \
-            plyFFGivenSniper, \
-            plyFFGivenMelee, \
-            plyFFGivenFire, \
-            plyFFGivenIncap, \
-            plyFFGivenOther, \
-            plyFFGivenSelf, \
-            plyFFTakenPellet, \
-            plyFFTakenBullet, \
-            plyFFTakenSniper, \
-            plyFFTakenMelee, \
-            plyFFTakenFire, \
-            plyFFTakenIncap, \
-            plyFFTakenOther, \
-            plyFFGivenTotal, \
-            plyFFTakenTotal, \
-            plyCarsTriggered, \
-            plyJockeyRideDuration, \
-            plyJockeyRideTotal, \
-            plyClears, \
-            plyAvgClearTime, \
-            plyTimeStartPresent, \
-            plyTimeStopPresent, \
-            plyTimeStartAlive, \
-            plyTimeStopAlive, \
-            plyTimeStartUpright, \
-            plyTimeStopUpright \
-            ) VALUES ( NULL, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,? \
-            )", errorBuffer, sizeof(errorBuffer));
-
-            if ( hSurvivorStmt == INVALID_HANDLE ) {
-                PrintDebug( 1, "[Stats] Prepare survivor query failed. %s", errorBuffer );
-                continue;
-            }
-        }
-
         SQL_BindParamString(hSurvivorStmt, 0, sTmpTime, false);
-        SQL_BindParamInt(hSurvivorStmt, 1, g_iRound, false);
-        SQL_BindParamInt(hSurvivorStmt, 2, iTeam, false);
-        SQL_BindParamString(hSurvivorStmt, 3, sTmpMap, false);
-        SQL_BindParamString(hSurvivorStmt, 4, g_sPlayerId[j], false);
-        SQL_BindParamInt(hSurvivorStmt, 5, 0, false);
-        SQL_BindParamInt(hSurvivorStmt, 6, g_bSecondHalf, false);
+        SQL_BindParamInt(hSurvivorStmt, 1, matchId, false);
+        SQL_BindParamInt(hSurvivorStmt, 2, g_iRound, false);
+        SQL_BindParamInt(hSurvivorStmt, 3, iTeam, false);
+        SQL_BindParamString(hSurvivorStmt, 4, sTmpMap, false);
+        SQL_BindParamString(hSurvivorStmt, 5, g_sPlayerId[j], false);
+        SQL_BindParamInt(hSurvivorStmt, 6, 0, false);
+        SQL_BindParamInt(hSurvivorStmt, 7, g_bSecondHalf, false);
 
         for ( i = 0; i <= MAXPLYSTATS; i++ ) {
-            SQL_BindParamInt(hSurvivorStmt, i+7, g_strRoundPlayerData[j][iTeam][i], false);
+            SQL_BindParamInt(hSurvivorStmt, i+8, g_strRoundPlayerData[j][iTeam][i], false);
         }
         if (!SQL_Execute(hSurvivorStmt)) {
             PrintToChatAll("[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
         }
         else {
             PrintDebug( 1, "[Stats] Saved survivor stats for %s.", g_sPlayerId[j] );
+        }
+        
+        if (IsMissionFinalMap() && bSecondHalf) {
+            if (g_iScores[iTeam] > g_iScores[(iTeam) ? 0 : 1]) {
+                result = 1;
+            }
+            else if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
+                result = -1;
+            }
+            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, iTeam);
         }
     }
 
@@ -460,77 +570,17 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         }
         iPlayerCount++;
 
-        if ( hInfectedStmt == INVALID_HANDLE ) {
-            hInfectedStmt = SQL_PrepareQuery(db, "INSERT INTO infected ( \
-            id, \
-            createdAt, \
-            round, \
-            team, \
-            map, \
-            steamid, \
-            deleted, \
-            isSecondHalf, \
-            infDmgTotal, \
-            infDmgUpright, \
-            infDmgTank, \
-            infDmgTankIncap, \
-            infDmgScratch, \
-            infDmgSpit, \
-            infDmgBoom, \
-            infDmgTankUp, \
-            infHunterDPs, \
-            infHunterDPDmg, \
-            infJockeyDPs, \
-            infDeathCharges, \
-            infCharges, \
-            infMultiCharges, \
-            infBoomsSingle, \
-            infBoomsDouble, \
-            infBoomsTriple, \
-            infBoomsQuad, \
-            infBooms, \
-            infBoomerPops, \
-            infLedged, \
-            infCommon, \
-            infSpawns, \
-            infSpawnSmoker, \
-            infSpawnBoomer, \
-            infSpawnHunter, \
-            infSpawnCharger, \
-            infSpawnSpitter, \
-            infSpawnJockey, \
-            infTankPasses, \
-            infTankRockHits, \
-            infCarsTriggered, \
-            infJockeyRideDuration, \
-            infJockeyRideTotal, \
-            infTimeStartPresent, \
-            infTimeStopPresent \
-            ) VALUES ( NULL, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,?,?,?,?,?,?,?,?, \
-                ?,?,? \
-            )", errorBuffer, sizeof(errorBuffer));
-
-            if ( hInfectedStmt == INVALID_HANDLE ) {
-                PrintDebug( 1, "[Stats] Prepare infected query failed. %s", errorBuffer );
-                continue;
-            }
-        }
-
         SQL_BindParamString(hInfectedStmt, 0, sTmpTime, false);
-        SQL_BindParamInt(hInfectedStmt, 1, g_iRound, false);
-        SQL_BindParamInt(hInfectedStmt, 2, iTeam, false);
-        SQL_BindParamString(hInfectedStmt, 3, sTmpMap, false);
-        SQL_BindParamString(hInfectedStmt, 4, g_sPlayerId[j], false);
-        SQL_BindParamInt(hInfectedStmt, 5, 0, false);
-        SQL_BindParamInt(hInfectedStmt, 6, g_bSecondHalf, false);
-
+        SQL_BindParamInt(hInfectedStmt, 1, matchId, false);
+        SQL_BindParamInt(hInfectedStmt, 2, g_iRound, false);
+        SQL_BindParamInt(hInfectedStmt, 3, iTeam, false);
+        SQL_BindParamString(hInfectedStmt, 4, sTmpMap, false);
+        SQL_BindParamString(hInfectedStmt, 5, g_sPlayerId[j], false);
+        SQL_BindParamInt(hInfectedStmt, 6, 0, false);
+        SQL_BindParamInt(hInfectedStmt, 7, g_bSecondHalf, false);
         
         for ( i = 0; i <= MAXINFSTATS; i++ ) {
-            SQL_BindParamInt(hInfectedStmt, i+7, g_strRoundPlayerInfData[j][iTeam][i], false);
+            SQL_BindParamInt(hInfectedStmt, i+8, g_strRoundPlayerInfData[j][iTeam][i], false);
         }
         if (!SQL_Execute(hInfectedStmt)) {
             PrintToChatAll("[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
@@ -538,65 +588,34 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         else {
             PrintDebug( 1, "[Stats] Saved infected stats for %s.", g_sPlayerId[j] );
         }
-    }
-    
-    // progress data
-    new Float: curFlowDist[MAXPLAYERS+1];
-    new Float: farFlowDist[MAXPLAYERS+1];
-    new clients = 0;
-    for ( i = 1; i <= MaxClients; i++ ) {
-        if ( !IS_VALID_SURVIVOR(i) ) { continue; }
         
-        if ( clients < 4 ) {
-            // GetEntPropFloat( i, Prop_Data, "m_farthestSurvivorFlowAtDeath" );     // this doesn't work/exist
-            // instead, we're tracking it per character 0-3
-            farFlowDist[clients] = g_fHighestFlow[clients];
-        }
-        curFlowDist[clients] = L4D2Direct_GetFlowDistance( i );
-        clients++;
-    }
-    
-    for ( i = 0; i < clients; i++ ) {
-        j = GetPlayerIndexForClient( i );
-        if ( j == -1 ) { continue; }
-            
-        if ( hProgressStmt == INVALID_HANDLE ) {
-            hProgressStmt = SQL_PrepareQuery(db, "INSERT INTO progress ( \
-            id, \
-            createdAt, \
-            round, \
-            team, \
-            map, \
-            steamid, \
-            deleted, \
-            isSecondHalf, \
-            curFlowDist, \
-            farFlowDist \
-            ) VALUES ( NULL, \
-                ?,?,?,?,?,?,?,? \
-            )", errorBuffer, sizeof(errorBuffer));
-
-            if ( hProgressStmt == INVALID_HANDLE ) {
-                PrintDebug( 1, "[Stats] Prepare progress query failed. %s", errorBuffer );
-                continue;
+        if (IsMissionFinalMap() && bSecondHalf) {
+            if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
+                result = 1;
             }
+            else if (g_iScores[iTeam] > g_iScores[(iTeam) ? 0 : 1]) {
+                result = -1;
+            }
+            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1);
         }
+    }
+}
 
-        SQL_BindParamString(hProgressStmt, 0, sTmpTime, false);
-        SQL_BindParamInt(hProgressStmt, 1, g_iRound, false);
-        SQL_BindParamInt(hProgressStmt, 2, iTeam, false);
-        SQL_BindParamString(hProgressStmt, 3, sTmpMap, false);
-        SQL_BindParamString(hProgressStmt, 4, g_sPlayerId[j], false);
-        SQL_BindParamInt(hProgressStmt, 5, 0, false);
-        SQL_BindParamInt(hProgressStmt, 6, g_bSecondHalf, false);
-        SQL_BindParamInt(hProgressStmt, 7, RoundFloat(curFlowDist[i]), false);
-        SQL_BindParamInt(hProgressStmt, 8, RoundFloat((i < 4) ? farFlowDist[i] : 0.0), false);
+stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap[], result, const String: sSteamId[], startedAt, endedAt, iTeam) {
+    SQL_BindParamString(hMatchStmt, 0, sTmpTime, false);
+    SQL_BindParamInt(hMatchStmt, 1, matchId, false);
+    SQL_BindParamString(hMatchStmt, 2, sTmpMap, false);
+    SQL_BindParamInt(hMatchStmt, 3, 0, false);
+    SQL_BindParamInt(hMatchStmt, 4, result, false);
+    SQL_BindParamString(hMatchStmt, 5, sSteamId, false);
+    SQL_BindParamInt(hMatchStmt, 6, startedAt, false);
+    SQL_BindParamInt(hMatchStmt, 7, endedAt, false);
+    SQL_BindParamInt(hMatchStmt, 8, iTeam, false);
 
-        if (!SQL_Execute(hProgressStmt)) {
-            PrintToChatAll("[Stats] Failed to save progress stats.");
-        }
-        else {
-            PrintDebug( 1, "[Stats] Saved progress stats.");
-        }
+    if (!SQL_Execute(hMatchStmt)) {
+        PrintToChatAll("[Stats] Failed to save matchlog stats.");
+    }
+    else {
+        PrintDebug( 1, "[Stats] Saved matchlog stats.");
     }
 }

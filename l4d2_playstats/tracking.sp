@@ -784,3 +784,15 @@ public Action: Event_JockeyRideEnd (Handle:event, const String:name[], bool:dont
         g_strRoundPlayerData[vicIndex][g_iCurTeam][plyJockeyRideDuration] += duration;
     }
 }
+
+public Action: Event_AwardEarned (Handle:event, const String:name[], bool:dontBroadcast) {
+    new client = GetClientOfUserId( GetEventInt(event, "userid") );
+    new award = GetClientOfUserId( GetEventInt(event, "award") );
+    new index;
+    if ( IS_VALID_SURVIVOR(client) && award == 67 ) {
+        index = GetPlayerIndexForClient( client );
+        if ( index == -1 ) { return; }
+        
+        g_strRoundPlayerData[index][g_iCurTeam][plyProtectAwards]++;
+    }
+}

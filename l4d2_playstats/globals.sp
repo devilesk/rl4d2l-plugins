@@ -92,4 +92,4 @@ new Handle:db;
 new Handle:hRoundStmt;
 new Handle:hSurvivorStmt;
 new Handle:hInfectedStmt;
-new Handle:hProgressStmt;
+new Handle:hMatchStmt;
