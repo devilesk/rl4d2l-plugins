@@ -122,7 +122,7 @@ public Action: Timer_RoundEnd ( Handle:timer )
     new totalSurvivor = GameRules_GetProp("m_iCampaignScore", 2, indexSurvivor);
     new roundSurvivor = totalSurvivor - scoreTotals[indexSurvivor];
     scoreTotals[indexSurvivor] = totalSurvivor;
-    Format(titles[indexSurvivor], sizeof(titles[]), "Team %d: *+%d* %d", InSecondHalfOfRound() ? 2 : 1, roundSurvivor, totalSurvivor);
+    Format(titles[indexSurvivor], sizeof(titles[]), "Team %d: %d (+%d)", InSecondHalfOfRound() ? 2 : 1, totalSurvivor, roundSurvivor);
     
     for ( new client = 1; client <= MaxClients; client++ )
     {
