@@ -3,6 +3,8 @@
 #include <sourcemod>
 #include <sdktools>
 #include <l4d2_direct>
+#define L4D2UTIL_STOCKS_ONLY
+#include <l4d2util>
 #include <discord_webhook>
 
 #define DEBUG 1
@@ -21,7 +23,6 @@
 #define TEAM_INFECTED           3
 
 new     bool:   g_bInRound              = false;
-new g_iHalf = 0;
 new iTankPercent = 0;
 new scoreTotals[2];
 new Handle:g_hVsBossBuffer;
@@ -56,7 +57,6 @@ public OnPluginStart()
 
 public OnMapStart()
 {
-    g_iHalf = 0;
     sEmbedRequest[0] = '\0';
     iEmbedCount = 0;
 }
@@ -68,26 +68,27 @@ public Event_RoundStart (Handle:hEvent, const String:name[], bool:dontBroadcast)
     new indexInfected = 1 - indexSurvivor;
     scoreTotals[indexSurvivor] = GameRules_GetProp("m_iCampaignScore", 2, indexSurvivor);
     scoreTotals[indexInfected] = GameRules_GetProp("m_iCampaignScore", 2, indexInfected);
-    CreateTimer(6.0, Timer_SaveTankPercent, _, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(6.0, SaveBossFlows, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action: Timer_SaveTankPercent ( Handle:timer )
+public Action:SaveBossFlows(Handle:timer)
 {
-    iTankPercent = 0;
-    if (g_iHalf == 0)
-    {
-        if (L4D2Direct_GetVSTankToSpawnThisRound(0))
-        {
-            iTankPercent = RoundToNearest(GetTankFlow(0)*100.0);
-        }
-    }
-    else
-    {
-        if (L4D2Direct_GetVSTankToSpawnThisRound(1))
-        {
-            iTankPercent = RoundToNearest(GetTankFlow(1)*100.0);
-        }
-    }
+	if (!InSecondHalfOfRound())
+	{
+		iTankPercent = 0;
+
+		if (L4D2Direct_GetVSTankToSpawnThisRound(0))
+		{
+			iTankPercent = RoundToNearest(GetTankFlow(0)*100.0);
+		}
+	}
+	else
+	{
+		if (iTankPercent != 0)
+		{
+			iTankPercent = RoundToNearest(GetTankFlow(1)*100.0);
+		}
+	}
 }
 
 public Event_RoundEnd (Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -121,7 +122,7 @@ public Action: Timer_RoundEnd ( Handle:timer )
     new totalSurvivor = GameRules_GetProp("m_iCampaignScore", 2, indexSurvivor);
     new roundSurvivor = totalSurvivor - scoreTotals[indexSurvivor];
     scoreTotals[indexSurvivor] = totalSurvivor;
-    Format(titles[indexSurvivor], sizeof(titles[]), "Team %d: *+%d* %d", g_iHalf + 1, roundSurvivor, totalSurvivor);
+    Format(titles[indexSurvivor], sizeof(titles[]), "Team %d: *+%d* %d", InSecondHalfOfRound() ? 2 : 1, roundSurvivor, totalSurvivor);
     
     for ( new client = 1; client <= MaxClients; client++ )
     {
@@ -139,14 +140,13 @@ public Action: Timer_RoundEnd ( Handle:timer )
     if (!sPlayers[indexInfected][0]) {
         strcopy(sPlayers[indexInfected], sizeof(sPlayers[]), "None");
     }
-    if (g_iHalf > 0) {
+    if (InSecondHalfOfRound()) {
         decl String:fields[CONBUFSIZELARGE];
         Format(fields, CONBUFSIZELARGE, "{\"name\":\"%s\",\"value\":\"%s\",\"inline\":%d},{\"name\":\"%s\",\"value\":\"%s\",\"inline\":%d}", titles[0], sPlayers[0], 1, titles[1], sPlayers[1], 1);
         InternalAddEmbed(sMap, description, "", 15158332, fields);
         FormatEmbedRequest(sEmbedRequest, sizeof(sEmbedRequest), sEmbedRequest);
         SendToDiscord("discord_scoreboard", sEmbedRequest);
     }
-    g_iHalf = 1;
 }
 
 bool GetMapName(const char[] mapId, char[] mapName, int iLength)
