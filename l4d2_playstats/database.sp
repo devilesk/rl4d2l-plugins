@@ -168,6 +168,12 @@ InitDatabase() {
         `infDmgTank` INT, \
         `infDmgTankIncap` INT, \
         `infDmgScratch` INT, \
+        `infDmgScratchSmoker` INT, \
+        `infDmgScratchBoomer` INT, \
+        `infDmgScratchHunter` INT, \
+        `infDmgScratchCharger` INT, \
+        `infDmgScratchSpitter` INT, \
+        `infDmgScratchJockey` INT, \
         `infDmgSpit` INT, \
         `infDmgBoom` INT, \
         `infDmgTankUp` INT, \
@@ -402,6 +408,12 @@ InitQueries() {
         infDmgTank, \
         infDmgTankIncap, \
         infDmgScratch, \
+        infDmgScratchSmoker, \
+        infDmgScratchBoomer, \
+        infDmgScratchHunter, \
+        infDmgScratchCharger, \
+        infDmgScratchSpitter, \
+        infDmgScratchJockey, \
         infDmgSpit, \
         infDmgBoom, \
         infDmgTankUp, \
@@ -599,6 +611,49 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1);
         }
     }
+    
+    if (IsMissionFinalMap() && bSecondHalf && g_bSystem2Loaded) {
+        char cmd[256];
+        if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
+            System2_ExecuteThreaded(ExecuteCallback, cmd);
+        }
+    }
+}
+
+public void ExecuteCallback(bool success, const char[] command, System2ExecuteOutput output, any data) {
+    if (!success || output.ExitStatus != 0) {
+        PrintToServer("Couldn't execute commands %s successfully", command);
+    } else {
+        char outputString[128];
+        output.GetOutput(outputString, sizeof(outputString));
+        PrintToServer("Output of the command %s: %s", command, outputString);
+    }
+}
+
+bool GetMatchEndScriptCmd(char[] cmd, int iLength)
+{
+    KeyValues kv = new KeyValues("l4d2_playstats");
+
+    char sFile[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/l4d2_playstats.cfg");
+
+    if (!FileExists(sFile))
+    {
+        SetFailState("[GetMatchEndScriptCmd] \"%s\" not found!", sFile);
+        return false;
+    }
+
+    kv.ImportFromFile(sFile);
+
+    if (!kv.JumpToKey("match_end_script_cmd", false))
+    {
+        SetFailState("[GetMatchEndScriptCmd] Can't find \"match_end_script_cmd\" in \"%s\"!", sFile);
+        delete kv;
+        return false;
+    }
+    kv.GetString(NULL_STRING, cmd, iLength);
+    delete kv;
+    return true;
 }
 
 stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap[], result, const String: sSteamId[], startedAt, endedAt, iTeam) {

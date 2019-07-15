@@ -10,7 +10,7 @@
 #undef REQUIRE_PLUGIN
 #include <readyup>
 #include <lgofnoc>
-#include <discord_webhook>
+#include <system2>
 #define REQUIRE_PLUGIN
 
 #include "l4d2_playstats/globals.sp"
@@ -73,18 +73,21 @@ public OnAllPluginsLoaded() {
     g_bReadyUpAvailable = LibraryExists("readyup");
     g_bPauseAvailable = LibraryExists("pause");
     g_bSkillDetectLoaded = LibraryExists("skill_detect");
+    g_bSystem2Loaded = LibraryExists("system2");
 }
 public OnLibraryRemoved(const String:name[]) {
     if ( StrEqual(name, "lgofnoc") ) { g_bLGOAvailable = false; }
     else if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = false; }
     else if ( StrEqual(name, "pause") ) { g_bPauseAvailable = false; }
     else if ( StrEqual(name, "skill_detect") ) { g_bSkillDetectLoaded = false; }
+    else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = false; }
 }
 public OnLibraryAdded(const String:name[]) {
     if ( StrEqual(name, "lgofnoc") ) { g_bLGOAvailable = true; }
     else if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = true; }
     else if ( StrEqual(name, "pause") ) { g_bPauseAvailable = true; }
     else if ( StrEqual(name, "skill_detect") ) { g_bSkillDetectLoaded = true; }
+    else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = true; }
 }
 
 public OnPluginStart() {
@@ -1521,4 +1524,7 @@ stock InitTries() {
     SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",          MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "l4d_ihm05_lakeside",             MP_FINALE);
 }

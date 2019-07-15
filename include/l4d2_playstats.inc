@@ -342,39 +342,45 @@ enum strInfData {
             infDmgTank,				// only upright
             infDmgTankIncap,			// only incapped
             infDmgScratch,			// only upright
+            infDmgScratchSmoker,		// only upright
+            infDmgScratchBoomer,		// only upright
+            infDmgScratchHunter,		// only upright
+            infDmgScratchCharger,		// only upright
+            infDmgScratchSpitter,		// only upright
+            infDmgScratchJockey,	// 10 only upright
             infDmgSpit,				// only upright
             infDmgBoom,				// only upright
             infDmgTankUp,				// only upright, excluding the tank itself
             infHunterDPs,				// damage pounce count
             infHunterDPDmg,			// damage pounce damage
-            infJockeyDPs,				// 10
+            infJockeyDPs,
             infDeathCharges,
             infCharges,
             infMultiCharges,
-            infBoomsSingle,
+            infBoomsSingle,         // 20
             infBoomsDouble,
             infBoomsTriple,
             infBoomsQuad,
             infBooms,				// boomed survivors
             infBoomerPops,				// times popped as boomer
-            infLedged,				// 20 survivors ledged
+            infLedged,				// survivors ledged
             infCommon,				// common killed by SI
             infSpawns,
             infSpawnSmoker,
-            infSpawnBoomer,
+            infSpawnBoomer,         // 30
             infSpawnHunter,
             infSpawnCharger,
             infSpawnSpitter,
             infSpawnJockey,
             infTankPasses,
-            infTankRockHits,			// 30
+            infTankRockHits,
             infCarsTriggered,
             infJockeyRideDuration,		// in milliseconds
             infJockeyRideTotal,
-            infTimeStartPresent,		// time present (on the team)
+            infTimeStartPresent,		// 40 time present (on the team)
             infTimeStopPresent		// if stoptime is 0, then it's NOW, ongoing
 };
-#define MAXINFSTATS                 35
+#define MAXINFSTATS                 41
 
 // trie values: weapon type (per accuracy-class)
 enum strWeaponType {

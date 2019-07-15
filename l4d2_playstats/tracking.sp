@@ -241,24 +241,38 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
                                         damage >= STUMBLE_DMG_THRESH
                                 ) {
                                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                    g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchCharger] += damage;
                                 }
                             }
                             case ZC_SMOKER: {
                                 if ( GetEntPropEnt(attacker, Prop_Send, "m_tongueVictim") == -1 ) {
                                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                    g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchSmoker] += damage;
                                 }
                             }
                             
                             case ZC_JOCKEY: {
                                 if ( GetEntPropEnt(attacker, Prop_Send, "m_jockeyVictim") == -1 ) {
                                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                    g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchJockey] += damage;
                                 }
                             }
                             
                             case ZC_HUNTER: {
                                 if ( GetEntPropEnt(attacker, Prop_Send, "m_pounceVictim") == -1 ) {
                                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                    g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchHunter] += damage;
                                 }
+                            }
+                            
+                            case ZC_BOOMER: {
+                                g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchBoomer] += damage;
+                            }
+                            
+                            case ZC_SPITTER: {
+                                g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
+                                g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchSpitter] += damage;
                             }
                             
                             default: {

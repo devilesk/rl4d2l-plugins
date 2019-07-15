@@ -15,7 +15,7 @@ public Plugin:myinfo =
 {
     name = "Teleport Tank",
     author = "devilesk",
-    version = "1.1.0",
+    version = "1.2.0",
     description = "Adds sm_teleporttank to teleport tank back to its spawn point.",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };

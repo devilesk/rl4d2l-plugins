@@ -22,6 +22,8 @@
 #define TEAM_SURVIVOR           2
 #define TEAM_INFECTED           3
 
+#define MAXMAP                  32
+
 new     bool:   g_bInRound              = false;
 new iTankPercent = 0;
 new scoreTotals[2];
@@ -30,13 +32,19 @@ new String:sPlayers[2][512];
 new String:titles[2][64];
 new String:sEmbedRequest[CONBUFSIZELARGE];
 new iEmbedCount = 0;
+new String: g_sMapName[MAXMAP];
+new Handle: g_hTrieMaps = INVALID_HANDLE;   // trie for getting finale maps
+
+enum strMapType {
+    MP_FINALE
+};
 
 public Plugin: myinfo =
 {
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.0.0",
+    version = "1.2.0",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
@@ -53,12 +61,14 @@ public OnPluginStart()
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
+    InitTries();
 }
 
 public OnMapStart()
 {
     sEmbedRequest[0] = '\0';
     iEmbedCount = 0;
+    GetCurrentMap( g_sMapName, MAXMAP );
 }
 
 public Event_RoundStart (Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -146,6 +156,11 @@ public Action: Timer_RoundEnd ( Handle:timer )
         InternalAddEmbed(sMap, description, "", 15158332, fields);
         FormatEmbedRequest(sEmbedRequest, sizeof(sEmbedRequest), sEmbedRequest);
         SendToDiscord("discord_scoreboard", sEmbedRequest);
+        
+        if (IsMissionFinalMap()) {
+            scoreTotals[0] = 0;
+            scoreTotals[1] = 0;
+        }
     }
 }
 
@@ -241,4 +256,32 @@ InternalAddEmbed(const String:title[], const String:description[], const String:
         Format(sEmbedRequest, sizeof(sEmbedRequest), "%s,%s", sEmbedRequest, sEmbed);
     }
     iEmbedCount++;
+}
+
+stock InitTries() {
+    // finales
+    g_hTrieMaps = CreateTrie();
+    SetTrieValue(g_hTrieMaps, "c1m4_atrium",                    MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c2m5_concert",                   MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c3m4_plantation",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",           MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c5m5_bridge",                    MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c6m3_port",                      MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c7m3_port",                      MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c8m5_rooftop",                   MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",          MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "l4d_ihm05_lakeside",             MP_FINALE);
+}
+
+stock IsMissionFinalMap() {
+    // since L4D_IsMissionFinalMap() is bollocksed, simple map string check
+    new strMapType: mapType;
+    if ( !GetTrieValue(g_hTrieMaps, g_sMapName, mapType) ) { return false; }
+    return bool:( mapType == MP_FINALE );
 }
