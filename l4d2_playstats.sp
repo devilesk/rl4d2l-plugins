@@ -90,7 +90,22 @@ public OnLibraryAdded(const String:name[]) {
     else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = true; }
 }
 
+public Action:Command_Test(client, args) {
+    LogMessage("Command_Test");
+    if (g_bSystem2Loaded) {
+        LogMessage("g_bSystem2Loaded");
+        char cmd[256];
+        if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
+            LogMessage("cmd: %s", cmd);
+            System2_ExecuteThreaded(ExecuteCallback, cmd);
+        }
+    }
+    return Plugin_Handled;
+}
+
 public OnPluginStart() {
+    RegAdminCmd("sm_stats_testcmd", Command_Test, ADMFLAG_KICK, "Test command.");
+    
     // events    
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("scavenge_round_start",       Event_RoundStart,				EventHookMode_PostNoCopy);

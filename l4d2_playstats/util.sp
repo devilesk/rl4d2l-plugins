@@ -394,7 +394,7 @@ stock stripUnicode ( String:testString[MAXNAME], maxLength = 20 ) {
 }
 
 stock PrintDebug( debugLevel, const String:Message[], any:... ) {
-    if (debugLevel <= GetConVarInt(g_hCvarDebug)) {
+    if (debugLevel <= GetConVarInt(g_hCvarDebug) || true) {
         decl String:DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 3);
         LogMessage(DebugBuff);

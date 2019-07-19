@@ -89,8 +89,8 @@ new     String: g_sStatsFile            [MAXNAME];                              
 new     Handle: g_hStatsFile;                                                           // handle for a statsfile that we write tables to
 
 new String:errorBuffer[255];
-new Handle:db;
-new Handle:hRoundStmt;
-new Handle:hSurvivorStmt;
-new Handle:hInfectedStmt;
-new Handle:hMatchStmt;
+new Handle:db = INVALID_HANDLE;
+new Handle:hRoundStmt = INVALID_HANDLE;
+new Handle:hSurvivorStmt = INVALID_HANDLE;
+new Handle:hInfectedStmt = INVALID_HANDLE;
+new Handle:hMatchStmt = INVALID_HANDLE;

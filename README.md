@@ -14,7 +14,14 @@
   
 ## teleport_tank.sp
 
-* Tank teleport vote plugin
+* Tank teleport vote plugin.
+* Adds sm_teleporttank and sm_teleporttankto <x> <y> <z> commands
+
+## spawn_secondary.sp
+
+* Spawn pistol and axe for survivors plugin
+* Adds sm_spawnsecondary command
+* Intended to be used when missing starting axes.
 
 ## discord_webhook
 

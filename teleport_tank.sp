@@ -4,120 +4,133 @@
 #include <sdktools>
 #include <builtinvotes>
 
-new g_iTankId;
-new bool:g_bUseCustomPos = false;
-new Float:position[3];
-new Float:positionCustom[3];
+#define TEAM_SPECTATOR          1
+#define TEAM_INFECTED           3
+#define ZC_TANK                 8
+
 new bool:g_bTankSpawned = false;
+new bool:g_bTankLocationSaved = false;
+new bool:g_bUseCustomPosition = false;
+new Float:g_vecPosition[3];
+new Float:g_vecPositionCustom[3];
 new Handle:hVote;
 
-public Plugin:myinfo =
-{
+public Plugin:myinfo = {
     name = "Teleport Tank",
     author = "devilesk",
-    version = "1.2.0",
-    description = "Adds sm_teleporttank to teleport tank back to its spawn point.",
+    version = "1.4.0",
+    description = "Adds sm_teleporttank to teleport tank to its original spawn point and sm_teleporttankto to teleport tank to a given point.",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
-public OnPluginStart()
-{
+public OnPluginStart() {
     HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
     HookEvent("tank_spawn", Event_TankSpawn,  EventHookMode_Post);
     HookEvent("tank_killed", Event_TankKilled,  EventHookMode_Post);
-    RegConsoleCmd("sm_teleporttank", Vote);
-    RegConsoleCmd("sm_teleporttank_to", Vote2);
+    RegConsoleCmd("sm_teleporttank", Command_Teleport);
+    RegConsoleCmd("sm_teleporttankto", Command_TeleportTo);
 }
 
-public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
-{
+Reset() {
     g_bTankSpawned = false;
+    g_bTankLocationSaved = false;
 }
 
-public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_iTankId = GetEventInt(event, "tankid");
-    CreateTimer(2.0, Timer_SaveTankLocation, _, TIMER_FLAG_NO_MAPCHANGE);
+public OnMapStart() {
+    Reset();
 }
 
-public Action: Timer_SaveTankLocation ( Handle:timer )
-{
-    if (!g_bTankSpawned && g_iTankId > 0)
-    {
-        GetEntPropVector(g_iTankId, Prop_Send, "m_vecOrigin", position);
-        g_bTankSpawned = true;
+public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
+    Reset();
+}
+
+public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
+    g_bTankSpawned = true;
+    CreateTimer(1.0, Timer_SaveTankLocation, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action: Timer_SaveTankLocation ( Handle:timer ) {
+    if (!g_bTankSpawned) { return Plugin_Handled; }
+    new iTank = FindTankClient();
+    if (iTank > 0) {
+        GetClientAbsOrigin(iTank, g_vecPosition);
+        g_bTankLocationSaved = true;
     }
+    return Plugin_Handled;
 }
 
-public Event_TankKilled(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bTankSpawned = false;
+public Event_TankKilled(Handle:event, const String:name[], bool:dontBroadcast) {
+    Reset();
 }
 
-public Action:Vote2(client, args) 
-{
-    if (args < 3)
-    {
-        ReplyToCommand(client, "[SM] Usage: sm_teleporttank_to <x coord> <y coord> <z coord>");
+public Action:Command_Teleport(client, args)  {
+    if (!g_bTankSpawned) {
+        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank not spawned.");
         return Plugin_Handled;
     }
     
-    if (!g_bTankSpawned)
-    {
+    if (!g_bTankLocationSaved) {
+        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank spawn location not saved. Try !teleporttank_to <x> <y> <z>.");
+        return Plugin_Handled;
+    }
+    
+    if (CheckCommandAccess(client, "sm_teleporttank", ADMFLAG_KICK)) {
+        g_bUseCustomPosition = false;
+        TeleportTank();
+    }
+    else if (IsSpectator(client)) {
+        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Vote can only be started by a player!");
+    }
+    else {
+        new String:prompt[100];
+        Format(prompt, sizeof(prompt), "Teleport tank to spawn point (%.2f,%.2f,%.2f)?", g_vecPosition[0], g_vecPosition[1], g_vecPosition[2]);
+        if (StartVote(client, prompt, false)) {
+            FakeClientCommand(client, "Vote Yes");
+        }
+    }
+    
+    return Plugin_Handled; 
+}
+
+public Action:Command_TeleportTo(client, args)  {
+    if (args < 3) {
+        ReplyToCommand(client, "[SM] Usage: sm_teleporttankto <x> <y> <z>");
+        return Plugin_Handled;
+    }
+    
+    if (!g_bTankSpawned) {
         PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank not spawned.");
         return Plugin_Handled;
     }
 
-    if (IsSpectator(client))
-    {
-        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Vote can only be started by a player!");
-        return Plugin_Handled;
-    }
-    
-    char x[8];
-    char y[8];
-    char z[8];
+    char x[8], y[8], z[8];
     GetCmdArg(1, x, sizeof(x));
     GetCmdArg(2, y, sizeof(y));
     GetCmdArg(3, z, sizeof(z));
-    positionCustom[0] = StringToFloat(x);
-    positionCustom[1] = StringToFloat(y);
-    positionCustom[2] = StringToFloat(z);
-
-    new String:prompt[100];
-    Format(prompt, sizeof(prompt), "Teleport tank to point (%.2f,%.2f,%.2f)?", positionCustom[0], positionCustom[1], positionCustom[2]);
-    if (StartVote(client, prompt, true))
-        FakeClientCommand(client, "Vote Yes");
-
-    return Plugin_Handled; 
-}
-
-public Action:Vote(client, args) 
-{
-    if (!g_bTankSpawned)
-    {
-        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank not spawned.");
-        return Plugin_Handled;
+    g_vecPositionCustom[0] = StringToFloat(x);
+    g_vecPositionCustom[1] = StringToFloat(y);
+    g_vecPositionCustom[2] = StringToFloat(z);
+    
+    if (CheckCommandAccess(client, "sm_teleporttankto", ADMFLAG_KICK)) {
+        g_bUseCustomPosition = true;
+        TeleportTank();
     }
-
-    if (IsSpectator(client))
-    {
+    else if (IsSpectator(client)) {
         PrintToChat(client, "\x01[\x04Teleport Tank\x01] Vote can only be started by a player!");
-        return Plugin_Handled;
     }
-
-    new String:prompt[100];
-    Format(prompt, sizeof(prompt), "Teleport tank back to its spawn point (%.2f,%.2f,%.2f)?", position[0], position[1], position[2]);
-    if (StartVote(client, prompt, false))
-        FakeClientCommand(client, "Vote Yes");
+    else {
+        new String:prompt[100];
+        Format(prompt, sizeof(prompt), "Teleport tank to point (%.2f,%.2f,%.2f)?", g_vecPositionCustom[0], g_vecPositionCustom[1], g_vecPositionCustom[2]);
+        if (StartVote(client, prompt, true)) {
+            FakeClientCommand(client, "Vote Yes");
+        }
+    }
 
     return Plugin_Handled; 
 }
 
-bool:StartVote(client, const String:sVoteHeader[], bool:bUseCustomPos)
-{
-    if (IsNewBuiltinVoteAllowed())
-    {
+bool:StartVote(client, const String:sVoteHeader[], bool:bUseCustomPosition) {
+    if (IsNewBuiltinVoteAllowed()) {
         new iNumPlayers;
         decl players[MaxClients];
         for (new i = 1; i <= MaxClients; i++)
@@ -128,7 +141,7 @@ bool:StartVote(client, const String:sVoteHeader[], bool:bUseCustomPos)
             players[iNumPlayers++] = i;
         }
     
-        g_bUseCustomPos = bUseCustomPos;
+        g_bUseCustomPosition = bUseCustomPosition;
         
         hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
         SetBuiltinVoteArgument(hVote, sVoteHeader);
@@ -142,30 +155,22 @@ bool:StartVote(client, const String:sVoteHeader[], bool:bUseCustomPos)
     return false;
 }
 
-public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2)
-{
-    switch (action)
-    {
-        case BuiltinVoteAction_End:
-        {
+public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2) {
+    switch (action) {
+        case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
             CloseHandle(vote);
         }
-        case BuiltinVoteAction_Cancel:
-        {
+        case BuiltinVoteAction_Cancel: {
             DisplayBuiltinVoteFail(vote, BuiltinVoteFailReason:param1);
         }
     }
 }
 
-public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2])
-{
-    for (new i = 0; i < num_items; i++)
-    {
-        if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES)
-        {
-            if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2))
-            {
+public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2]) {
+    for (new i = 0; i < num_items; i++) {
+        if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
+            if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
                 DisplayBuiltinVotePass(vote, "Teleporting tank...");
                 PrintToChatAll("\x01[\x04Teleport Tank\x01] Vote passed! Teleporting tank...");
                 TeleportTank();
@@ -176,21 +181,50 @@ public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[
     DisplayBuiltinVoteFail(vote, BuiltinVoteFail_Loses);
 }
 
-public TeleportTank()
-{
-    if (g_bTankSpawned) {
-        TeleportEntity(g_iTankId, g_bUseCustomPos ? positionCustom : position, NULL_VECTOR, NULL_VECTOR);
-        PrintToChatAll("\x01[\x04Teleport Tank\x01] Tank teleported to (%.2f,%.2f,%.2f).",
-            g_bUseCustomPos ? positionCustom[0] : position[0],
-            g_bUseCustomPos ? positionCustom[1] : position[1],
-            g_bUseCustomPos ? positionCustom[2] : position[2]);
+TeleportTank() {
+    if (!g_bTankSpawned) {
+        PrintToChatAll("\x01[\x04Teleport Tank\x01] Teleport failed. Tank not spawned.");
+        return;
+    }
+
+    if (!g_bTankLocationSaved && !g_bUseCustomPosition) {
+        PrintToChatAll("\x01[\x04Teleport Tank\x01] Teleport failed. Teleport location not set.");
+        return;
+    }
+    
+    new iTank = FindTankClient();
+    if (iTank > 0) {
+        new Float:vecPosition[3];
+        if (g_bUseCustomPosition) {
+            vecPosition = g_vecPositionCustom;
+        }
+        else {
+            vecPosition = g_vecPosition;
+        }
+        TeleportEntity(iTank, vecPosition, NULL_VECTOR, NULL_VECTOR);
+        PrintToChatAll("\x01[\x04Teleport Tank\x01] Tank teleported to (%.2f,%.2f,%.2f).", vecPosition[0], vecPosition[1], vecPosition[2]);
     }
     else {
-        PrintToChatAll("\x01[\x04Teleport Tank\x01] Tank not spawned.");
+        PrintToChatAll("\x01[\x04Teleport Tank\x01] Teleport failed. Tank not found.");
     }
 }
 
-stock bool:IsSpectator(client)
-{
-    return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 1;
+IsInfected(client) {
+    return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_INFECTED;
+}
+
+IsSpectator(client) {
+    return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SPECTATOR;
+}
+
+FindTankClient() {
+    for (new client = 1; client <= MaxClients; client++) {
+        if (!IsInfected(client) ||
+            !IsPlayerAlive(client) ||
+            GetEntProp(client, Prop_Send, "m_zombieClass") != ZC_TANK) {
+                continue;
+        }
+        return client;
+    }
+    return 0;
 }

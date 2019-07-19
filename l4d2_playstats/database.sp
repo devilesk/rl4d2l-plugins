@@ -235,7 +235,7 @@ InitQueries() {
         map, \
         deleted, \
         isSecondHalf, \
-        teamIsA`, \
+        teamIsA, \
         teamARound, \
         teamATotal, \
         teamBRound, \
@@ -266,11 +266,14 @@ InitQueries() {
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
-            ?,?,? \
+            ?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hRoundStmt == INVALID_HANDLE ) {
             PrintDebug( 1, "[Stats] Prepare round query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare round query success." );
         }
     }
     
@@ -384,11 +387,14 @@ InitQueries() {
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
-            ?,?,?,?,?,? \
+            ?,?,?,?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hSurvivorStmt == INVALID_HANDLE ) {
             PrintDebug( 1, "[Stats] Prepare survivor query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare survivor query success." );
         }
     }
 
@@ -450,11 +456,14 @@ InitQueries() {
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
-            ?,?,? \
+            ?,?,?,?,?,?,?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hInfectedStmt == INVALID_HANDLE ) {
             PrintDebug( 1, "[Stats] Prepare infected query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare infected query success." );
         }
     }
 
@@ -471,11 +480,14 @@ InitQueries() {
         endedAt, \
         team \
         ) VALUES ( NULL, \
-            ?,?,?,?,?,?,?,? \
+            ?,?,?,?,?,?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hMatchStmt == INVALID_HANDLE ) {
             PrintDebug( 1, "[Stats] Prepare match query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare match query success." );
         }
     }
 }
@@ -494,8 +506,10 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
 
     decl String: sTmpMap[64];
     GetCurrentMap( sTmpMap, sizeof(sTmpMap) );
+    PrintDebug( 1, "[Stats] Map %s", sTmpMap );
     decl String: sTmpTime[20];
     FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
+    PrintDebug( 1, "[Stats] Time %s", sTmpTime );
     
     new matchId = g_strRoundData[0][0][rndStartTime];
     new startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );
@@ -504,6 +518,12 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     
     // round data
     new i;
+    if ( hRoundStmt == INVALID_HANDLE ) {
+        PrintDebug( 1, "[Stats] Round query invalid." );
+    }
+    else {
+        PrintDebug( 1, "[Stats] Round query valid." );
+    }
 
     SQL_BindParamString(hRoundStmt, 0, sTmpTime, false);
     SQL_BindParamInt(hRoundStmt, 1, matchId, false);
@@ -552,6 +572,7 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         }
         if (!SQL_Execute(hSurvivorStmt)) {
             PrintToChatAll("[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
+            PrintDebug(1, "[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
         }
         else {
             PrintDebug( 1, "[Stats] Saved survivor stats for %s.", g_sPlayerId[j] );
@@ -596,6 +617,7 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         }
         if (!SQL_Execute(hInfectedStmt)) {
             PrintToChatAll("[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
+            PrintDebug(1, "[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
         }
         else {
             PrintDebug( 1, "[Stats] Saved infected stats for %s.", g_sPlayerId[j] );
@@ -623,10 +645,14 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
 public void ExecuteCallback(bool success, const char[] command, System2ExecuteOutput output, any data) {
     if (!success || output.ExitStatus != 0) {
         PrintToServer("Couldn't execute commands %s successfully", command);
+        PrintDebug(1, "Couldn't execute commands %s successfully", command);
+        LogMessage("Couldn't execute commands %s successfully", command);
     } else {
         char outputString[128];
         output.GetOutput(outputString, sizeof(outputString));
         PrintToServer("Output of the command %s: %s", command, outputString);
+        PrintDebug(1, "Output of the command %s: %s", command, outputString);
+        LogMessage("Output of the command %s: %s", command, outputString);
     }
 }
 
@@ -669,6 +695,7 @@ stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap
 
     if (!SQL_Execute(hMatchStmt)) {
         PrintToChatAll("[Stats] Failed to save matchlog stats.");
+        PrintDebug(1, "[Stats] Failed to save matchlog stats.");
     }
     else {
         PrintDebug( 1, "[Stats] Saved matchlog stats.");
