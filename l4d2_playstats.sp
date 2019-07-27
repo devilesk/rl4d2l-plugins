@@ -27,7 +27,7 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.10.0",
+    version = "0.11.0",
     url = "https://github.com/Tabbernaut/L4D2-Plugins"
 };
 
@@ -90,22 +90,7 @@ public OnLibraryAdded(const String:name[]) {
     else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = true; }
 }
 
-public Action:Command_Test(client, args) {
-    LogMessage("Command_Test");
-    if (g_bSystem2Loaded) {
-        LogMessage("g_bSystem2Loaded");
-        char cmd[256];
-        if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
-            LogMessage("cmd: %s", cmd);
-            System2_ExecuteThreaded(ExecuteCallback, cmd);
-        }
-    }
-    return Plugin_Handled;
-}
-
 public OnPluginStart() {
-    RegAdminCmd("sm_stats_testcmd", Command_Test, ADMFLAG_KICK, "Test command.");
-    
     // events    
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("scavenge_round_start",       Event_RoundStart,				EventHookMode_PostNoCopy);
@@ -744,6 +729,10 @@ stock ResetStats ( bool:bCurrentRoundOnly = false, iTeam = -1, bool: bFailedRoun
                 for ( k = 0; k <= MAXPLYSTATS; k++ ) {
                     g_strRoundPlayerInfData[i][j][k] = 0;
                 }
+                for ( k = 0; k < MAXTRACKED; k++ ) {
+                    g_strRoundPvPFFData[i][j][k] = 0;
+                    g_strRoundPvPInfDmgData[i][j][k] = 0;
+                }
             }
         }
     }
@@ -755,6 +744,10 @@ stock ResetStats ( bool:bCurrentRoundOnly = false, iTeam = -1, bool: bFailedRoun
             }
             for ( k = 0; k <= MAXINFSTATS; k++ ) {
                 g_strRoundPlayerInfData[i][iTeam][k] = 0;
+            }
+            for ( k = 0; k < MAXTRACKED; k++ ) {
+                g_strRoundPvPFFData[i][iTeam][k] = 0;
+                g_strRoundPvPInfDmgData[i][iTeam][k] = 0;
             }
         }
     }
@@ -1537,7 +1530,7 @@ stock InitTries() {
     SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "C12m5_cornfield",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
     SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",          MP_FINALE);
     SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MP_FINALE);

@@ -221,6 +221,36 @@ InitDatabase() {
         `team` INT, \
         PRIMARY KEY  (`id`) \
         );");
+        
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `pvp_ff` ( \
+        `id` INT NOT NULL auto_increment, \
+        `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+        `matchId` INT, \
+        `round` INT, \
+        `team` INT, \
+        `map` varchar(64), \
+        `steamid` varchar(32), \
+        `deleted` BOOLEAN, \
+        `isSecondHalf` BOOLEAN, \
+        `victim` varchar(32), \
+        `damage` INT, \
+        PRIMARY KEY  (`id`) \
+        );");
+        
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `pvp_infdmg` ( \
+        `id` INT NOT NULL auto_increment, \
+        `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+        `matchId` INT, \
+        `round` INT, \
+        `team` INT, \
+        `map` varchar(64), \
+        `steamid` varchar(32), \
+        `deleted` BOOLEAN, \
+        `isSecondHalf` BOOLEAN, \
+        `victim` varchar(32), \
+        `damage` INT, \
+        PRIMARY KEY  (`id`) \
+        );");
     }
 }
 
@@ -490,6 +520,56 @@ InitQueries() {
             PrintDebug( 1, "[Stats] Prepare match query success." );
         }
     }
+
+    if ( hPvPFFStmt == INVALID_HANDLE ) {
+        hPvPFFStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_ff ( \
+        id, \
+        createdAt, \
+        matchId, \
+        round, \
+        team, \
+        map, \
+        steamid, \
+        deleted, \
+        isSecondHalf, \
+        victim, \
+        damage \
+        ) VALUES ( NULL, \
+            ?,?,?,?,?,?,?,?,?,? \
+        )", errorBuffer, sizeof(errorBuffer));
+
+        if ( hPvPFFStmt == INVALID_HANDLE ) {
+            PrintDebug( 1, "[Stats] Prepare pvp ff query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare pvp ff query success." );
+        }
+    }
+
+    if ( hPvPInfDmgStmt == INVALID_HANDLE ) {
+        hPvPInfDmgStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_infdmg ( \
+        id, \
+        createdAt, \
+        matchId, \
+        round, \
+        team, \
+        map, \
+        steamid, \
+        deleted, \
+        isSecondHalf, \
+        victim, \
+        damage \
+        ) VALUES ( NULL, \
+            ?,?,?,?,?,?,?,?,?,? \
+        )", errorBuffer, sizeof(errorBuffer));
+
+        if ( hPvPInfDmgStmt == INVALID_HANDLE ) {
+            PrintDebug( 1, "[Stats] Prepare pvp ff query failed. %s", errorBuffer );
+        }
+        else {
+            PrintDebug( 1, "[Stats] Prepare pvp ff query success." );
+        }
+    }
 }
 
 // write round stats to database
@@ -526,23 +606,23 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     }
 
     SQL_BindParamString(hRoundStmt, 0, sTmpTime, false);
-    SQL_BindParamInt(hRoundStmt, 1, matchId, false);
-    SQL_BindParamInt(hRoundStmt, 2, g_iRound, false);
-    SQL_BindParamInt(hRoundStmt, 3, iTeam, false);
+    SQL_BindParamInt(hRoundStmt, 1, matchId, true);
+    SQL_BindParamInt(hRoundStmt, 2, g_iRound, true);
+    SQL_BindParamInt(hRoundStmt, 3, iTeam, true);
     SQL_BindParamString(hRoundStmt, 4, sTmpMap, false);
-    SQL_BindParamInt(hRoundStmt, 5, 0, false);
-    SQL_BindParamInt(hRoundStmt, 6, g_bSecondHalf, false);
-    SQL_BindParamInt(hRoundStmt, 7, iTeam == LTEAM_A, false);
-    SQL_BindParamInt(hRoundStmt, 8, g_iScores[LTEAM_A] - g_iFirstScoresSet[((g_bCMTSwapped)?1:0)], false);
-    SQL_BindParamInt(hRoundStmt, 9, g_iScores[LTEAM_A], false);
-    SQL_BindParamInt(hRoundStmt, 10, g_iScores[LTEAM_B] - g_iFirstScoresSet[((g_bCMTSwapped)?0:1)], false);
-    SQL_BindParamInt(hRoundStmt, 11, g_iScores[LTEAM_B], false);
-    SQL_BindParamInt(hRoundStmt, 12, g_iSurvived[iTeam], false);
-    SQL_BindParamInt(hRoundStmt, 13, L4D_GetVersusMaxCompletionScore(), false);
-    SQL_BindParamInt(hRoundStmt, 14, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), false);
+    SQL_BindParamInt(hRoundStmt, 5, 0, true);
+    SQL_BindParamInt(hRoundStmt, 6, g_bSecondHalf, true);
+    SQL_BindParamInt(hRoundStmt, 7, iTeam == LTEAM_A, true);
+    SQL_BindParamInt(hRoundStmt, 8, g_iScores[LTEAM_A] - g_iFirstScoresSet[((g_bCMTSwapped)?1:0)], true);
+    SQL_BindParamInt(hRoundStmt, 9, g_iScores[LTEAM_A], true);
+    SQL_BindParamInt(hRoundStmt, 10, g_iScores[LTEAM_B] - g_iFirstScoresSet[((g_bCMTSwapped)?0:1)], true);
+    SQL_BindParamInt(hRoundStmt, 11, g_iScores[LTEAM_B], true);
+    SQL_BindParamInt(hRoundStmt, 12, g_iSurvived[iTeam], true);
+    SQL_BindParamInt(hRoundStmt, 13, L4D_GetVersusMaxCompletionScore(), true);
+    SQL_BindParamInt(hRoundStmt, 14, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), true);
 
     for ( i = 0; i <= MAXRNDSTATS; i++ ) {
-        SQL_BindParamInt(hRoundStmt, i+15, g_strRoundData[g_iRound][iTeam][i], false);
+        SQL_BindParamInt(hRoundStmt, i+15, g_strRoundData[g_iRound][iTeam][i], true);
     }
     if (!SQL_Execute(hRoundStmt)) {
         PrintToChatAll("[Stats] Failed to save round stats.");
@@ -559,16 +639,16 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         iPlayerCount++;
 
         SQL_BindParamString(hSurvivorStmt, 0, sTmpTime, false);
-        SQL_BindParamInt(hSurvivorStmt, 1, matchId, false);
-        SQL_BindParamInt(hSurvivorStmt, 2, g_iRound, false);
-        SQL_BindParamInt(hSurvivorStmt, 3, iTeam, false);
+        SQL_BindParamInt(hSurvivorStmt, 1, matchId, true);
+        SQL_BindParamInt(hSurvivorStmt, 2, g_iRound, true);
+        SQL_BindParamInt(hSurvivorStmt, 3, iTeam, true);
         SQL_BindParamString(hSurvivorStmt, 4, sTmpMap, false);
         SQL_BindParamString(hSurvivorStmt, 5, g_sPlayerId[j], false);
-        SQL_BindParamInt(hSurvivorStmt, 6, 0, false);
-        SQL_BindParamInt(hSurvivorStmt, 7, g_bSecondHalf, false);
+        SQL_BindParamInt(hSurvivorStmt, 6, 0, true);
+        SQL_BindParamInt(hSurvivorStmt, 7, g_bSecondHalf, true);
 
         for ( i = 0; i <= MAXPLYSTATS; i++ ) {
-            SQL_BindParamInt(hSurvivorStmt, i+8, g_strRoundPlayerData[j][iTeam][i], false);
+            SQL_BindParamInt(hSurvivorStmt, i+8, g_strRoundPlayerData[j][iTeam][i], true);
         }
         if (!SQL_Execute(hSurvivorStmt)) {
             PrintToChatAll("[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
@@ -584,6 +664,9 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             }
             else if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
                 result = -1;
+            }
+            else {
+                result = 0;
             }
             WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, iTeam);
         }
@@ -604,16 +687,16 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         iPlayerCount++;
 
         SQL_BindParamString(hInfectedStmt, 0, sTmpTime, false);
-        SQL_BindParamInt(hInfectedStmt, 1, matchId, false);
-        SQL_BindParamInt(hInfectedStmt, 2, g_iRound, false);
-        SQL_BindParamInt(hInfectedStmt, 3, iTeam, false);
+        SQL_BindParamInt(hInfectedStmt, 1, matchId, true);
+        SQL_BindParamInt(hInfectedStmt, 2, g_iRound, true);
+        SQL_BindParamInt(hInfectedStmt, 3, iTeam, true);
         SQL_BindParamString(hInfectedStmt, 4, sTmpMap, false);
         SQL_BindParamString(hInfectedStmt, 5, g_sPlayerId[j], false);
-        SQL_BindParamInt(hInfectedStmt, 6, 0, false);
-        SQL_BindParamInt(hInfectedStmt, 7, g_bSecondHalf, false);
+        SQL_BindParamInt(hInfectedStmt, 6, 0, true);
+        SQL_BindParamInt(hInfectedStmt, 7, g_bSecondHalf, true);
         
         for ( i = 0; i <= MAXINFSTATS; i++ ) {
-            SQL_BindParamInt(hInfectedStmt, i+8, g_strRoundPlayerInfData[j][iTeam][i], false);
+            SQL_BindParamInt(hInfectedStmt, i+8, g_strRoundPlayerInfData[j][iTeam][i], true);
         }
         if (!SQL_Execute(hInfectedStmt)) {
             PrintToChatAll("[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
@@ -630,29 +713,106 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             else if (g_iScores[iTeam] > g_iScores[(iTeam) ? 0 : 1]) {
                 result = -1;
             }
+            else {
+                result = 0;
+            }
             WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1);
         }
     }
-    
-    if (IsMissionFinalMap() && bSecondHalf && g_bSystem2Loaded) {
-        char cmd[256];
-        if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
-            System2_ExecuteThreaded(ExecuteCallback, cmd);
+
+    // player ff data
+    iPlayerCount = 0;
+    for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
+        if ( g_iPlayerRoundTeam[iTeam][j] != iTeam ) { continue; }
+        iPlayerCount++;
+
+        SQL_BindParamString(hPvPFFStmt, 0, sTmpTime, false);
+        SQL_BindParamInt(hPvPFFStmt, 1, matchId, true);
+        SQL_BindParamInt(hPvPFFStmt, 2, g_iRound, true);
+        SQL_BindParamInt(hPvPFFStmt, 3, iTeam, true);
+        SQL_BindParamString(hPvPFFStmt, 4, sTmpMap, false);
+        SQL_BindParamString(hPvPFFStmt, 5, g_sPlayerId[j], false);
+        SQL_BindParamInt(hPvPFFStmt, 6, 0, true);
+        SQL_BindParamInt(hPvPFFStmt, 7, g_bSecondHalf, true);
+
+        for ( i = FIRST_NON_BOT; i < g_iPlayers; i++ ) {
+            SQL_BindParamString(hPvPFFStmt, 8, g_sPlayerId[i], false);
+            SQL_BindParamInt(hPvPFFStmt, 9, g_strRoundPvPFFData[j][iTeam][i], true);
+            if (!SQL_Execute(hPvPFFStmt)) {
+                PrintToChatAll("[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
+                PrintDebug(1, "[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
+            }
+            else {
+                PrintDebug( 1, "[Stats] Saved player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i] );
+            }
+        }
+    }
+
+    // player infdmg data
+    iPlayerCount = 0;
+    for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
+        // opposite team!
+        if ( g_iPlayerRoundTeam[iTeam][j] != (iTeam) ? 0 : 1 ) { continue; }
+
+        // leave out players that were actually specs...
+        if (    g_strRoundPlayerInfData[j][iTeam][infTimeStartPresent] == 0 && g_strRoundPlayerInfData[j][iTeam][infTimeStopPresent] == 0 ||
+                g_strRoundPlayerInfData[j][iTeam][infSpawns] == 0 && g_strRoundPlayerInfData[j][iTeam][infTankPasses] == 0
+        ) {
+            continue;
+        }
+        iPlayerCount++;
+
+        SQL_BindParamString(hPvPInfDmgStmt, 0, sTmpTime, false);
+        SQL_BindParamInt(hPvPInfDmgStmt, 1, matchId, true);
+        SQL_BindParamInt(hPvPInfDmgStmt, 2, g_iRound, true);
+        SQL_BindParamInt(hPvPInfDmgStmt, 3, iTeam, true);
+        SQL_BindParamString(hPvPInfDmgStmt, 4, sTmpMap, false);
+        SQL_BindParamString(hPvPInfDmgStmt, 5, g_sPlayerId[j], false);
+        SQL_BindParamInt(hPvPInfDmgStmt, 6, 0, true);
+        SQL_BindParamInt(hPvPInfDmgStmt, 7, g_bSecondHalf, true);
+        
+        for ( i = FIRST_NON_BOT; i < g_iPlayers; i++ ) {
+            SQL_BindParamString(hPvPInfDmgStmt, 8, g_sPlayerId[i], false);
+            SQL_BindParamInt(hPvPInfDmgStmt, 9, g_strRoundPvPInfDmgData[j][iTeam][i], true);
+            if (!SQL_Execute(hPvPInfDmgStmt)) {
+                PrintToChatAll("[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
+                PrintDebug(1, "[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
+            }
+            else {
+                PrintDebug( 1, "[Stats] Saved pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i] );
+            }
+
+        }
+    }
+
+    if (IsMissionFinalMap() && bSecondHalf) {
+        if (g_bSystem2Loaded) {
+            char cmd[256];
+            char fCmd[256];
+            if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
+                Format(fCmd, sizeof(fCmd), cmd, matchId);
+                PrintDebug(1, "[Stats] Executing match end cmd: %s.", fCmd);
+                System2_ExecuteThreaded(ExecuteCallback, fCmd);
+            }
+            else {
+                PrintDebug(1, "[Stats] Match end cmd not found.");
+            }
+        }
+        else {
+            PrintDebug( 1, "[Stats] system2 library not loaded. Match end cmd won't execute." );
         }
     }
 }
 
 public void ExecuteCallback(bool success, const char[] command, System2ExecuteOutput output, any data) {
     if (!success || output.ExitStatus != 0) {
-        PrintToServer("Couldn't execute commands %s successfully", command);
-        PrintDebug(1, "Couldn't execute commands %s successfully", command);
-        LogMessage("Couldn't execute commands %s successfully", command);
+        PrintToServer("[Stats] Couldn't execute commands %s successfully", command);
+        PrintDebug(1, "[Stats] Couldn't execute commands %s successfully", command);
     } else {
         char outputString[128];
         output.GetOutput(outputString, sizeof(outputString));
-        PrintToServer("Output of the command %s: %s", command, outputString);
-        PrintDebug(1, "Output of the command %s: %s", command, outputString);
-        LogMessage("Output of the command %s: %s", command, outputString);
+        PrintToServer("[Stats] Output of the command %s: %s", command, outputString);
+        PrintDebug(1, "[Stats] Output of the command %s: %s", command, outputString);
     }
 }
 
@@ -665,7 +825,7 @@ bool GetMatchEndScriptCmd(char[] cmd, int iLength)
 
     if (!FileExists(sFile))
     {
-        SetFailState("[GetMatchEndScriptCmd] \"%s\" not found!", sFile);
+        PrintDebug(1, "[Stats] GetMatchEndScriptCmd \"%s\" not found!", sFile);
         return false;
     }
 
@@ -673,7 +833,7 @@ bool GetMatchEndScriptCmd(char[] cmd, int iLength)
 
     if (!kv.JumpToKey("match_end_script_cmd", false))
     {
-        SetFailState("[GetMatchEndScriptCmd] Can't find \"match_end_script_cmd\" in \"%s\"!", sFile);
+        PrintDebug(1, "[Stats] GetMatchEndScriptCmd Can't find \"match_end_script_cmd\" in \"%s\"!", sFile);
         delete kv;
         return false;
     }
@@ -684,14 +844,14 @@ bool GetMatchEndScriptCmd(char[] cmd, int iLength)
 
 stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap[], result, const String: sSteamId[], startedAt, endedAt, iTeam) {
     SQL_BindParamString(hMatchStmt, 0, sTmpTime, false);
-    SQL_BindParamInt(hMatchStmt, 1, matchId, false);
+    SQL_BindParamInt(hMatchStmt, 1, matchId, true);
     SQL_BindParamString(hMatchStmt, 2, sTmpMap, false);
-    SQL_BindParamInt(hMatchStmt, 3, 0, false);
-    SQL_BindParamInt(hMatchStmt, 4, result, false);
+    SQL_BindParamInt(hMatchStmt, 3, 0, true);
+    SQL_BindParamInt(hMatchStmt, 4, result, true);
     SQL_BindParamString(hMatchStmt, 5, sSteamId, false);
-    SQL_BindParamInt(hMatchStmt, 6, startedAt, false);
-    SQL_BindParamInt(hMatchStmt, 7, endedAt, false);
-    SQL_BindParamInt(hMatchStmt, 8, iTeam, false);
+    SQL_BindParamInt(hMatchStmt, 6, startedAt, true);
+    SQL_BindParamInt(hMatchStmt, 7, endedAt, true);
+    SQL_BindParamInt(hMatchStmt, 8, iTeam, true);
 
     if (!SQL_Execute(hMatchStmt)) {
         PrintToChatAll("[Stats] Failed to save matchlog stats.");

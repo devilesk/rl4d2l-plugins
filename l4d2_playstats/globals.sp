@@ -68,6 +68,9 @@ new             g_strRoundPlayerData    [MAXTRACKED][2][strPlayerData];         
 new             g_strPlayerInfData      [MAXTRACKED][strPlayerData];
 new             g_strRoundPlayerInfData [MAXTRACKED][2][strPlayerData];                 // player data for infected action per team (team is survivor team! -- when infected player was on opposite team)
 
+new             g_strRoundPvPFFData     [MAXTRACKED][2][MAXTRACKED];                    // pvp ff data per team
+new             g_strRoundPvPInfDmgData    [MAXTRACKED][2][MAXTRACKED];                    // pvp dmg data per team
+
 new     Handle: g_hTriePlayers                                      = INVALID_HANDLE;   // trie for getting player index
 new     Handle: g_hTrieWeapons                                      = INVALID_HANDLE;   // trie for getting weapon type (from classname)
 new     Handle: g_hTrieMaps                                         = INVALID_HANDLE;   // trie for getting finale maps
@@ -94,3 +97,5 @@ new Handle:hRoundStmt = INVALID_HANDLE;
 new Handle:hSurvivorStmt = INVALID_HANDLE;
 new Handle:hInfectedStmt = INVALID_HANDLE;
 new Handle:hMatchStmt = INVALID_HANDLE;
+new Handle:hPvPFFStmt = INVALID_HANDLE;
+new Handle:hPvPInfDmgStmt = INVALID_HANDLE;

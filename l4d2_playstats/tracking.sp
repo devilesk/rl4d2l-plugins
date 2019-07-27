@@ -165,6 +165,7 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
         
         if ( attIndex == vicIndex ) {
             // damage to self
+            g_strRoundPvPFFData[attIndex][g_iCurTeam][vicIndex] += damage;
             g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGivenSelf] += damage;
         }
         else if ( IsPlayerIncapacitated(victim) ) {
@@ -173,6 +174,7 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
             g_strRoundPlayerData[vicIndex][g_iCurTeam][plyFFTakenIncap] += damage;
         }
         else {
+            g_strRoundPvPFFData[attIndex][g_iCurTeam][vicIndex] += damage;
             g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGiven] += damage;
             if ( attIndex != vicIndex ) {
                 g_strRoundPlayerData[vicIndex][g_iCurTeam][plyFFTaken] += damage;
@@ -219,6 +221,7 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
             
             if ( zClass == ZC_TANK ) {
                 if ( !IsPlayerIncapacitatedAtAll(victim) ) {
+                    g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTank] += damage;
                     g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTakenTank] += damage;
                 }
@@ -230,6 +233,7 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
                 g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTotal] += damage;
                 
                 if ( !IsPlayerIncapacitatedAtAll(victim) ) {
+                    g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgUpright] += damage;
                     
                     if ( type & DMG_CLUB ) {
@@ -302,7 +306,7 @@ public Action: Event_PlayerHurt ( Handle:event, const String:name[], bool:dontBr
                     
                     g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTaken] += damage;
                     g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTakenBoom] += damage;
-                    
+                    g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTotal] += damage;
                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgUpright] += damage;
                     g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgBoom] += damage;
