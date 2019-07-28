@@ -92,6 +92,7 @@ public OnMapStart() {
     
     // save map name (after onmapload resets, so it doesn't get deleted)
     GetCurrentMap( g_sMapName[g_iRound], MAXMAP );
+    StrToLower( g_sMapName[g_iRound] );
     //PrintDebug( 2, "MapStart (round %i): %s ", g_iRound, g_sMapName[g_iRound] );
 }
 

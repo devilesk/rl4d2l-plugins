@@ -69,6 +69,7 @@ public OnMapStart()
     sEmbedRequest[0] = '\0';
     iEmbedCount = 0;
     GetCurrentMap( g_sMapName, MAXMAP );
+    StrToLower( g_sMapName );
 }
 
 public Event_RoundStart (Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -124,7 +125,8 @@ public Action: Timer_RoundEnd ( Handle:timer )
         strcopy(description, sizeof(description), "Tank spawn: None");
     }
     
-    GetCurrentMap(sMap, 64);
+    GetCurrentMap(sMap, sizeof(sMap));
+    StrToLower( sMap );
     GetMapName(sMap, sMap, sizeof(sMap));
     
     new indexSurvivor = GameRules_GetProp("m_bAreTeamsFlipped");
@@ -272,7 +274,7 @@ stock InitTries() {
     SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "C12m5_cornfield",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
     SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",          MP_FINALE);
     SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MP_FINALE);
@@ -284,4 +286,10 @@ stock IsMissionFinalMap() {
     new strMapType: mapType;
     if ( !GetTrieValue(g_hTrieMaps, g_sMapName, mapType) ) { return false; }
     return bool:( mapType == MP_FINALE );
+}
+
+stock StrToLower(String:arg[]) {
+	for (new i = 0; i < strlen(arg); i++) {
+		arg[i] = CharToLower(arg[i]);
+	}
 }

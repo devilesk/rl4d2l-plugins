@@ -1530,7 +1530,7 @@ stock InitTries() {
     SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "C12m5_cornfield",                MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
     SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",          MP_FINALE);
     SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MP_FINALE);

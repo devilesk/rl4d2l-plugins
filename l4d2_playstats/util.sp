@@ -393,6 +393,12 @@ stock stripUnicode ( String:testString[MAXNAME], maxLength = 20 ) {
     strcopy( testString, maxLength, tmpString );
 }
 
+stock StrToLower(String:arg[]) {
+	for (new i = 0; i < strlen(arg); i++) {
+		arg[i] = CharToLower(arg[i]);
+	}
+}
+
 stock PrintDebug( debugLevel, const String:Message[], any:... ) {
     if (debugLevel <= GetConVarInt(g_hCvarDebug)) {
         decl String:DebugBuff[256];
