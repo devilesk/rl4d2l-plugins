@@ -34,7 +34,7 @@ public Plugin:myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
     description = "Admin commands and vote commands for spawning pistols and/or axes for survivors.",
-    version = "0.4.0",
+    version = "0.5.0",
     url = "https://steamcommunity.com/groups/RL4D2L"
 }
 
@@ -185,7 +185,7 @@ public Action:Command_SpawnPistol(client, args)  {
         if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
     }
     
-    if (CheckCommandAccess(client, "sm_spawnpistol", ADMFLAG_KICK)) {
+    if (CheckCommandAccess(client, "sm_spawnpistol", ADMFLAG_KICK, true)) {
         SpawnWeaponForClients(PISTOL, iMaxCount);
     }
     else if (CanStartVote(client)) {
@@ -213,7 +213,7 @@ public Action:Command_SpawnAxe(client, args)  {
         if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
     }
     
-    if (CheckCommandAccess(client, "sm_spawnaxe", ADMFLAG_KICK)) {
+    if (CheckCommandAccess(client, "sm_spawnaxe", ADMFLAG_KICK, true)) {
         SpawnWeaponForClients(AXE, iMaxCount);
     }
     else if (CanStartVote(client)) {
@@ -241,7 +241,7 @@ public Action:Command_SpawnSecondary(client, args)  {
         if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
     }
     
-    if (CheckCommandAccess(client, "sm_spawnsecondary", ADMFLAG_KICK)) {
+    if (CheckCommandAccess(client, "sm_spawnsecondary", ADMFLAG_KICK, true)) {
         SpawnWeaponForClients(PISTOL, iMaxCount);
         SpawnWeaponForClients(AXE, iMaxCount);
     }

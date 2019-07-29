@@ -18,7 +18,7 @@ new Handle:hVote;
 public Plugin:myinfo = {
     name = "Teleport Tank",
     author = "devilesk",
-    version = "1.4.0",
+    version = "1.5.0",
     description = "Adds sm_teleporttank to teleport tank to its original spawn point and sm_teleporttankto to teleport tank to a given point.",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
@@ -74,7 +74,7 @@ public Action:Command_Teleport(client, args)  {
         return Plugin_Handled;
     }
     
-    if (CheckCommandAccess(client, "sm_teleporttank", ADMFLAG_KICK)) {
+    if (CheckCommandAccess(client, "sm_teleporttank", ADMFLAG_KICK, true)) {
         g_bUseCustomPosition = false;
         TeleportTank();
     }
@@ -111,7 +111,7 @@ public Action:Command_TeleportTo(client, args)  {
     g_vecPositionCustom[1] = StringToFloat(y);
     g_vecPositionCustom[2] = StringToFloat(z);
     
-    if (CheckCommandAccess(client, "sm_teleporttankto", ADMFLAG_KICK)) {
+    if (CheckCommandAccess(client, "sm_teleporttankto", ADMFLAG_KICK, true)) {
         g_bUseCustomPosition = true;
         TeleportTank();
     }
