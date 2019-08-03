@@ -591,6 +591,8 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     decl String: sTmpTime[20];
     FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
     PrintDebug( 1, "[Stats] Time %s", sTmpTime );
+    PrintDebug( 1, "[Stats] IsMissionFinalMap %i", IsMissionFinalMap() );
+    PrintDebug( 1, "[Stats] bSecondHalf %i", bSecondHalf );
     
     new matchId = g_strRoundData[0][0][rndStartTime];
     new startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );
@@ -601,9 +603,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     new i;
     if ( hRoundStmt == INVALID_HANDLE ) {
         PrintDebug( 1, "[Stats] Round query invalid." );
-    }
-    else {
-        PrintDebug( 1, "[Stats] Round query valid." );
     }
 
     SQL_BindParamString(hRoundStmt, 0, sTmpTime, false);
@@ -628,9 +627,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     if (!SQL_Execute(hRoundStmt)) {
         PrintToChatAll("[Stats] Failed to save round stats.");
     }
-    else {
-        PrintDebug( 1, "[Stats] Saved round stats.");
-    }
     
     // player data
     new j;
@@ -654,9 +650,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
         if (!SQL_Execute(hSurvivorStmt)) {
             PrintToChatAll("[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
             PrintDebug(1, "[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
-        }
-        else {
-            PrintDebug( 1, "[Stats] Saved survivor stats for %s.", g_sPlayerId[j] );
         }
         
         if (IsMissionFinalMap() && bSecondHalf) {
@@ -703,9 +696,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             PrintToChatAll("[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
             PrintDebug(1, "[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
         }
-        else {
-            PrintDebug( 1, "[Stats] Saved infected stats for %s.", g_sPlayerId[j] );
-        }
         
         if (IsMissionFinalMap() && bSecondHalf) {
             if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
@@ -743,9 +733,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
                 PrintToChatAll("[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
                 PrintDebug(1, "[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
             }
-            else {
-                PrintDebug( 1, "[Stats] Saved player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i] );
-            }
         }
     }
 
@@ -779,10 +766,6 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
                 PrintToChatAll("[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
                 PrintDebug(1, "[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
             }
-            else {
-                PrintDebug( 1, "[Stats] Saved pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i] );
-            }
-
         }
     }
 
@@ -857,8 +840,5 @@ stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap
     if (!SQL_Execute(hMatchStmt)) {
         PrintToChatAll("[Stats] Failed to save matchlog stats.");
         PrintDebug(1, "[Stats] Failed to save matchlog stats.");
-    }
-    else {
-        PrintDebug( 1, "[Stats] Saved matchlog stats.");
     }
 }
