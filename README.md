@@ -7,7 +7,8 @@
 * Executes system command after last stats of the match have been logged.
   * Requires [system2](https://forums.alliedmods.net/showthread.php?t=146019) extension
   * Create a `addons/sourcemod/configs/l4d2_playstats.cfg`
-  ```"l4d2_playstats.cfg"
+  ```
+  "l4d2_playstats.cfg"
   {
     "match_end_script_cmd"	"ls /home"
   }```
@@ -23,20 +24,22 @@
 * Adds sm_spawnsecondary command
 * Intended to be used when missing starting axes.
 
-## discord_webhook
+## discord_webhook.sp
 
 * Plugin library for making discord webhook requests
 * Requires [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556) extension
 * Create a `addons/sourcemod/configs/discord_webhook.cfg`
-```"Discord"
+```
+"Discord"
 {
 	"discord_test"
 	{
 		"url"	"<webhook_url>"
 	}
-}```
+}
+```
 
-## discord_scoreboard
+## discord_scoreboard.sp
 
 * End of round scores reported to discord via webhook
 * Requires discord_webhook plugin
