@@ -11,7 +11,8 @@
   "l4d2_playstats.cfg"
   {
     "match_end_script_cmd"	"ls /home"
-  }```
+  }
+  ```
   
 ## teleport_tank.sp
 
