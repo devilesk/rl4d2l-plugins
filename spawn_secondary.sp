@@ -34,7 +34,7 @@ public Plugin:myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
     description = "Admin commands and vote commands for spawning pistols and/or axes for survivors.",
-    version = "0.5.0",
+    version = "0.6.0",
     url = "https://steamcommunity.com/groups/RL4D2L"
 }
 
@@ -43,6 +43,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_spawnsecondary", Command_SpawnSecondary, "Call vote to spawn pistol and axe for 1 to 4 survivors.");
     RegConsoleCmd("sm_spawnpistol", Command_SpawnPistol, "Call vote to spawn a pistol for 1 to 4 survivors.");
     RegConsoleCmd("sm_spawnaxe", Command_SpawnAxe, "Call vote to spawn an axe for 1 to 4 survivors.");
+    HookEvent("round_end", Event_RoundEnd);
 }
 
 public OnLibraryRemoved(const String:name[]) {
@@ -54,6 +55,10 @@ public OnLibraryAdded(const String:name[]) {
 }
 
 public OnMapStart() {
+    g_bSpawnNotAllowed = false;
+}
+
+public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     g_bSpawnNotAllowed = false;
 }
 
@@ -164,6 +169,9 @@ IsSpectator(client) {
 }
 
 bool:CanStartVote(client) {
+    if (!IsSpawnAllowed()) {
+        return false;
+    }
     if (IsSpectator(client)) {
         PrintToChat(client, "\x01[\x04Spawn Secondary\x01] Vote can only be started by a player!");
         return false;
@@ -172,8 +180,6 @@ bool:CanStartVote(client) {
 }
 
 public Action:Command_SpawnPistol(client, args)  {
-    if (!IsSpawnAllowed()) { return Plugin_Handled; }
-    
     new iMaxCount;
     if (args < 1)  {
         iMaxCount = 1;
@@ -200,8 +206,6 @@ public Action:Command_SpawnPistol(client, args)  {
 }
 
 public Action:Command_SpawnAxe(client, args)  {
-    if (!IsSpawnAllowed()) { return Plugin_Handled; }
-    
     new iMaxCount;
     if (args < 1)  {
         iMaxCount = 1;
@@ -228,8 +232,6 @@ public Action:Command_SpawnAxe(client, args)  {
 }
 
 public Action:Command_SpawnSecondary(client, args)  {
-    if (!IsSpawnAllowed()) { return Plugin_Handled; }
-    
     new iMaxCount;
     if (args < 1)  {
         iMaxCount = 1;
