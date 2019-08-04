@@ -83,7 +83,7 @@
 #define DMG_BURN                (1 << 3)        // heat burned
 #define DMG_BLAST               (1 << 6)        // explosive blast damage
 #define DMG_CLUB                (1 << 7)        // crowbar, punch, headbutt
-#define DMG_BUCKSHOT            (1 << 29)       // not quite a bullet. Little, rounder, different. 
+#define DMG_BUCKSHOT            (1 << 24)       // not quite a bullet. Little, rounder, different. 
 
 #define FIRST_NON_BOT           4               // first index that doesn't belong to a survivor bot
 
