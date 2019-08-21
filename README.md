@@ -55,3 +55,7 @@
 ## tank\_and\_nowitch\_ifier.sp
 
 * Fixed AdjustBossFlow to properly use boss ban flow min and max
+
+## l4d2\_horde\_equaliser.sp
+
+* Fixed infinite hordes for horde sizes below 120.
