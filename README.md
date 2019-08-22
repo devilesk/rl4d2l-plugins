@@ -59,3 +59,7 @@
 ## l4d2\_horde\_equaliser.sp
 
 * Fixed infinite hordes for horde sizes below 120.
+
+## suicideblitzfinalefix.sp
+
+* Modified ProdigySim's [spawnstatefix](https://gist.github.com/ProdigySim/04912e5e76f69027f8c4) plugin to autofix Suicide Blitz 2 finale.
