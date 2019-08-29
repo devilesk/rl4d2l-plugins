@@ -55,6 +55,9 @@
 ## tank\_and\_nowitch\_ifier.sp
 
 * Fixed AdjustBossFlow to properly use boss ban flow min and max
+* Added `sm_tank_nowitch_debug` cvar for logging
+* Added `sm_tank_nowitch_debug_info` command for dumping info on current spawn configuration
+  * Requires `sm_tank_nowitch_debug` set to 1
 
 ## l4d2\_horde\_equaliser.sp
 
