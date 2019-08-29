@@ -70,3 +70,11 @@
 ## player_skill_stats.sp
 
 * Psykotikism's [player skill stats](https://github.com/Psykotikism/Player_Skill_Stats) modified by bscal to save to database. No longer in use and replaced by modified l4d2_playstats plugin.
+
+## eq_finale_tanks.sp
+
+* Modified Visor's [EQ2 Finale Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/eq_finale_tanks.sp).
+  Reworked to no longer manage flow tanks, since that can be handled by the `static_tank_map` cvar used in the [tank\_and\_nowitch\_ifier](https://github.com/devilesk/rl4d2l-plugins/blob/master/tank_and_nowitch_ifier.sp) plugin. Cvars:
+  * `tank_map_only_second_event` (formerly `tank_map_flow_and_second_event`)
+  * `tank_map_only_first_event` (unchanged)
+* Added `sm_tank_map_debug` cvar for logging
