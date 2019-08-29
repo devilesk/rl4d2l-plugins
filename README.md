@@ -63,3 +63,7 @@
 ## suicideblitzfinalefix.sp
 
 * Modified ProdigySim's [spawnstatefix](https://gist.github.com/ProdigySim/04912e5e76f69027f8c4) plugin to autofix Suicide Blitz 2 finale.
+
+## player_skill_stats.sp
+
+* Psykotikism's [player skill stats](https://github.com/Psykotikism/Player_Skill_Stats) modified by bscal to save to database. No longer in use and replaced by modified l4d2_playstats plugin.
