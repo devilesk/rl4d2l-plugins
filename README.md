@@ -18,6 +18,7 @@
 
 * Tank teleport vote plugin.
 * Adds sm_teleporttank and sm_teleporttankto <x> <y> <z> commands
+* Adds `sm_teleport_tank_debug` cvar for logging
 
 ## spawn_secondary.sp
 
