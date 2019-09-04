@@ -576,9 +576,11 @@ stock L4D2Direct_GetPreIncapHealth(client)
 	if (client < 1 || client > MaxClients)
 		return -1;
 
-	decl value;
-	if (!GetEntityValueFromOffset(client, "CTerrorPlayer::m_preIncapacitatedHealth", NumberType_Int32, value)) value = -1;
-	return value;
+	new health;
+	if (GetEntityValueFromOffset(client, "CTerrorPlayer::m_preIncapacitatedHealth", NumberType_Int32, health))
+		return health;
+
+	return -1;
 }
 
 /**
@@ -609,9 +611,11 @@ stock L4D2Direct_GetPreIncapHealthBuffer(client)
 	if (client < 1 || client > MaxClients)
 		return -1;
 
-	decl value;
-	if (!GetEntityValueFromOffset(client, "CTerrorPlayer::m_preIncapacitatedHealthBuffer", NumberType_Int32, value)) value = -1;
-	return value;
+	new health;
+	if (GetEntityValueFromOffset(client, "CTerrorPlayer::m_preIncapacitatedHealthBuffer", NumberType_Int32, health))
+		return health;
+
+	return -1;
 }
 
 /**
@@ -814,4 +818,3 @@ stock L4D2Direct_DoAnimationEvent(client, event)
 	}
 	SDKCall(DoAnimationEventSDKCall, client, event, 0);
 }
-
