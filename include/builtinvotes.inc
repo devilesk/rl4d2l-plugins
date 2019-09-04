@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
-
+ 
 #if defined _builtinvotes_included
  #endinput
 #endif
@@ -216,7 +216,7 @@ native Handle:CreateBuiltinVote(BuiltinVoteActionHandler:handler, BuiltinVoteTyp
 native bool:DisplayBuiltinVote(Handle:vote, clients[], numClients, time);
 
 /**
- * Sends a vote menu to all clients.  See DisplayBuiltinVote() for more information.
+ * Sends a vote menu to all clients.  See VoteMenu() for more information.
  *
  * @param vote				Vote Handle.
  * @param time				Maximum time to leave menu on the screen.
@@ -224,7 +224,7 @@ native bool:DisplayBuiltinVote(Handle:vote, clients[], numClients, time);
  *							in progress.
  * @error					Invalid Handle.
  */
-stock bool:DisplayBuiltinVoteToAll(Handle:vote, time)
+stock DisplayBuiltinVoteToAll(Handle:vote, time)
 {
 	new total;
 	decl players[MaxClients];
@@ -549,137 +549,6 @@ stock GetBuiltinVoteInfo(param2, &winningVotes, &totalVotes)
 {
 	winningVotes = param2 & 0xFFFF;
 	totalVotes = param2 >> 16;
-}
-
-/**
- * Sends a vote menu to a single team.  See DisplayBuiltinVote() for more information.
- *
- * @param vote				Vote Handle.
- * @param team				Team to send vote to. 1 = spectators, 2 = RED/Survivors, 3 = BLU/Infected
- * @param time				Maximum time to leave menu on the screen.
- * @return					True on success, false if this menu already has a vote session
- *							in progress.
- * @error					Invalid Handle.
- */
-stock bool:DisplayBuiltinVoteToTeam(Handle:vote, team, time)
-{
-	SetBuiltinVoteTeam(vote, team);
-
-	new total;
-	decl players[MaxClients];
-	
-	for (new i=1; i<=MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i) || (GetClientTeam(i) != team))
-		{
-			continue;
-		}
-		players[total++] = i;
-	}
-	
-	return DisplayBuiltinVote(vote, players, total, time);
-}
-
-/**
- * Sends a vote menu to all clients except one.  See DisplayBuiltinVote() for more information.
- * Useful for kick/ban votes
- *
- * @param vote				Vote Handle.
- * @param client			Client index not to send vote to
- * @param time				Maximum time to leave menu on the screen.
- * @return					True on success, false if this menu already has a vote session
- *							in progress or if the client isn't in the game.
- * @error					Invalid Handle.
- */
-stock bool:DisplayBuiltinVoteToAllButOne(Handle:vote, client, time)
-{
-	if (!IsClientInGame(client))
-	{
-		return false;
-	}
-
-	new total;
-	decl players[MaxClients];
-	
-	for (new i=1; i<=MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i) || (i == client))
-		{
-			continue;
-		}
-		players[total++] = i;
-	}
-	
-	return DisplayBuiltinVote(vote, players, total, time);
-}
-
-/**
- * Sends a vote menu to a single team except one player.  See DisplayBuiltinVote() for more information.
- *
- * @param vote				Vote Handle.
- * @param client			Client index not to send vote to.  Team is derived from this client.
- * @param time				Maximum time to leave menu on the screen.
- * @return					True on success, false if this menu already has a vote session
- *							in progress or the client isn't in the game.
- * @error					Invalid Handle.
- */
-stock bool:DisplayBuiltinVoteToTeamButOne(Handle:vote, client, time)
-{
-	if (!IsClientInGame(client))
-	{
-		return false;
-	}
-	
-	new team = GetClientTeam(client);
-	
-#if 0
-	if (team < 2)
-	{
-		return false;
-	}
-#endif
-	
-	SetBuiltinVoteTeam(vote, team);
-
-	new total;
-	decl players[MaxClients];
-	
-	for (new i=1; i<=MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i) || (i == client) || (GetClientTeam(i) != team))
-		{
-			continue;
-		}
-		players[total++] = i;
-	}
-	
-	return DisplayBuiltinVote(vote, players, total, time);
-}
-
-/**
- * Sends a vote menu to all clients who are not spectators or waiting to choose a team.  See DisplayBuiltinVote() for more information.
- *
- * @param vote				Vote Handle.
- * @param time				Maximum time to leave menu on the screen.
- * @return					True on success, false if this menu already has a vote session
- *							in progress.
- * @error					Invalid Handle.
- */
-stock bool:DisplayBuiltinVoteToAllNonSpectators(Handle:vote, time)
-{
-	new total;
-	decl players[MaxClients];
-	
-	for (new i=1; i<=MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i) || (GetClientTeam(i) < 2))
-		{
-			continue;
-		}
-		players[total++] = i;
-	}
-	
-	return DisplayBuiltinVote(vote, players, total, time);
 }
 
 /**
