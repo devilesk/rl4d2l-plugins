@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * Left 4 Downtown SourceMod Extension
- * Copyright (C) 2009 Igor "Downtown1" Smirnov.
+ * Copyright (C) 2009-2011 Downtown1, ProdigySim; 2012-2015 Visor
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -428,6 +428,29 @@ forward Action:L4D2_OnEntityShoved(client, entity, weapon, Float:vector[3], bool
  * @return      Pl_Handled to let the client through with addons, Pl_Continue otherwise.
  */
 forward Action:L4D2_OnClientDisableAddons(const String:SteamID[]);
+
+/**
+ * @brief Called whenever CInferno::Spread(Vector const&) is invoked (only for spitters -- ignores fire)
+ *
+ * @param spitter	 	spitter that spat (:D)
+ * @param projectile	spitter's projectile entity
+ * @param x				x coordinate of the new acid puddle (can be overridden)
+ * @param y				y coordinate of the new acid puddle (can be overridden)
+ * @param z				z coordinate of the new acid puddle (can be overridden)
+ *
+ * @return 		Pl_Handled to block, Pl_Continue otherwise
+ */
+forward Action:L4D2_OnSpitSpread(spitter, projectile, &Float:x, &Float:y, &Float:z);
+
+/**
+ * @brief Called whenever CTerrorPlayer::OnShovedByPounceLanding(CTerrorPlayer*) is invoked
+ *
+ * @param victim	the survivor that is about to get stumbled as a result of "attacker" capping someone in close proximity
+ * @param attacker	the SI that is about to cause a stumble as a result of capping someone in close proximity to a survivor
+ *
+ * @return 		Pl_Handled to block, Pl_Continue otherwise
+ */
+forward Action:L4D2_OnPounceOrLeapStumble(victim, attacker);
 
 /**
  * @brief Get the current campaign scores stored in the Director
