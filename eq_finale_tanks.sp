@@ -24,14 +24,14 @@ public Plugin:myinfo = {
     name = "Finale Tank Manager",
     author = "devilesk, original by Visor",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
-    version = "1.0.0",
+    version = "1.0.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_tank_map_debug", "0", "Finale Tank Manager debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
-    HookEvent("round_start", EventHook:OnRoundStart, EventHookMode_PostNoCopy);
+    HookEvent("round_start", EventHook:RoundStartEvent, EventHookMode_PostNoCopy);
 
     hOnlyFirstEventTankSpawningScheme = CreateTrie();
     hOnlySecondEventTankSpawningScheme = CreateTrie();
@@ -54,7 +54,7 @@ public Action:SetMapOnlySecondEventSpawningScheme(args) {
     PrintDebug("[SetMapOnlySecondEventSpawningScheme] Added: %s", mapname);
 }
 
-public OnRoundStart() {
+public RoundStartEvent() {
     CreateTimer(8.0, ProcessTankSpawn);
 }
 
