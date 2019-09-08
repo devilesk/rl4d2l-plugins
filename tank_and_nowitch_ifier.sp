@@ -16,7 +16,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.0.0",
+    version = "2.0.1",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -159,8 +159,8 @@ stock Float:GetTankFlow(round) {
 
 stock PrintDebugInfoDump() {
     if (GetConVarBool(g_hCvarDebug)) {
-        PrintDebug("[Round 1] tank enabled: %i, tank flow: %f, display %: %f, witch enabled: %i", L4D2Direct_GetVSTankToSpawnThisRound(0), L4D2Direct_GetVSTankFlowPercent(0), GetTankFlow(0), L4D2Direct_GetVSWitchToSpawnThisRound(0));
-        PrintDebug("[Round 2] tank enabled: %i, tank flow: %f, display %: %f, witch enabled: %i", L4D2Direct_GetVSTankToSpawnThisRound(1), L4D2Direct_GetVSTankFlowPercent(1), GetTankFlow(1), L4D2Direct_GetVSWitchToSpawnThisRound(1));
+        PrintDebug("[Round 1] tank enabled: %i, tank flow: %f, display: %f, witch enabled: %i", L4D2Direct_GetVSTankToSpawnThisRound(0), L4D2Direct_GetVSTankFlowPercent(0), GetTankFlow(0), L4D2Direct_GetVSWitchToSpawnThisRound(0));
+        PrintDebug("[Round 2] tank enabled: %i, tank flow: %f, display: %f, witch enabled: %i", L4D2Direct_GetVSTankToSpawnThisRound(1), L4D2Direct_GetVSTankFlowPercent(1), GetTankFlow(1), L4D2Direct_GetVSWitchToSpawnThisRound(1));
     }
 }
 
