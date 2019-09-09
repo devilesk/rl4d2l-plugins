@@ -79,3 +79,8 @@
   * `tank_map_only_second_event` (formerly `tank_map_flow_and_second_event`)
   * `tank_map_only_first_event` (unchanged)
 * Added `sm_tank_map_debug` cvar for logging
+
+## l4d_tank_control_eq.sp
+* Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp)
+  * Merged with SirPlease's changes from decompiled [ZoneMod version](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_tank_control_eq.smx)
+* Fixed handle leaks
