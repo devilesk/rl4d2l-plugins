@@ -4,7 +4,24 @@
 #include <sdktools>
 #include <l4d2_direct>
 
-#define FINALE_STAGE_TANK 8
+#define FINALE_GAUNTLET_1               0
+#define FINALE_HORDE_ATTACK_1           1
+#define FINALE_HALFTIME_BOSS            2
+#define FINALE_GAUNTLET_2               3
+#define FINALE_HORDE_ATTACK_2           4
+#define FINALE_FINAL_BOSS               5
+#define FINALE_HORDE_ESCAPE             6
+#define FINALE_CUSTOM_PANIC             7
+#define FINALE_CUSTOM_TANK              8
+#define FINALE_CUSTOM_SCRIPTED          9
+#define FINALE_CUSTOM_DELAY             10
+#define FINALE_CUSTOM_CLEAROUT          11
+#define FINALE_GAUNTLET_START           12
+#define FINALE_GAUNTLET_HORDE           13
+#define FINALE_GAUNTLET_HORDE_BONUSTIME 14
+#define FINALE_GAUNTLET_BOSS_INCOMING   15
+#define FINALE_GAUNTLET_BOSS            16
+#define FINALE_GAUNTLET_ESCAPE          17
 
 enum TankSpawningScheme {
     Skip,
@@ -22,9 +39,9 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 
 public Plugin:myinfo = {
     name = "Finale Tank Manager",
-    author = "devilesk, original by Visor",
+    author = "Visor, Sir, Electr0, devilesk",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
-    version = "1.0.2",
+    version = "1.1.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -79,7 +96,7 @@ public Action:ProcessTankSpawn(Handle:timer) {
 public Action:L4D2_OnChangeFinaleStage(&finaleType, const String:arg[]) {
     PrintDebug("[OnChangeFinaleStage] finaleType: %i, tankCount: %i, spawnScheme: %i", finaleType, tankCount, spawnScheme);
     
-    if (finaleType == FINALE_STAGE_TANK) {
+    if (spawnScheme != Skip && (finaleType == FINALE_CUSTOM_TANK || finaleType == FINALE_GAUNTLET_BOSS || finaleType == FINALE_GAUNTLET_ESCAPE)) {
         tankCount++;
 
         if (spawnScheme == FirstOnEvent && tankCount != 1) {

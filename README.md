@@ -79,6 +79,8 @@
   * `tank_map_only_second_event` (formerly `tank_map_flow_and_second_event`)
   * `tank_map_only_first_event` (unchanged)
 * Added `sm_tank_map_debug` cvar for logging
+* Updated to handle tanks on gauntlet finales.
+  * `bridge_escape_fix.smx` no longer needed.
 
 ## l4d_tank_control_eq.sp
 * Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp)
