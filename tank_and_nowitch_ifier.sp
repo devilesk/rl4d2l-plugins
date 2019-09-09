@@ -16,7 +16,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.0.1",
+    version = "2.0.2",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -66,7 +66,7 @@ public Action:Reset_Command(args) {
 }
 
 public RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast) {
-    CreateTimer(0.5, AdjustBossFlow);
+    CreateTimer(0.5, AdjustBossFlow, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action:Info_Cmd(client, args) {
@@ -75,7 +75,7 @@ public Action:Info_Cmd(client, args) {
 #if DEBUG
 public Action:Test_Cmd(client, args) {
     PrintDebug("[Test_Cmd] Starting AdjustBossFlow timer...");
-    CreateTimer(0.5, AdjustBossFlow);
+    CreateTimer(0.5, AdjustBossFlow, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 #endif
 
