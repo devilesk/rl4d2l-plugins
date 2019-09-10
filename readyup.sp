@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir)",
 	description = "New and improved ready-up plugin.",
-	version = "9.1",
+	version = "9.2",
 	url = ""
 };
 
@@ -1225,10 +1225,10 @@ ActivateEntities(String:className[], String:inputName[])
 		if (!IsValidEdict(iEntity) || !IsValidEntity(iEntity))
 			continue;
 			
-		if (GetEntProp(iEntity, PropType:1, "m_spawnflags", 4, 0) != 526336)
-		{
-			AcceptEntityInput(iEntity, inputName, -1, -1, 0);
-		}
+		if (GetEntProp(iEntity, Prop_Data, "m_spawnflags") & (1 << 19))
+			continue;
+			
+		AcceptEntityInput(iEntity, inputName);
 	}
 }
 
