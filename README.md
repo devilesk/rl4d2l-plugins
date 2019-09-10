@@ -82,6 +82,14 @@
 * Updated to handle tanks on gauntlet finales.
   * `bridge_escape_fix.smx` no longer needed.
 
+## l4d2_restartmap.sp
+
+* Adds sm_restartmap to restart the current map. Preserves scores and who has played tank. Automatically restarts map when broken flow detected.
+  * `sm_restartmap_debug` cvar for logging
+  * `sm_restartmap_autofix` cvar for autofix. Enabled by default.
+  * `sm_restartmap_autofix_max_tries` cvar for max autofix map restart attempts
+* Score setting based on Visor's [SetScores](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_setscores.sp)
+
 ## l4d_tank_control_eq.sp
 * Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp)
   * Merged with SirPlease's changes from decompiled [ZoneMod version](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_tank_control_eq.smx)
