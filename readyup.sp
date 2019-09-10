@@ -38,10 +38,10 @@
 public Plugin:myinfo =
 {
 	name = "L4D2 Ready-Up",
-	author = "CanadaRox, (Lazy unoptimized additions by Sir)",
+	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.2",
-	url = ""
+	version = "9.2.1",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 enum L4D2Team

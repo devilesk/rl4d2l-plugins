@@ -86,3 +86,7 @@
 * Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp)
   * Merged with SirPlease's changes from decompiled [ZoneMod version](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_tank_control_eq.smx)
 * Fixed handle leaks
+
+## readyup.sp
+* Reconstructed SirPlease's version of CanadaRox's [readyup](https://github.com/MatthewClair/l4d2readyup/blob/master/readyup.sp) plugin used in [ZoneMod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/readyup.smx)
+* Applied spoon's [bugfix](https://github.com/spoon-l4d2/Plugins/blob/19b55c3c3122333bba0ce2e2cec202b4af623cab/source/readyup.sp#L1409) to prevent unbreakable doors from being made breakable.
