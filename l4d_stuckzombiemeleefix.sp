@@ -81,8 +81,8 @@ public Event_EntShoved(Handle:event, const String:name[], bool:dontBroadcast)
 	GetEntityNetClass(entid, entclass, sizeof(entclass));
 	if (!StrEqual(entclass, "Infected")) return; //make sure it IS a zombie.
 	
-	new Handle:data = CreateDataPack(); //a data pack because i need multiple values saved
-	CreateTimer(0.5, CheckForMovement, data); //0.5 seemed both long enough for a normal zombie to stumble away and for a stuck one to DIEEEEE
+	new Handle:data; //a data pack because i need multiple values saved
+	CreateDataTimer(0.5, CheckForMovement, data, TIMER_FLAG_NO_MAPCHANGE); //0.5 seemed both long enough for a normal zombie to stumble away and for a stuck one to DIEEEEE
 	
 	WritePackCell(data, entid); //save the Zombie id
 	
@@ -112,8 +112,6 @@ public Action:CheckForMovement(Handle:timer, Handle:data)
 	oldpos[0] = ReadPackFloat(data); //get the old Zombie position (half a sec ago)
 	oldpos[1] = ReadPackFloat(data);
 	oldpos[2] = ReadPackFloat(data);
-	
-	CloseHandle(data); //Dispose of the Handle. It shouldn't have messed with the family
 	
 	decl Float:newpos[3];
 	GetEntityAbsOrigin(zombieid, newpos); //get the Zombies current position
