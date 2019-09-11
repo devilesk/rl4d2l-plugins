@@ -101,3 +101,6 @@
 
 ## l4d_stuckzombiemeleefix.sp
 * Minor edit to AtomicStryker's [Stuck Zombie Melee Fix](http://forums.alliedmods.net/showthread.php?p=932416) to use recommended datapack timer practices described in the wiki and eliminate possible handle leak.
+
+## l4d2_getupfix.sp
+* Minor edit to [L4D2 Get-Up Fix](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_getupfix.sp) to use datapack instead of stack and use recommended datapack timer practices described in the wiki and eliminate possible handle leak.
