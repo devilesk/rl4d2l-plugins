@@ -4,12 +4,12 @@
 #include <sdktools>
 #define DEBUG 0
 
-#define PLUGIN_VERSION "1.0.4"
+#define PLUGIN_VERSION "1.0.5"
 
 public Plugin:myinfo = 
 {
 	name = "Stuck Zombie Melee Fix",
-	author = "AtomicStryker",
+	author = "AtomicStryker, devilesk",
 	description = "Smash nonstaggering Zombies",
 	version = PLUGIN_VERSION,
 	url = "http://forums.alliedmods.net/showthread.php?p=932416"
