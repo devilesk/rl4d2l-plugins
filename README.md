@@ -98,3 +98,6 @@
 ## readyup.sp
 * Reconstructed SirPlease's version of CanadaRox's [readyup](https://github.com/MatthewClair/l4d2readyup/blob/master/readyup.sp) plugin used in [ZoneMod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/readyup.smx)
 * Applied spoon's [bugfix](https://github.com/spoon-l4d2/Plugins/blob/19b55c3c3122333bba0ce2e2cec202b4af623cab/source/readyup.sp#L1409) to prevent unbreakable doors from being made breakable.
+
+## l4d_stuckzombiemeleefix.sp
+* Minor edit to AtomicStryker's [Stuck Zombie Melee Fix](http://forums.alliedmods.net/showthread.php?p=932416) to use recommended datapack timer practices described in the wiki and eliminate possible handle leak.
