@@ -10,9 +10,9 @@
 public Plugin:myinfo = 
 {
     name = "L4D2 Get-Up Fix",
-    author = "Blade, ProdigySim, DieTeetasse, Stabby, Jahze",
+    author = "Blade, ProdigySim, DieTeetasse, Stabby, Jahze, devilesk",
     description = "Double/no/self-clear get-up fix.",
-    version = "1.7",
+    version = "1.7.1",
     url = "http://bitbucket.org/ProdigySim/misc-sourcemod-plugins/"
 }
 
