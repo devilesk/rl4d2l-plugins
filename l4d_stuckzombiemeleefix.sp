@@ -1,3 +1,5 @@
+#pragma semicolon 1
+
 #include <sourcemod>
 #include <sdktools>
 #define DEBUG 0
@@ -79,7 +81,7 @@ public Event_EntShoved(Handle:event, const String:name[], bool:dontBroadcast)
 	GetEntityNetClass(entid, entclass, sizeof(entclass));
 	if (!StrEqual(entclass, "Infected")) return; //make sure it IS a zombie.
 	
-	new Handle:data = CreateDataPack() //a data pack because i need multiple values saved
+	new Handle:data = CreateDataPack(); //a data pack because i need multiple values saved
 	CreateTimer(0.5, CheckForMovement, data); //0.5 seemed both long enough for a normal zombie to stumble away and for a stuck one to DIEEEEE
 	
 	WritePackCell(data, entid); //save the Zombie id
@@ -138,7 +140,7 @@ public Action:CheckForMovement(Handle:timer, Handle:data)
 		#endif
 	}
 	
-	else SetEntProp(zombieid, Prop_Data, "m_iHealth", zombiehealth - (zombiehealthmax / 2)) //else remove half of its health, so the zombie dies from the next melee blow
+	else SetEntProp(zombieid, Prop_Data, "m_iHealth", zombiehealth - (zombiehealthmax / 2)); //else remove half of its health, so the zombie dies from the next melee blow
 		
 	return Plugin_Handled;
 }
