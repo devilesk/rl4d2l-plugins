@@ -88,29 +88,32 @@ ProcessClient(client) {
         return;
     }
     
-    // create stack with client and sequence
-    new Handle:tempStack = CreateStack(3);
-    PushStackCell(tempStack, client);
-    PushStackCell(tempStack, sequence);
+    // create pack with client and sequence
+    new Handle:tempData;
     
     if (sequence == getUpAnimations[charIndex][INDEX_HUNTER]) {
-        CreateTimer(ANIM_HUNTER_LENGTH, Timer_CheckClient, tempStack);
+        CreateDataTimer(ANIM_HUNTER_LENGTH, Timer_CheckClient, tempData, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (sequence == getUpAnimations[charIndex][INDEX_CHARGER]) {
-        CreateTimer(ANIM_CHARGER_STANDARD_LENGTH, Timer_CheckClient, tempStack);
+        CreateDataTimer(ANIM_CHARGER_STANDARD_LENGTH, Timer_CheckClient, tempData, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (sequence == getUpAnimations[charIndex][INDEX_CHARGER_WALL]) {
-        CreateTimer(ANIM_CHARGER_SLAMMED_WALL_LENGTH - 2.5*GetEntPropFloat(client, Prop_Send, "m_flCycle"), Timer_CheckClient, tempStack);
+        CreateDataTimer(ANIM_CHARGER_SLAMMED_WALL_LENGTH - 2.5*GetEntPropFloat(client, Prop_Send, "m_flCycle"), Timer_CheckClient, tempData, TIMER_FLAG_NO_MAPCHANGE);
     }
     else {
-        CreateTimer(ANIM_CHARGER_SLAMMED_GROUND_LENGTH - 2.5*GetEntPropFloat(client, Prop_Send, "m_flCycle"), Timer_CheckClient, tempStack);
+        CreateDataTimer(ANIM_CHARGER_SLAMMED_GROUND_LENGTH - 2.5*GetEntPropFloat(client, Prop_Send, "m_flCycle"), Timer_CheckClient, tempData, TIMER_FLAG_NO_MAPCHANGE);
     }
+
+    WritePackCell(tempData, client);
+    WritePackCell(tempData, sequence);
 }
 
-public Action:Timer_CheckClient(Handle:timer, any:tempStack) {
-    decl client, oldSequence, Float:duration;
-    PopStackCell(tempStack, oldSequence);
-    PopStackCell(tempStack, client);
+public Action:Timer_CheckClient(Handle:timer, Handle:tempData) {
+    ResetPack(tempData);
+
+    new Float:duration;
+    new client = ReadPackCell(tempData);
+    new oldSequence = ReadPackCell(tempData);
     
     new SurvivorCharacter:charIndex = IdentifySurvivor(client);    
     if (charIndex == SC_NONE) return;
