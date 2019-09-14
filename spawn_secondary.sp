@@ -26,23 +26,24 @@
  
 new bool:g_bReadyUpAvailable = false;
 new bool:g_bSpawnNotAllowed = false;
-new g_iMaxCount;
 new g_wepType;
 new Handle:hVote;
+int g_target_list[MAXPLAYERS];
+int g_target_count;
 
 public Plugin:myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
-    description = "Admin commands and vote commands for spawning pistols and/or axes for survivors.",
-    version = "0.6.0",
-    url = "https://steamcommunity.com/groups/RL4D2L"
+    description = "Spawning pistols and/or axes for players.",
+    version = "0.7.0",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 public OnPluginStart() {
     g_bReadyUpAvailable = LibraryExists("readyup");
-    RegConsoleCmd("sm_spawnsecondary", Command_SpawnSecondary, "Call vote to spawn pistol and axe for 1 to 4 survivors.");
-    RegConsoleCmd("sm_spawnpistol", Command_SpawnPistol, "Call vote to spawn a pistol for 1 to 4 survivors.");
-    RegConsoleCmd("sm_spawnaxe", Command_SpawnAxe, "Call vote to spawn an axe for 1 to 4 survivors.");
+    RegConsoleCmd("sm_spawnsecondary", Command_SpawnSecondary, "Spawn pistol and axe for a player.");
+    RegConsoleCmd("sm_spawnpistol", Command_SpawnPistol, "Spawn a pistol for a player.");
+    RegConsoleCmd("sm_spawnaxe", Command_SpawnAxe, "Spawn an axe for a player.");
     HookEvent("round_end", Event_RoundEnd);
 }
 
@@ -108,7 +109,7 @@ bool:SpawnPistolForClient(iClient) {
         GetClientAbsOrigin(iClient, vecPosition);
         vecPosition[2] += 10;
         if (SpawnPistol(vecPosition)) {
-            PrintToChatAll("\x01[\x04Spawn Secondary\x01] Spawned pistol by %N.", iClient);
+            PrintToChatAll("\x01[\x04Spawn Secondary\x01] Spawned pistol for %N.", iClient);
             return true;
         }
     }
@@ -121,7 +122,7 @@ bool:SpawnAxeForClient(iClient) {
         GetClientAbsOrigin(iClient, vecPosition);
         vecPosition[2] += 20;
         if (SpawnAxe(vecPosition)) {
-            PrintToChatAll("\x01[\x04Spawn Secondary\x01] Spawned axe by %N.", iClient);
+            PrintToChatAll("\x01[\x04Spawn Secondary\x01] Spawned axe for %N.", iClient);
             return true;
         }
     }
@@ -137,28 +138,9 @@ bool:SpawnWeaponForClient(wepType, iClient) {
     }
 }
 
-SpawnWeaponForClients(wepType, iMaxCount) {
-    new iCount = 0;
-    for (new i = 1; i <= MaxClients; i++) {
-        if (iCount < iMaxCount) {
-            if (SpawnWeaponForClient(wepType, i)) {
-                iCount++;
-            }
-        }
-    }
-}
-
 bool:IsSpawnAllowed() {
     if (g_bSpawnNotAllowed) {
         PrintToChatAll("\x01[\x04Spawn Secondary\x01] Cannot spawn after round started.");
-        return false;
-    }
-    return true;
-}
-
-bool:IsValidMaxCount(iMaxCount) {
-    if (iMaxCount < 1 || iMaxCount > 4) {
-        PrintToChatAll("\x01[\x04Spawn Secondary\x01] Spawn count must be between 1 and 4.");
         return false;
     }
     return true;
@@ -180,24 +162,43 @@ bool:CanStartVote(client) {
 }
 
 public Action:Command_SpawnPistol(client, args)  {
-    new iMaxCount;
-    if (args < 1)  {
-        iMaxCount = 1;
+    if (args < 1)
+    {
+        ReplyToCommand(client, "[SM] Usage: sm_spawnpistol <#userid|name>");
+        return Plugin_Handled;
     }
-    else {
-        char arg[8];
-        GetCmdArg(1, arg, sizeof(arg));
-        iMaxCount = StringToInt(arg);
-        if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
+
+    char arg[65];
+    GetCmdArg(1, arg, sizeof(arg));
+
+    char target_name[MAX_TARGET_LENGTH];
+    int target_list[MAXPLAYERS], target_count;
+    bool tn_is_ml;
+    
+    if ((target_count = ProcessTargetString(
+            arg,
+            client,
+            target_list,
+            MAXPLAYERS,
+            COMMAND_FILTER_ALIVE,
+            target_name,
+            sizeof(target_name),
+            tn_is_ml)) <= 0)
+    {
+        ReplyToTargetError(client, target_count);
+        return Plugin_Handled;
     }
     
     if (CheckCommandAccess(client, "sm_spawnpistol", ADMFLAG_KICK, true)) {
-        SpawnWeaponForClients(PISTOL, iMaxCount);
+        for (int i = 0; i < target_count; i++)
+        {
+            SpawnWeaponForClient(PISTOL, target_list[i]);
+        }
     }
     else if (CanStartVote(client)) {
         new String:prompt[100];
-        Format(prompt, sizeof(prompt), "Spawn %d pistol for survivors?", iMaxCount);
-        if (StartVote(client, prompt, PISTOL, iMaxCount)) {
+        Format(prompt, sizeof(prompt), "Spawn pistol for %s?", target_name);
+        if (StartVote(client, prompt, PISTOL, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
         }
     }
@@ -206,24 +207,43 @@ public Action:Command_SpawnPistol(client, args)  {
 }
 
 public Action:Command_SpawnAxe(client, args)  {
-    new iMaxCount;
-    if (args < 1)  {
-        iMaxCount = 1;
+    if (args < 1)
+    {
+        ReplyToCommand(client, "[SM] Usage: sm_spawnaxe <#userid|name>");
+        return Plugin_Handled;
     }
-    else {
-        char arg[8];
-        GetCmdArg(1, arg, sizeof(arg));
-        iMaxCount = StringToInt(arg);
-        if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
+
+    char arg[65];
+    GetCmdArg(1, arg, sizeof(arg));
+
+    char target_name[MAX_TARGET_LENGTH];
+    int target_list[MAXPLAYERS], target_count;
+    bool tn_is_ml;
+    
+    if ((target_count = ProcessTargetString(
+            arg,
+            client,
+            target_list,
+            MAXPLAYERS,
+            COMMAND_FILTER_ALIVE,
+            target_name,
+            sizeof(target_name),
+            tn_is_ml)) <= 0)
+    {
+        ReplyToTargetError(client, target_count);
+        return Plugin_Handled;
     }
     
     if (CheckCommandAccess(client, "sm_spawnaxe", ADMFLAG_KICK, true)) {
-        SpawnWeaponForClients(AXE, iMaxCount);
+        for (int i = 0; i < target_count; i++)
+        {
+            SpawnWeaponForClient(AXE, target_list[i]);
+        }
     }
     else if (CanStartVote(client)) {
         new String:prompt[100];
-        Format(prompt, sizeof(prompt), "Spawn %d axe for survivors?", iMaxCount);
-        if (StartVote(client, prompt, AXE, iMaxCount)) {
+        Format(prompt, sizeof(prompt), "Spawn axe for %s?", target_name);
+        if (StartVote(client, prompt, AXE, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
         }
     }
@@ -232,25 +252,44 @@ public Action:Command_SpawnAxe(client, args)  {
 }
 
 public Action:Command_SpawnSecondary(client, args)  {
-    new iMaxCount;
-    if (args < 1)  {
-        iMaxCount = 1;
+    if (args < 1)
+    {
+        ReplyToCommand(client, "[SM] Usage: sm_spawnsecondary <#userid|name>");
+        return Plugin_Handled;
     }
-    else {
-        char arg[8];
-        GetCmdArg(1, arg, sizeof(arg));
-        iMaxCount = StringToInt(arg);
-        if (!IsValidMaxCount(iMaxCount)) { return Plugin_Handled; }
+
+    char arg[65];
+    GetCmdArg(1, arg, sizeof(arg));
+
+    char target_name[MAX_TARGET_LENGTH];
+    int target_list[MAXPLAYERS], target_count;
+    bool tn_is_ml;
+    
+    if ((target_count = ProcessTargetString(
+            arg,
+            client,
+            target_list,
+            MAXPLAYERS,
+            COMMAND_FILTER_ALIVE,
+            target_name,
+            sizeof(target_name),
+            tn_is_ml)) <= 0)
+    {
+        ReplyToTargetError(client, target_count);
+        return Plugin_Handled;
     }
     
     if (CheckCommandAccess(client, "sm_spawnsecondary", ADMFLAG_KICK, true)) {
-        SpawnWeaponForClients(PISTOL, iMaxCount);
-        SpawnWeaponForClients(AXE, iMaxCount);
+        for (int i = 0; i < target_count; i++)
+        {
+            SpawnWeaponForClient(PISTOL, target_list[i]);
+            SpawnWeaponForClient(AXE, target_list[i]);
+        }
     }
     else if (CanStartVote(client)) {
         new String:prompt[100];
-        Format(prompt, sizeof(prompt), "Spawn %d pistol and axe for survivors?", iMaxCount);
-        if (StartVote(client, prompt, BOTH, iMaxCount)) {
+        Format(prompt, sizeof(prompt), "Spawn pistol and axe for %s?", target_name);
+        if (StartVote(client, prompt, BOTH, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
         }
     }
@@ -258,7 +297,7 @@ public Action:Command_SpawnSecondary(client, args)  {
     return Plugin_Handled; 
 }
 
-bool:StartVote(client, const String:sVoteHeader[], wepType, iMaxCount) {
+bool:StartVote(client, const String:sVoteHeader[], wepType, target_count, const target_list[MAXPLAYERS]) {
     if (IsNewBuiltinVoteAllowed()) {
         new iNumPlayers;
         decl players[MaxClients];
@@ -271,7 +310,8 @@ bool:StartVote(client, const String:sVoteHeader[], wepType, iMaxCount) {
         }
     
         g_wepType = wepType;
-        g_iMaxCount = iMaxCount;
+        g_target_count = target_count;
+        g_target_list = target_list;
         
         hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
         SetBuiltinVoteArgument(hVote, sVoteHeader);
@@ -303,12 +343,12 @@ public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
                 DisplayBuiltinVotePass(vote, "Spawning weapons...");
                 PrintToChatAll("\x01[\x04Spawn Secondary\x01] Vote passed! Spawning weapons...");
-                if (g_wepType == BOTH) {
-                    SpawnWeaponForClients(PISTOL, g_iMaxCount);
-                    SpawnWeaponForClients(AXE, g_iMaxCount);
-                }
-                else {
-                    SpawnWeaponForClients(g_wepType, g_iMaxCount);
+                for (int j = 0; j < g_target_count; j++)
+                {
+                    if (g_wepType == BOTH || g_wepType == AXE)
+                        SpawnWeaponForClient(AXE, g_target_list[j]);
+                    if (g_wepType == BOTH || g_wepType == PISTOL)
+                        SpawnWeaponForClient(PISTOL, g_target_list[j]);
                 }
                 return;
             }
