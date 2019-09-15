@@ -5,15 +5,31 @@
 
 #pragma newdecls required
 
-#define MAX_ROCHELLESOUND      8
-#define MAX_ELLISSOUND         6
-#define MAX_NICKSOUND          14
-#define MAX_COACHSOUND         18
+#define MAX_ROCHELLESOUND		8
+#define MAX_ELLISSOUND			6
+#define MAX_NICKSOUND			14
+#define MAX_COACHSOUND			18
 
-#define MAX_FRANCISSOUND	   11
-#define MAX_ZOEYSOUND		   9
-#define MAX_LOUISSOUND		   7
-#define MAX_BILLSOUND		   10
+#define MAX_FRANCISSOUND		11
+#define MAX_ZOEYSOUND			9
+#define MAX_LOUISSOUND			7
+#define MAX_BILLSOUND			10
+
+#define BLOCK_WORLD				(1 << 0)
+#define BLOCK_LOOK				(1 << 1)
+#define BLOCK_ASK				(1 << 2)
+#define BLOCK_FOLLOWME			(1 << 3)
+#define BLOCK_GETTINGREVIVED	(1 << 4)
+#define BLOCK_ALERTGIVEITEM		(1 << 5)
+#define BLOCK_IMWITHYOU			(1 << 6)
+#define BLOCK_LAUGHTER			(1 << 7)
+#define BLOCK_NAME				(1 << 8)
+#define BLOCK_LEADON			(1 << 9)
+#define BLOCK_MOVEON			(1 << 10)
+#define BLOCK_FRIENDLYFIRE		(1 << 11)
+#define BLOCK_SPLAT				(1 << 12)
+#define BLOCK_ALL				BLOCK_WORLD | BLOCK_LOOK | BLOCK_ASK | BLOCK_FOLLOWME | BLOCK_GETTINGREVIVED | BLOCK_ALERTGIVEITEM | BLOCK_IMWITHYOU | BLOCK_LAUGHTER | BLOCK_NAME | BLOCK_LEADON | BLOCK_MOVEON | BLOCK_FRIENDLYFIRE | BLOCK_SPLAT
+#define BLOCK_DEFAULT			BLOCK_LOOK | BLOCK_ASK | BLOCK_FOLLOWME | BLOCK_GETTINGREVIVED | BLOCK_ALERTGIVEITEM | BLOCK_IMWITHYOU | BLOCK_LAUGHTER | BLOCK_NAME | BLOCK_LEADON | BLOCK_MOVEON | BLOCK_FRIENDLYFIRE | BLOCK_SPLAT
 
 Handle cBlockHB;
 Handle cBlock4Competitive;
@@ -21,9 +37,9 @@ Handle cBlock4Competitive;
 public Plugin myinfo = 
 {
 	name = "Sound Manipulation",
-	author = "Sir",
+	author = "Sir, devilesk",
 	description = "Allows control over certain sounds",
-	version = "1.5",
+	version = "1.5b",
 	url = "https://github.com/SirPlease/SirCoding"
 }
 
@@ -152,8 +168,11 @@ char sBillSound[MAX_BILLSOUND + 1][] =
 
 public void OnPluginStart()
 {
+	char sCmdDefault[16];
+	IntToString(BLOCK_DEFAULT, sCmdDefault, sizeof(sCmdDefault));
+	
 	cBlockHB = CreateConVar("sound_block_hb", "0", "Block the Heartbeat Sound, very useful for 1v1 matchmodes");
-	cBlock4Competitive = CreateConVar("sound_block_for_comp", "0", "Block a lot of Random noises and voice lines");
+	cBlock4Competitive = CreateConVar("sound_block_for_comp", sCmdDefault, "Block a lot of Random noises and voice lines. Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat. Block default: 8190 (allow world). Block all: 8191.", FCVAR_NONE, true, 0.0, true, float(BLOCK_ALL));
 
 	// Event Hook
 	HookEvent("weapon_fire", Event_WeaponFire);
@@ -295,34 +314,33 @@ public Action SoundHook(int clients[64], int &numClients, char sample[PLATFORM_M
 	if (GetConVarBool(cBlockHB) && StrEqual(sample, "player/heartbeatloop.wav", false)) return Plugin_Stop;
 
 	// Competitive Stuff
-	if (GetConVarBool(cBlock4Competitive))
-	{
-		// World
-		if (StrContains(sample, "World", true) != -1  ||
-		// Look...
-		StrContains(sample, "look", false) != -1 ||
-		// Ask..
-		StrContains(sample, "ask", false) != -1   ||
-		// Follow Me..
-		StrContains(sample, "followme", false) != -1 ||
-		// Follow Me..
-		StrContains(sample, "gettingrevived", false) != -1 ||
-		// Item..
-		StrContains(sample, "alertgiveitem", false) != -1 ||
-		// I'm with you..
-		StrContains(sample, "imwithyou", false) != -1 ||
-		// Laughter..
-		StrContains(sample, "laughter", false) != -1 ||
-		// Name..
-		StrContains(sample, "name", false) != -1 ||
-		// Lead on..
-		StrContains(sample, "leadon", false) != -1 ||
-		// Move On..
-		StrContains(sample, "moveon", false) != -1 ||
-		// FF..
-		StrContains(sample, "friendlyfire", false) != -1 ||
-		// Blood Splat..
-		StrContains(sample, "splat", false) != -1) return Plugin_Stop;
-	}
+	int iBlockFlags = GetConVarInt(cBlock4Competitive);
+	// World
+	if (iBlockFlags & BLOCK_WORLD && StrContains(sample, "World", true) != -1) return Plugin_Stop;
+	// Look...
+	if (iBlockFlags & BLOCK_LOOK && StrContains(sample, "look", false) != -1) return Plugin_Stop;
+	// Ask...
+	if (iBlockFlags & BLOCK_ASK && StrContains(sample, "ask", false) != -1) return Plugin_Stop;
+	// Follow Me...
+	if (iBlockFlags & BLOCK_FOLLOWME && StrContains(sample, "followme", false) != -1) return Plugin_Stop;
+	// Follow Me..
+	if (iBlockFlags & BLOCK_GETTINGREVIVED && StrContains(sample, "gettingrevived", false) != -1) return Plugin_Stop;
+	// Item..
+	if (iBlockFlags & BLOCK_ALERTGIVEITEM && StrContains(sample, "alertgiveitem", false) != -1) return Plugin_Stop;
+	// I'm with you..
+	if (iBlockFlags & BLOCK_IMWITHYOU && StrContains(sample, "imwithyou", false) != -1) return Plugin_Stop;
+	// Laughter..
+	if (iBlockFlags & BLOCK_LAUGHTER && StrContains(sample, "laughter", false) != -1) return Plugin_Stop;
+	// Name..
+	if (iBlockFlags & BLOCK_NAME && StrContains(sample, "name", false) != -1) return Plugin_Stop;
+	// Lead on..
+	if (iBlockFlags & BLOCK_LEADON && StrContains(sample, "leadon", false) != -1) return Plugin_Stop;
+	// Move On..
+	if (iBlockFlags & BLOCK_MOVEON && StrContains(sample, "moveon", false) != -1) return Plugin_Stop;
+	// FF..
+	if (iBlockFlags & BLOCK_FRIENDLYFIRE && StrContains(sample, "friendlyfire", false) != -1) return Plugin_Stop;
+	// Blood Splat..
+	if (iBlockFlags & BLOCK_SPLAT && StrContains(sample, "splat", false) != -1) return Plugin_Stop;
+	
 	return Plugin_Continue;
 }

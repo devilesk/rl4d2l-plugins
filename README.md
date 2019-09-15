@@ -104,3 +104,7 @@
 
 ## l4d2_getupfix.sp
 * Minor edit to [L4D2 Get-Up Fix](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_getupfix.sp) to use datapack instead of stack and use recommended datapack timer practices described in the wiki and eliminate possible handle leak.
+
+## l4d2_sound_manipulation.sp
+* Updated [Sound Manipulation](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_sound_manipulation.sp) to allow for more control over which sounds are blocked by using `sound_block_for_comp` to set flags.
+  * Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat. Block default: 8190 (allow world). Block all: 8191.
