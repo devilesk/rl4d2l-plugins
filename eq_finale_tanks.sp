@@ -42,7 +42,7 @@ public Plugin:myinfo = {
     name = "Finale Tank Manager",
     author = "Visor, Sir, Electr0, devilesk",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
-    version = "1.1.1",
+    version = "1.1.2",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -61,6 +61,7 @@ public OnPluginStart() {
 public Action:SetMapOnlyFirstEventSpawningScheme(args) {
     decl String:mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
+    StrToLower(mapname);
     SetTrieValue(hOnlyFirstEventTankSpawningScheme, mapname, true);
     PrintDebug("[SetMapOnlyFirstEventSpawningScheme] Added: %s", mapname);
 }
@@ -68,6 +69,7 @@ public Action:SetMapOnlyFirstEventSpawningScheme(args) {
 public Action:SetMapOnlySecondEventSpawningScheme(args) {
     decl String:mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
+    StrToLower(mapname);
     SetTrieValue(hOnlySecondEventTankSpawningScheme, mapname, true);
     PrintDebug("[SetMapOnlySecondEventSpawningScheme] Added: %s", mapname);
 }
