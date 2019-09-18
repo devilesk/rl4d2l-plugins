@@ -28,7 +28,7 @@ public Plugin:myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.3.0",
+    version = "0.4.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -65,16 +65,18 @@ public OnMapStart() {
     // Compare current map to previous map and reset if different.
     decl String:sBuffer[MAXMAP];
     GetCurrentMap(sBuffer,sizeof(sBuffer));
-    if (strcmp(g_sMapName, sBuffer) != 0) {
+    if (!StrEqual(g_sMapName, sBuffer, false)) {
         g_bIsMapRestarted = false;
         g_iMapRestarts = 0;
     }
     
+    // Start broken flow check timer if autofix enabled and max tries not reached
+    if (GetConVarBool(g_hCvarAutofix) && g_iMapRestarts < GetConVarInt(g_hCvarAutofixMaxTries)) {
+        CreateTimer(2.0, CheckFlowBroken, _, TIMER_FLAG_NO_MAPCHANGE);
+    }
+    
+    // Set scores if map restarted
     if (g_bIsMapRestarted) {
-        if (GetConVarBool(g_hCvarAutofix) && g_iMapRestarts < GetConVarInt(g_hCvarAutofixMaxTries)) {
-            CreateTimer(2.0, CheckFlowBroken, _, TIMER_FLAG_NO_MAPCHANGE);
-        }
-        
         PrintDebug("[OnMapStart] Restarted. Setting scores... survivor: %i, score %i, infected: %i, score %i", g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
         
         //Set the scores
@@ -135,7 +137,7 @@ bool:IsFlowBroken() {
 
 public Action Command_RestartMap(int client, int args)
 {
-    if (CheckCommandAccess(client, "sm_restartmap_debug", ADMFLAG_KICK, true)) {
+    if (CheckCommandAccess(client, "sm_restartmap", ADMFLAG_KICK, true)) {
         RestartMap();
     }
     else if (CanStartVote(client)) {
