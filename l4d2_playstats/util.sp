@@ -323,13 +323,6 @@ stock CheckGameMode() {
     }
 }
 
-stock IsMissionFinalMap() {
-    // since L4D_IsMissionFinalMap() is bollocksed, simple map string check
-    new strMapType: mapType;
-    if ( !GetTrieValue(g_hTrieMaps, g_sMapName[g_iRound], mapType) ) { return false; }
-    return bool:( mapType == MP_FINALE );
-}
-
 stock stripUnicode ( String:testString[MAXNAME], maxLength = 20 ) {
     if ( maxLength < 1 ) { maxLength = MAXNAME; }
     
@@ -391,12 +384,6 @@ stock stripUnicode ( String:testString[MAXNAME], maxLength = 20 ) {
     }
     
     strcopy( testString, maxLength, tmpString );
-}
-
-stock StrToLower(String:arg[]) {
-	for (new i = 0; i < strlen(arg); i++) {
-		arg[i] = CharToLower(arg[i]);
-	}
 }
 
 stock PrintDebug( debugLevel, const String:Message[], any:... ) {

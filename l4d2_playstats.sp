@@ -22,12 +22,13 @@
 #include "l4d2_playstats/util.sp"
 #include "l4d2_playstats/database.sp"
 #include "l4d2_playstats/file.sp"
+#include "includes/finalemaps"
     
 public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.13.1",
+    version = "0.14.0",
     url = "https://github.com/Tabbernaut/L4D2-Plugins"
 };
 
@@ -1521,59 +1522,4 @@ stock InitTries() {
     g_hTrieEntityCreated = CreateTrie();
     SetTrieValue(g_hTrieEntityCreated, "infected",              OEC_INFECTED);
     SetTrieValue(g_hTrieEntityCreated, "witch",                 OEC_WITCH);
-    
-    // finales
-    g_hTrieMaps = CreateTrie();
-    SetTrieValue(g_hTrieMaps, "c1m4_atrium",                    MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c2m5_concert",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c3m4_plantation",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",           MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c5m5_bridge",                    MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c6m3_port",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c7m3_port",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c8m5_rooftop",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
-
-    SetTrieValue(g_hTrieMaps, "2019_M3b",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "bhm4_base",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "bloodtracks_04",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_bts06_school",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cwm4_building",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cotd04_rooftop",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_city17_05",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_ff05_station",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "dkr_m5_stadium",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_darkblood04_extraction",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_daybreak05_rescue",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "ddg3_bluff_v2_1",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "deadbeat04_park",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_dbd2dc_new_dawn",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "death_sentence_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cdta_05finalroad",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "ec05_quarry",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c1m1_hotel_d_insane",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "hf04_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "BombShelter",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "highway05_afb02_20130820",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_ihm05_lakeside",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "jsarena204_arena",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_diescraper4_top_361",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_diescraper4_top_361",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_149_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_tbm_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "x1m5_salvation",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_ravenholm05_docks",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_stadium5_stadium",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "eu05_train_b16",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "uz_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "uf4_airfield",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "mnac",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "wfp4_commstation",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c1_mario1_4",             MP_FINALE);
-
 }

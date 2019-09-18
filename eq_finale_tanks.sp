@@ -3,6 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <l4d2_direct>
+#include "includes/rl4d2l_util"
 
 #define FINALE_GAUNTLET_1               0
 #define FINALE_HORDE_ATTACK_1           1
@@ -41,7 +42,7 @@ public Plugin:myinfo = {
     name = "Finale Tank Manager",
     author = "Visor, Sir, Electr0, devilesk",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
-    version = "1.1.0",
+    version = "1.1.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -80,7 +81,7 @@ public Action:ProcessTankSpawn(Handle:timer) {
     tankCount = 0;
     
     decl String:mapname[64];
-    GetCurrentMap(mapname, sizeof(mapname));
+    GetCurrentMapLower(mapname, sizeof(mapname));
     
     new bool:dummy;
     if (GetTrieValue(hOnlyFirstEventTankSpawningScheme, mapname, dummy)) {

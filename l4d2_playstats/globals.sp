@@ -74,7 +74,6 @@ new             g_strRoundPvPInfDmgData    [MAXTRACKED][2][MAXTRACKED];         
 
 new     Handle: g_hTriePlayers                                      = INVALID_HANDLE;   // trie for getting player index
 new     Handle: g_hTrieWeapons                                      = INVALID_HANDLE;   // trie for getting weapon type (from classname)
-new     Handle: g_hTrieMaps                                         = INVALID_HANDLE;   // trie for getting finale maps
 new     Handle: g_hTrieEntityCreated                                = INVALID_HANDLE;   // trie for getting classname of entity created
 
 new     Float:  g_fHighestFlow          [4];                                            // highest flow a survivor was seen to have in the round (per character 0-3)

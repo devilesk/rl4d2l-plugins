@@ -4,6 +4,7 @@
 #include <sdktools>
 #include <l4d2_direct>
 #include <builtinvotes>
+#include "includes/rl4d2l_util"
 
 #define TEAM_SPECTATOR          1
 #define MAXMAP                  32
@@ -28,7 +29,7 @@ public Plugin:myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.4.0",
+    version = "0.5.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -64,7 +65,7 @@ public OnPluginStart() {
 public OnMapStart() {
     // Compare current map to previous map and reset if different.
     decl String:sBuffer[MAXMAP];
-    GetCurrentMap(sBuffer,sizeof(sBuffer));
+    GetCurrentMapLower(sBuffer,sizeof(sBuffer));
     if (!StrEqual(g_sMapName, sBuffer, false)) {
         g_bIsMapRestarted = false;
         g_iMapRestarts = 0;
@@ -115,7 +116,7 @@ public RestartMap() {
     PrintToConsoleAll("[RestartMap] Restarting map. Attempt: %i of %i... survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
     PrintDebug("[RestartMap] Restarting map. Attempt: %i of %i...  survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
     
-    GetCurrentMap(g_sMapName, sizeof(g_sMapName));
+    GetCurrentMapLower(g_sMapName, sizeof(g_sMapName));
     ServerCommand("changelevel %s", g_sMapName);
 }
 

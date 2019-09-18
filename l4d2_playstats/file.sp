@@ -36,8 +36,7 @@ stock WriteStatsToFile( iTeam, bool:bSecondHalf ) {
         FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d_%H-%M" );
         IntToString( g_iRound, sTmpRoundNo, sizeof(sTmpRoundNo) );
         LeftPadString( sTmpRoundNo, sizeof(sTmpRoundNo), 4, true );
-        GetCurrentMap( sTmpMap, sizeof(sTmpMap) );
-        StrToLower( sTmpMap );
+        GetCurrentMapLower( sTmpMap, sizeof(sTmpMap) );
         
         FormatEx( g_sStatsFile, sizeof(g_sStatsFile), "%s_%s_%s.txt", sTmpTime, sTmpRoundNo, sTmpMap );
     }

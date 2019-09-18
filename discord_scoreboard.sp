@@ -6,6 +6,7 @@
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 #include <discord_webhook>
+#include "includes/finalemaps"
 
 #define DEBUG 1
 
@@ -32,8 +33,6 @@ new String:sPlayers[2][512];
 new String:titles[2][64];
 new String:sEmbedRequest[CONBUFSIZELARGE];
 new iEmbedCount = 0;
-new String: g_sMapName[MAXMAP];
-new Handle: g_hTrieMaps = INVALID_HANDLE;   // trie for getting finale maps
 new Handle: g_hCvarWebhookConfig = INVALID_HANDLE;
 new String: g_sWebhookName[64];
 
@@ -46,7 +45,7 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.3.1",
+    version = "1.4.0",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
@@ -64,15 +63,12 @@ public OnPluginStart()
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
-    InitTries();
 }
 
 public OnMapStart()
 {
     sEmbedRequest[0] = '\0';
     iEmbedCount = 0;
-    GetCurrentMap( g_sMapName, MAXMAP );
-    StrToLower( g_sMapName );
 }
 
 public Event_RoundStart (Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -128,8 +124,7 @@ public Action: Timer_RoundEnd ( Handle:timer )
         strcopy(description, sizeof(description), "Tank spawn: None");
     }
     
-    GetCurrentMap(sMap, sizeof(sMap));
-    StrToLower( sMap );
+    GetCurrentMapLower(sMap, sizeof(sMap));
     GetMapName(sMap, sMap, sizeof(sMap));
     
     new indexSurvivor = GameRules_GetProp("m_bAreTeamsFlipped");
@@ -262,73 +257,4 @@ InternalAddEmbed(const String:title[], const String:description[], const String:
         Format(sEmbedRequest, sizeof(sEmbedRequest), "%s,%s", sEmbedRequest, sEmbed);
     }
     iEmbedCount++;
-}
-
-stock InitTries() {
-    // finales
-    g_hTrieMaps = CreateTrie();
-    SetTrieValue(g_hTrieMaps, "c1m4_atrium",                    MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c2m5_concert",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c3m4_plantation",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",           MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c5m5_bridge",                    MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c6m3_port",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c7m3_port",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c8m5_rooftop",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c10m5_houseboat",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",                MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MP_FINALE);
-
-    SetTrieValue(g_hTrieMaps, "2019_M3b",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "bhm4_base",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "bloodtracks_04",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_bts06_school",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cwm4_building",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cotd04_rooftop",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_city17_05",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_ff05_station",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "dkr_m5_stadium",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_darkblood04_extraction",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_daybreak05_rescue",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "ddg3_bluff_v2_1",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "deadbeat04_park",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_dbd2dc_new_dawn",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "death_sentence_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "cdta_05finalroad",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "dprm5_milltown_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "ec05_quarry",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c1m1_hotel_d_insane",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "hf04_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "bombshelter",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "highway05_afb02_20130820",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_ihm05_lakeside",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "jsarena204_arena",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_diescraper4_top_361",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_diescraper4_top_361",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_149_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_tbm_5",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "x1m5_salvation",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d_ravenholm05_docks",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "l4d2_stadium5_stadium",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "eu05_train_b16",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "uz_escape",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "uf4_airfield",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "mnac",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "wfp4_commstation",             MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c1_mario1_4",             MP_FINALE);
-}
-
-stock IsMissionFinalMap() {
-    // since L4D_IsMissionFinalMap() is bollocksed, simple map string check
-    new strMapType: mapType;
-    if ( !GetTrieValue(g_hTrieMaps, g_sMapName, mapType) ) { return false; }
-    return bool:( mapType == MP_FINALE );
-}
-
-stock StrToLower(String:arg[]) {
-	for (new i = 0; i < strlen(arg); i++) {
-		arg[i] = CharToLower(arg[i]);
-	}
 }

@@ -18,6 +18,7 @@
 #pragma semicolon 1
  
 #include <sourcemod>
+#include "includes/rl4d2l_util"
  
 // Offset of the prop we're looking for from m_ghostSpawnState,
 // since its relative offset should be more stable than other stuff...
@@ -30,7 +31,7 @@ public Plugin:myinfo =
 		name = "Finale Can't Spawn Glitch Fix",
 		author = "ProdigySim, modified by Wicket and devilesk",
 		description = "Fixing Waiting For Survivors To Start The Finale or w/e",
-		version = "1.1.1",
+		version = "1.2.0",
 		url = "https://github.com/devilesk/rl4d2l-plugins/blob/master/suicideblitzfinalefix.sp"
 }
  
@@ -47,9 +48,9 @@ public OnMapStart()
 {
 	decl String:mapname[200];
 	g_bAutoFixThisMap = false;
-	if(GetCurrentMap(mapname, sizeof(mapname)) > 0)
+	if(GetCurrentMapLower(mapname, sizeof(mapname)) > 0)
 	{
-		if(StrEqual("l4d2_stadium5_stadium", mapname))
+		if(StrEqual("l4d2_stadium5_stadium", mapname, false))
 		{
 			g_bAutoFixThisMap = true;
 		}

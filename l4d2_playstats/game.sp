@@ -94,8 +94,7 @@ public OnMapStart() {
     CreateTimer( FREQ_FLOWCHECK, Timer_SaveFlows, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
     
     // save map name (after onmapload resets, so it doesn't get deleted)
-    GetCurrentMap( g_sMapName[g_iRound], MAXMAP );
-    StrToLower( g_sMapName[g_iRound] );
+    GetCurrentMapLower( g_sMapName[g_iRound], MAXMAP );
     //PrintDebug( 2, "MapStart (round %i): %s ", g_iRound, g_sMapName[g_iRound] );
 }
 

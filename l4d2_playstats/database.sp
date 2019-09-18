@@ -615,8 +615,7 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     PrintDebug( 1, "[Stats] Saving to database" );
 
     decl String: sTmpMap[64];
-    GetCurrentMap( sTmpMap, sizeof(sTmpMap) );
-    StrToLower( sTmpMap );
+    GetCurrentMapLower( sTmpMap, sizeof(sTmpMap) );
     PrintDebug( 1, "[Stats] Map %s", sTmpMap );
     decl String: sTmpTime[20];
     FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );

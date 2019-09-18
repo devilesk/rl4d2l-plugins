@@ -9,6 +9,7 @@
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 #include <left4downtown>
+#include "includes/rl4d2l_util"
 
 #define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
 #define MIN(%0,%1) (((%0) < (%1)) ? (%0) : (%1))
@@ -16,7 +17,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.0.2",
+    version = "2.1.0",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -57,6 +58,7 @@ public Action:L4D_OnSpawnWitchBride(const Float:vector[3], const Float:qangle[3]
 public Action:StaticTank_Command(args) {
     decl String:mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
+    StrToLower(mapname);
     SetTrieValue(hStaticTankMaps, mapname, true);
     PrintDebug("[StaticTank_Command] Added: %s", mapname);
 }
@@ -84,7 +86,7 @@ public Action:AdjustBossFlow(Handle:timer) {
 
     decl String:sCurMap[64];
     decl dummy;
-    GetCurrentMap(sCurMap, sizeof(sCurMap));
+    GetCurrentMapLower(sCurMap, sizeof(sCurMap));
 
     new iCvarMinFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMin) * 100);
     new iCvarMaxFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMax) * 100);
