@@ -27,7 +27,7 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.11.0",
+    version = "0.13.1",
     url = "https://github.com/Tabbernaut/L4D2-Plugins"
 };
 
@@ -129,6 +129,14 @@ public OnPluginStart() {
     HookEvent("jockey_ride",                Event_JockeyRide,				EventHookMode_Post);
     HookEvent("jockey_ride_end",            Event_JockeyRideEnd,		EventHookMode_Post);
     HookEvent("award_earned",               Event_AwardEarned,		EventHookMode_Post);
+    
+    // Database config cvar
+    g_hCvarDatabaseConfig = CreateConVar(
+            "l4d2_playstats_database_cfg",
+            "l4d2_playstats",
+            "Name of database keyvalue entry to use in databases.cfg",
+            FCVAR_PLUGIN, true, 0.0, false
+        );
     
     // cvars
     g_hCvarDebug = CreateConVar(
@@ -252,9 +260,6 @@ public OnPluginStart() {
         g_iCurTeam = ( g_bModeCampaign ) ? 0 : GetCurrentTeamSurvivor();
         UpdatePlayerCurrentTeam();
     }
-
-    InitDatabase();
-    InitQueries();
 }
 
 /*

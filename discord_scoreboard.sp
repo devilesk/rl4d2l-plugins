@@ -34,6 +34,8 @@ new String:sEmbedRequest[CONBUFSIZELARGE];
 new iEmbedCount = 0;
 new String: g_sMapName[MAXMAP];
 new Handle: g_hTrieMaps = INVALID_HANDLE;   // trie for getting finale maps
+new Handle: g_hCvarWebhookConfig = INVALID_HANDLE;
+new String: g_sWebhookName[64];
 
 enum strMapType {
     MP_FINALE
@@ -44,7 +46,7 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.2.0",
+    version = "1.3.1",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
@@ -58,6 +60,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
+    g_hCvarWebhookConfig = CreateConVar("discord_scoreboard_webhook_cfg", "discord_scoreboard", "Name of webhook keyvalue entry to use in discord_webhook.cfg", FCVAR_NONE);
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
@@ -157,7 +160,8 @@ public Action: Timer_RoundEnd ( Handle:timer )
         Format(fields, CONBUFSIZELARGE, "{\"name\":\"%s\",\"value\":\"%s\",\"inline\":%d},{\"name\":\"%s\",\"value\":\"%s\",\"inline\":%d}", titles[0], sPlayers[0], 1, titles[1], sPlayers[1], 1);
         InternalAddEmbed(sMap, description, "", 15158332, fields);
         FormatEmbedRequest(sEmbedRequest, sizeof(sEmbedRequest), sEmbedRequest);
-        SendToDiscord("discord_scoreboard", sEmbedRequest);
+        GetConVarString(g_hCvarWebhookConfig, g_sWebhookName, sizeof(g_sWebhookName));
+        SendToDiscord(g_sWebhookName, sEmbedRequest);
         
         if (IsMissionFinalMap()) {
             scoreTotals[0] = 0;

@@ -7,7 +7,13 @@
 #include <sourcemod>
 
 InitDatabase() {
-    db = SQL_Connect("l4d2_playstats", false, errorBuffer, sizeof(errorBuffer));
+    GetConVarString(g_hCvarDatabaseConfig, g_sDatabaseConfig, sizeof(g_sDatabaseConfig));
+    if (db != INVALID_HANDLE) {
+        CloseHandle(db);
+        db = INVALID_HANDLE;
+    }
+    db = SQL_Connect(g_sDatabaseConfig, false, errorBuffer, sizeof(errorBuffer));
+    PrintDebug( 1, "[InitDatabase] g_sDatabaseConfig: %s", g_sDatabaseConfig );
     if (db == INVALID_HANDLE) {
         PrintToServer("Could not connect: %s", errorBuffer);
     }
@@ -255,6 +261,10 @@ InitDatabase() {
 }
 
 InitQueries() {
+    if (hRoundStmt != INVALID_HANDLE) {
+        CloseHandle(hRoundStmt);
+        hRoundStmt = INVALID_HANDLE;
+    }
     if ( hRoundStmt == INVALID_HANDLE ) {
         hRoundStmt = SQL_PrepareQuery(db, "INSERT INTO round ( \
         id, \
@@ -307,6 +317,10 @@ InitQueries() {
         }
     }
     
+    if (hSurvivorStmt != INVALID_HANDLE) {
+        CloseHandle(hSurvivorStmt);
+        hSurvivorStmt = INVALID_HANDLE;
+    }
     if ( hSurvivorStmt == INVALID_HANDLE ) {
         hSurvivorStmt = SQL_PrepareQuery(db, "INSERT INTO survivor ( \
         id, \
@@ -428,6 +442,10 @@ InitQueries() {
         }
     }
 
+    if (hInfectedStmt != INVALID_HANDLE) {
+        CloseHandle(hInfectedStmt);
+        hInfectedStmt = INVALID_HANDLE;
+    }
     if ( hInfectedStmt == INVALID_HANDLE ) {
         hInfectedStmt = SQL_PrepareQuery(db, "INSERT INTO infected ( \
         id, \
@@ -497,6 +515,10 @@ InitQueries() {
         }
     }
 
+    if (hMatchStmt != INVALID_HANDLE) {
+        CloseHandle(hMatchStmt);
+        hMatchStmt = INVALID_HANDLE;
+    }
     if ( hMatchStmt == INVALID_HANDLE ) {
         hMatchStmt = SQL_PrepareQuery(db, "INSERT INTO matchlog ( \
         id, \
@@ -521,6 +543,10 @@ InitQueries() {
         }
     }
 
+    if (hPvPFFStmt != INVALID_HANDLE) {
+        CloseHandle(hPvPFFStmt);
+        hPvPFFStmt = INVALID_HANDLE;
+    }
     if ( hPvPFFStmt == INVALID_HANDLE ) {
         hPvPFFStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_ff ( \
         id, \
@@ -546,6 +572,10 @@ InitQueries() {
         }
     }
 
+    if (hPvPInfDmgStmt != INVALID_HANDLE) {
+        CloseHandle(hPvPInfDmgStmt);
+        hPvPInfDmgStmt = INVALID_HANDLE;
+    }
     if ( hPvPInfDmgStmt == INVALID_HANDLE ) {
         hPvPInfDmgStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_infdmg ( \
         id, \

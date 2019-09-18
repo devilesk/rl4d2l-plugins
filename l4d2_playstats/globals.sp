@@ -25,6 +25,7 @@ new     bool:   g_bModeScavenge         = false;
 new     Handle: g_hCookiePrint          = INVALID_HANDLE;
 new             g_iCookieValue          [MAXPLAYERS+1];                                 // if a cookie is set for a client, this is its value
 
+new     Handle: g_hCvarDatabaseConfig   = INVALID_HANDLE;
 new     Handle: g_hCvarDebug            = INVALID_HANDLE;
 new     Handle: g_hCvarMVPBrevityFlags  = INVALID_HANDLE;
 new     Handle: g_hCvarAutoPrintVs      = INVALID_HANDLE;
@@ -99,3 +100,4 @@ new Handle:hInfectedStmt = INVALID_HANDLE;
 new Handle:hMatchStmt = INVALID_HANDLE;
 new Handle:hPvPFFStmt = INVALID_HANDLE;
 new Handle:hPvPInfDmgStmt = INVALID_HANDLE;
+new String:g_sDatabaseConfig[64];
