@@ -123,4 +123,20 @@
 
 ## l4d2_sound_manipulation.sp
 * Updated [Sound Manipulation](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_sound_manipulation.sp) to allow for more control over which sounds are blocked by using `sound_block_for_comp` to set flags.
-  * Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat. Block default: 8190 (allow world). Block all: 8191.
+  * Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat. Block default: 8190 (allow world). Block all: 8191.  
+## static_tank_control.sp
+* Requires l4d_tank_control_eq plugin and overrides its tank selection process with a predetermined one.
+* Adds `static_tank_control` server command to specify if a given player should play a given tank on a given map.
+  * Usage: `static_tank_control <tank_number> <map_name> [steam_id...]`
+    * `tank_number` 1 or 2 representing which tank spawn to apply to.
+    * `map_name` the map id to apply to.
+    * `steam_id` any number of steam ids. The first player that is currently infected will be given the tank.
+  * Example:
+    ```
+    static_tank_control 1 c1m1_hotel "STEAM_1:1:TEAMA_PLAYER1" "STEAM_1:1:TEAMB_PLAYER1"
+    static_tank_control 1 c1m2_streets "STEAM_1:1:TEAMA_PLAYER2" "STEAM_1:1:TEAMB_PLAYER2"
+    static_tank_control 1 c1m3_mall "STEAM_1:1:TEAMA_PLAYER3" "STEAM_1:1:TEAMB_PLAYER3"
+    static_tank_control 1 c1m4_atrium "STEAM_1:1:TEAMA_PLAYER4" "STEAM_1:1:TEAMB_PLAYER4"
+    static_tank_control 2 c1m4_atrium "STEAM_1:1:TEAMA_PLAYER1" "STEAM_1:1:TEAMB_PLAYER1"
+    ```
+  
