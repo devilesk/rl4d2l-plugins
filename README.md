@@ -91,9 +91,25 @@
 * Score setting based on Visor's [SetScores](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_setscores.sp)
 
 ## l4d_tank_control_eq.sp
-* Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp)
-  * Merged with SirPlease's changes from decompiled [ZoneMod version](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_tank_control_eq.smx)
-* Fixed handle leaks
+* Modified arti's [L4D2 Tank Control](https://github.com/alexberriman/l4d2-plugins/blob/master/l4d_tank_control/l4d_tank_control.sp).
+  * Merged with SirPlease's changes from decompiled [ZoneMod version](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_tank_control_eq.smx).
+* Fixed handle leaks.
+* Added commands for viewing and modifying the pool of players who have not played tank:
+  * `sm_tankpool` displays the tank pool.
+  * `sm_addtankpool`, `sm_queuetank` adds a player to the tank pool.
+  * `sm_removetankpool`, `sm_dequeuetank` removes a player from the tank pool.
+* Added natives:
+  * `TankControlEQ_SetTank`
+  * `TankControlEQ_GetWhosHadTank`
+  * `TankControlEQ_ClearWhosHadTank`
+  * `TankControlEQ_GetTankPool`
+* Added forwards:
+  * `TankControlEQ_OnChooseTank` called whenever a tank is chosen from the tank pool.
+    * Return `Plugin_Continue` to continue with default tank choosing process.
+    * Return `Plugin_Handled` to block the default tank choosing process.
+  * `TankControlEQ_OnTankGiven` called when player has been given control of the tank.
+    * Called with Steam ID of tank player.
+  * `TankControlEQ_OnTankControlReset` called when new game detected and pools are reset.
 
 ## readyup.sp
 * Reconstructed SirPlease's version of CanadaRox's [readyup](https://github.com/MatthewClair/l4d2readyup/blob/master/readyup.sp) plugin used in [ZoneMod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/readyup.smx)
