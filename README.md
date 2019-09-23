@@ -124,6 +124,10 @@
 ## l4d2_sound_manipulation.sp
 * Updated [Sound Manipulation](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_sound_manipulation.sp) to allow for more control over which sounds are blocked by using `sound_block_for_comp` to set flags.
   * Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat. Block default: 8190 (allow world). Block all: 8191.  
+  
+## l4d_tank_rush.sp
+* Added cvar `l4d_no_tank_rush_debug` to [L4D2 No Tank Rush](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d_tank_rush.sp) for debug logging.
+
 ## static_tank_control.sp
 * Requires l4d_tank_control_eq plugin and overrides its tank selection process with a predetermined one.
 * Adds `static_tank_control` server command to specify if a given player should play a given tank on a given map.
