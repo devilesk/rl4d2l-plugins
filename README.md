@@ -146,4 +146,6 @@
     static_tank_control 1 c1m4_atrium "STEAM_1:1:TEAMA_PLAYER4" "STEAM_1:1:TEAMB_PLAYER4"
     static_tank_control 2 c1m4_atrium "STEAM_1:1:TEAMA_PLAYER1" "STEAM_1:1:TEAMB_PLAYER1"
     ```
-  
+
+## tankdoorfix.sp
+* Minor edit to Dr. Greg House's [TankDoorFix](https://forums.alliedmods.net/showthread.php?t=225087) to fix `Array index is out of bounds` error.
