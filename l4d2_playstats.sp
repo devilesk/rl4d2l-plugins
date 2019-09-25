@@ -28,8 +28,8 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.14.0",
-    url = "https://github.com/Tabbernaut/L4D2-Plugins"
+    version = "0.16.0",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 /*
@@ -93,49 +93,56 @@ public OnLibraryAdded(const String:name[]) {
 
 public OnPluginStart() {
     // events    
-    HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
-    HookEvent("scavenge_round_start",       Event_RoundStart,				EventHookMode_PostNoCopy);
-    HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
+    HookEvent("round_start",                Event_RoundStart,               EventHookMode_PostNoCopy);
+    HookEvent("scavenge_round_start",       Event_RoundStart,               EventHookMode_PostNoCopy);
+    HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
     
-    HookEvent("mission_lost",               Event_MissionLostCampaign,		EventHookMode_Post);
-    HookEvent("map_transition",             Event_MapTransition,			EventHookMode_PostNoCopy);
-    HookEvent("finale_win",                 Event_FinaleWin,				EventHookMode_PostNoCopy);
-    HookEvent("survivor_rescued",           Event_SurvivorRescue,			EventHookMode_Post);
+    HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
+    HookEvent("map_transition",             Event_MapTransition,            EventHookMode_PostNoCopy);
+    HookEvent("finale_win",                 Event_FinaleWin,                EventHookMode_PostNoCopy);
+    HookEvent("survivor_rescued",           Event_SurvivorRescue,           EventHookMode_Post);
     
-    HookEvent("player_team",                Event_PlayerTeam,				EventHookMode_Post);
-    HookEvent("player_spawn",               Event_PlayerSpawn,			EventHookMode_Post);
-    HookEvent("player_hurt",                Event_PlayerHurt,				EventHookMode_Post);
-    HookEvent("player_death",               Event_PlayerDeath,			EventHookMode_Post);
-    HookEvent("player_incapacitated",       Event_PlayerIncapped,			EventHookMode_Post);
-    HookEvent("player_ledge_grab",          Event_PlayerLedged,			EventHookMode_Post);
-    HookEvent("player_ledge_release",       Event_PlayerLedgeRelease,		EventHookMode_Post);
+    HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
+    HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
+    HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Post);
+    HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Post);
+    HookEvent("player_incapacitated",       Event_PlayerIncapped,           EventHookMode_Post);
+    HookEvent("player_ledge_grab",          Event_PlayerLedged,             EventHookMode_Post);
+    HookEvent("player_ledge_release",       Event_PlayerLedgeRelease,       EventHookMode_Post);
     
-    HookEvent("revive_success",             Event_PlayerRevived,			EventHookMode_Post);
-    HookEvent("player_falldamage",          Event_PlayerFallDamage,		EventHookMode_Post);
+    HookEvent("revive_success",             Event_PlayerRevived,            EventHookMode_Post);
+    HookEvent("player_falldamage",          Event_PlayerFallDamage,         EventHookMode_Post);
     
-    HookEvent("tank_spawn",                 Event_TankSpawned,			EventHookMode_Post);
-    HookEvent("weapon_fire",                Event_WeaponFire,				EventHookMode_Post);
-    HookEvent("infected_hurt",              Event_InfectedHurt,			EventHookMode_Post);
-    HookEvent("witch_killed",               Event_WitchKilled,			EventHookMode_Post);
-    HookEvent("heal_success",               Event_HealSuccess,			EventHookMode_Post);
-    HookEvent("defibrillator_used",         Event_DefibUsed,				EventHookMode_Post);
-    HookEvent("pills_used",                 Event_PillsUsed,				EventHookMode_Post);
-    HookEvent("adrenaline_used",            Event_AdrenUsed,				EventHookMode_Post);
+    HookEvent("tank_spawn",                 Event_TankSpawned,              EventHookMode_Post);
+    HookEvent("weapon_fire",                Event_WeaponFire,               EventHookMode_Post);
+    HookEvent("infected_hurt",              Event_InfectedHurt,             EventHookMode_Post);
+    HookEvent("witch_killed",               Event_WitchKilled,              EventHookMode_Post);
+    HookEvent("heal_success",               Event_HealSuccess,              EventHookMode_Post);
+    HookEvent("defibrillator_used",         Event_DefibUsed,                EventHookMode_Post);
+    HookEvent("pills_used",                 Event_PillsUsed,                EventHookMode_Post);
+    HookEvent("adrenaline_used",            Event_AdrenUsed,                EventHookMode_Post);
     
-    HookEvent("player_now_it",              Event_PlayerBoomed,			EventHookMode_Post);
-    HookEvent("player_no_longer_it",        Event_PlayerUnboomed,			EventHookMode_Post);
+    HookEvent("player_now_it",              Event_PlayerBoomed,             EventHookMode_Post);
+    HookEvent("player_no_longer_it",        Event_PlayerUnboomed,           EventHookMode_Post);
     
-    HookEvent("charger_carry_start",        Event_ChargerCarryStart,		EventHookMode_Post);
-    HookEvent("charger_impact",             Event_ChargerImpact,			EventHookMode_Post);
-    HookEvent("jockey_ride",                Event_JockeyRide,				EventHookMode_Post);
-    HookEvent("jockey_ride_end",            Event_JockeyRideEnd,		EventHookMode_Post);
-    HookEvent("award_earned",               Event_AwardEarned,		EventHookMode_Post);
+    HookEvent("charger_carry_start",        Event_ChargerCarryStart,        EventHookMode_Post);
+    HookEvent("charger_impact",             Event_ChargerImpact,            EventHookMode_Post);
+    HookEvent("jockey_ride",                Event_JockeyRide,               EventHookMode_Post);
+    HookEvent("jockey_ride_end",            Event_JockeyRideEnd,            EventHookMode_Post);
+    HookEvent("award_earned",               Event_AwardEarned,              EventHookMode_Post);
     
     // Database config cvar
     g_hCvarDatabaseConfig = CreateConVar(
             "l4d2_playstats_database_cfg",
             "l4d2_playstats",
             "Name of database keyvalue entry to use in databases.cfg",
+            FCVAR_PLUGIN, true, 0.0, false
+        );
+
+    g_hCvarCustomConfig = CreateConVar(
+            "l4d2_playstats_customcfg",
+            "",
+            "Name of custom cfg",
             FCVAR_PLUGIN, true, 0.0, false
         );
     

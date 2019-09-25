@@ -622,6 +622,11 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     PrintDebug( 1, "[Stats] Time %s", sTmpTime );
     PrintDebug( 1, "[Stats] IsMissionFinalMap %i", IsMissionFinalMap() );
     PrintDebug( 1, "[Stats] bSecondHalf %i", bSecondHalf );
+
+    decl String:cfgString[64];
+    cfgString[0] = '\0';
+    GetConVarString(g_hCvarCustomConfig, cfgString, sizeof(cfgString));
+    PrintDebug( 1, "[Stats] g_hCvarCustomConfig %s", cfgString );
     
     new matchId = g_strRoundData[0][0][rndStartTime];
     new startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );

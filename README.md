@@ -13,6 +13,7 @@
         "match_end_script_cmd"	"ls /home"
     }
     ```
+* Adds `l4d2_playstats_customcfg` cvar to store a confogl custom config name that will get logged and saved with stats.
   
 ## teleport_tank.sp
 
