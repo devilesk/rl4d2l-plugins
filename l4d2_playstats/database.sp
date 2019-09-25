@@ -54,6 +54,7 @@ InitDatabase() {
         `rndStopTimePause` INT, \
         `rndStartTimeTank` INT, \
         `rndStopTimeTank` INT, \
+        `configName` varchar(64), \
         PRIMARY KEY  (`id`) \
         );");
         
@@ -225,6 +226,7 @@ InitDatabase() {
         `startedAt` INT, \
         `endedAt` INT, \
         `team` INT, \
+        `configName` varchar(64), \
         PRIMARY KEY  (`id`) \
         );");
         
@@ -283,6 +285,7 @@ InitQueries() {
         survivorCount, \
         maxCompletionScore, \
         maxFlowDist, \
+        configName, \
         rndRestarts, \
         rndPillsUsed, \
         rndKitsUsed, \
@@ -306,7 +309,7 @@ InitQueries() {
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
             ?,?,?,?,?,?,?,?,?,?, \
-            ?,?,?,? \
+            ?,?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hRoundStmt == INVALID_HANDLE ) {
@@ -530,9 +533,10 @@ InitQueries() {
         steamid, \
         startedAt, \
         endedAt, \
-        team \
+        team, \
+        configName \
         ) VALUES ( NULL, \
-            ?,?,?,?,?,?,?,?,? \
+            ?,?,?,?,?,?,?,?,?,? \
         )", errorBuffer, sizeof(errorBuffer));
 
         if ( hMatchStmt == INVALID_HANDLE ) {
@@ -654,9 +658,10 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
     SQL_BindParamInt(hRoundStmt, 12, g_iSurvived[iTeam], true);
     SQL_BindParamInt(hRoundStmt, 13, L4D_GetVersusMaxCompletionScore(), true);
     SQL_BindParamInt(hRoundStmt, 14, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), true);
+    SQL_BindParamString(hRoundStmt, 15, cfgString, false);
 
     for ( i = 0; i <= MAXRNDSTATS; i++ ) {
-        SQL_BindParamInt(hRoundStmt, i+15, g_strRoundData[g_iRound][iTeam][i], true);
+        SQL_BindParamInt(hRoundStmt, i+16, g_strRoundData[g_iRound][iTeam][i], true);
     }
     if (!SQL_Execute(hRoundStmt)) {
         PrintToChatAll("[Stats] Failed to save round stats.");
@@ -696,7 +701,7 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             else {
                 result = 0;
             }
-            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, iTeam);
+            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, iTeam, cfgString);
         }
     }
 
@@ -741,7 +746,7 @@ stock WriteStatsToDB( iTeam, bool:bSecondHalf ) {
             else {
                 result = 0;
             }
-            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1);
+            WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1, cfgString);
         }
     }
 
@@ -860,7 +865,7 @@ bool GetMatchEndScriptCmd(char[] cmd, int iLength)
     return true;
 }
 
-stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap[], result, const String: sSteamId[], startedAt, endedAt, iTeam) {
+stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap[], result, const String: sSteamId[], startedAt, endedAt, iTeam, const String: sConfigName[]) {
     SQL_BindParamString(hMatchStmt, 0, sTmpTime, false);
     SQL_BindParamInt(hMatchStmt, 1, matchId, true);
     SQL_BindParamString(hMatchStmt, 2, sTmpMap, false);
@@ -870,6 +875,7 @@ stock WriteMatchLogToDB(const String: sTmpTime[], matchId, const String: sTmpMap
     SQL_BindParamInt(hMatchStmt, 6, startedAt, true);
     SQL_BindParamInt(hMatchStmt, 7, endedAt, true);
     SQL_BindParamInt(hMatchStmt, 8, iTeam, true);
+    SQL_BindParamString(hMatchStmt, 9, sConfigName, false);
 
     if (!SQL_Execute(hMatchStmt)) {
         PrintToChatAll("[Stats] Failed to save matchlog stats.");
