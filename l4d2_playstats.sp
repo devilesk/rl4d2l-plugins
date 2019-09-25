@@ -28,8 +28,8 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.15.0",
-    url = "https://github.com/devilesk/rl4d2l-plugins"
+    version = "0.14.0",
+    url = "https://github.com/Tabbernaut/L4D2-Plugins"
 };
 
 /*
@@ -188,8 +188,6 @@ public OnPluginStart() {
             "First round is ignored (for use with confogl/matchvotes - this will be automatically unset after a new map is loaded).",
             FCVAR_PLUGIN, true, 0.0, false
         );
-    
-    g_hCustomConfig = FindConVar("confogl_customcfg");
     
     g_iTeamSize = 4;
     g_iFirstScoresSet[2] = 1;   // don't save scores for first map

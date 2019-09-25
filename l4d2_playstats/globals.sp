@@ -34,7 +34,6 @@ new     Handle: g_hCvarShowBots         = INVALID_HANDLE;
 new     Handle: g_hCvarDetailPercent    = INVALID_HANDLE;
 new     Handle: g_hCvarWriteStats       = INVALID_HANDLE;
 new     Handle: g_hCvarSkipMap          = INVALID_HANDLE;
-new     Handle: g_hCustomConfig          = INVALID_HANDLE;
 
 new     bool:   g_bGameStarted          = false;
 new     bool:   g_bInRound              = false;
