@@ -152,3 +152,6 @@
 
 ## l4d2_getup_slide_fix.sp
 * Updated [Stagger Blocker](https://raw.githubusercontent.com/Attano/L4D2-Competitive-Framework/master/addons/sourcemod/scripting/l4d2_getup_slide_fix.sp) to check for valid infected attacker.
+
+## saferoom_gnome.sp
+* Spawns a gnome in the saferoom that is removed when the round goes live.
