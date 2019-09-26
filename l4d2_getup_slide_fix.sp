@@ -19,9 +19,9 @@ public Plugin:myinfo =
 {
     name        = "Stagger Blocker",
     author      = "Standalone (aka Manu), Visor, Sir",
-    description = "Block players from being staggered by Jockeys and Hunters for a time while getting up from a Hunter pounce, Charger pummel or Charger impact.",
-    version     = "1.3.1",
-    url         = "https://github.com/Attano/L4D2-Competitive-Framework"
+    description = "Block players from being staggered by Jockeys and Hunters for a time while getting up from a Hunter pounce & Charger pummel",
+    version     = "1.3",
+    url         = "https://github.com/SirPlease/L4D2-Competitive-Rework"
 }
 
 public OnPluginStart() 
@@ -29,7 +29,6 @@ public OnPluginStart()
     HookEvent("pounce_stopped", Event_PounceChargeEnd);
     HookEvent("charger_pummel_end", Event_PounceChargeEnd);
     HookEvent("charger_carry_end", Event_PounceChargeEnd);
-    HookEvent("charger_impact", Event_Impact);
     HookEvent("player_bot_replace", Event_PlayerBotReplace);
     HookEvent("bot_player_replace", Event_BotPlayerReplace);
     HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
@@ -71,35 +70,6 @@ public Action:Event_PlayerBotReplace(Handle:event, const String:name[], bool:don
     }
 }
 
-public Action:Event_Impact(Handle:event, String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(event, "victim"));
-    new SurvivorCharacter:charIndex = IdentifySurvivor(client);
-    if (charIndex == SC_NONE) return Plugin_Continue;
-    if (GetEntityFlags(client) & FL_ONGROUND)
-    {
-        CreateTimer(0.2, HookOnThink, client);
-        isSurvivorStaggerBlocked[charIndex] = true;
-    }
-    else
-    {
-        CreateTimer(0.1, Timer_Recheck, client, TIMER_REPEAT);
-    }
-    return Plugin_Continue;
-}
-public Action:Timer_Recheck(Handle:timer, any:client)
-{
-    new SurvivorCharacter:charIndex = IdentifySurvivor(client);
-    if (charIndex == SC_NONE) return Plugin_Stop;
-    if (GetEntityFlags(client) & FL_ONGROUND)
-    {
-        SDKHook(client, SDKHook_PostThink, OnThink);
-        isSurvivorStaggerBlocked[charIndex] = true;
-        return Plugin_Stop;
-    }
-    return Plugin_Continue;
-}
-
 public Action:Event_PounceChargeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim"));
@@ -134,7 +104,7 @@ public OnThink(client)
 
 public Action:L4D2_OnStagger(target, source) 
 {
-    if (source != 0 && IsValidInfected(source))
+    if (IsValidInfected(source))
     {
         new L4D2_Infected:sourceClass = GetInfectedClass(source);
         
