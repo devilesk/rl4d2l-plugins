@@ -27,10 +27,10 @@ new bool:checkpointAnnounced[MAX_CHECKPOINTS];
 public Plugin:myinfo = 
 {
 	name = "L4D2 Horde Equaliser",
-	author = "Visor (original idea by Sir), Fix by devilesk",
+	author = "Visor (original idea by Sir)",
 	description = "Make certain event hordes finite",
-	version = "3.0.6c",
-	url = "https://github.com/Attano/Equilibrium"
+	version = "3.0.7b",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart()
@@ -57,6 +57,7 @@ public OnMapStart()
 {
 	commonLimit = L4D2_GetMapValueInt("horde_limit", -1);
 	commonTank = L4D2_GetMapValueInt("horde_tank", -1);
+
 	PrecacheSound(HORDE_SOUND);
 }
 
@@ -89,22 +90,13 @@ public OnEntityCreated(entity, const String:classname[])
 		}
 		
 		commonTotal++;
-		
-		// Horde too small for audial feedback
-		if (commonLimit < HORDE_MIN_SIZE_AUDIAL_FEEDBACK)
-		{
-			return;
-		}
-		
 		if (GetConVarBool(hCvarHordeCheckpointAnnounce) && 
 			(commonTotal >= ((lastCheckpoint + 1) * RoundFloat(float(commonLimit / MAX_CHECKPOINTS))))
-		) {
-			EmitSoundToAll(HORDE_SOUND);
+		) 
+		{
+			if (commonLimit >= HORDE_MIN_SIZE_AUDIAL_FEEDBACK) EmitSoundToAll(HORDE_SOUND);
 			new remaining = commonLimit - commonTotal;
-			if (remaining)
-			{
-				CPrintToChatAll("<{olive}Horde{default}> {red}%i {default}common remaining..", remaining);
-			}
+			if (remaining != 0) CPrintToChatAll("<{olive}Horde{default}> {red}%i {default}common remaining..", remaining);
 			checkpointAnnounced[lastCheckpoint] = true;
 			lastCheckpoint++;
 		}
@@ -124,7 +116,7 @@ public Action:L4D_OnSpawnMob(&amount)
 	////////////////////////////////////
 	
 	// "Pause" the infinite horde during the Tank fight
-	if ((GetConVarBool(hCvarNoEventHordeDuringTanks) || commonTank > 0) && (IsTankUp() && IsInfiniteHordeActive()))
+	if ((GetConVarBool(hCvarNoEventHordeDuringTanks) || commonTank > 0) && IsTankUp() && IsInfiniteHordeActive())
 	{
 		SetPendingMobCount(0);
 		amount = 0;
@@ -173,7 +165,7 @@ bool:IsInfiniteHordeActive()
 
 SetPendingMobCount(count)
 {
-	return StoreToAddress(pZombieManager + Address:528, count, NumberType_Int32);
+	StoreToAddress(pZombieManager + Address:528, count, NumberType_Int32);
 }
 
 GetHordeCountdown()
