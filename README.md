@@ -156,3 +156,6 @@
 
 ## saferoom_gnome.sp
 * Spawns a gnome in the saferoom that is removed when the round goes live.
+
+## l4d2_godframes_control_merge.sp
+* Updated [L4D2 Godframes Control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_godframes_control_merge.sp) from L4D2 Competitive Rework v0.6.4.
