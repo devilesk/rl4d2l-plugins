@@ -449,7 +449,7 @@ public ChooseTank() {
     
     // Select a random person to become tank
     new maxIndex = GetArraySize(infectedPool) - 1;
-    new rndIndex = GetRandomInt(0, maxIndex);
+    new rndIndex = Math_GetRandomInt(0, maxIndex);
     GetArrayString(infectedPool, rndIndex, g_sQueuedTankSteamId, sizeof(g_sQueuedTankSteamId));
     CloseHandle(infectedPool);
     PrintDebug("[ChooseTank] maxIndex: %i, rndIndex: %i, queued tank: %s.", maxIndex, rndIndex, g_sQueuedTankSteamId);
@@ -605,4 +605,16 @@ stock PrintDebug(const String:Message[], any:...) {
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
     }
+}
+
+#define SIZE_OF_INT         2147483647 // without 0
+stock Math_GetRandomInt(min, max)
+{
+    new random = GetURandomInt();
+
+    if (random == 0) {
+        random++;
+    }
+
+    return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }

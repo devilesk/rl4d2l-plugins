@@ -394,3 +394,15 @@ stock PrintDebug( debugLevel, const String:Message[], any:... ) {
         //PrintToServer(DebugBuff);
     }
 }
+
+#define SIZE_OF_INT         2147483647 // without 0
+stock Math_GetRandomInt(min, max)
+{
+    new random = GetURandomInt();
+
+    if (random == 0) {
+        random++;
+    }
+
+    return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
+}

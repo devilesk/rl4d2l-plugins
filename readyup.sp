@@ -1132,7 +1132,7 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 	{
 		if (GetConVarBool(l4d_ready_chuckle))
 		{
-			EmitSoundToAll(countdownSound[GetRandomInt(0,MAX_SOUNDS-1)]);
+			EmitSoundToAll(countdownSound[Math_GetRandomInt(0,MAX_SOUNDS-1)]);
 		}
 		else
 		{
@@ -1252,4 +1252,16 @@ MakePropsBreakable()
 			continue;
 		DispatchKeyValueFloat(iEntity, "minhealthdmg", 5.0);
 	}
+}
+
+#define SIZE_OF_INT         2147483647 // without 0
+stock Math_GetRandomInt(min, max)
+{
+	new random = GetURandomInt();
+
+	if (random == 0) {
+		random++;
+	}
+
+	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }

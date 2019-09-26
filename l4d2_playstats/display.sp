@@ -922,7 +922,7 @@ String: GetFunFactChatString( bool:bRound = true, bool:bTeam = true, iTeam = -1 
     if ( !wTotal ) { return printBuffer; }
     
     // pick one, format it
-    new wPick = GetRandomInt( 0, wTotal-1 );
+    new wPick = Math_GetRandomInt( 0, wTotal-1 );
     wPick = wPicks[wPick];
     
     switch (wPick) {

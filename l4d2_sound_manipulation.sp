@@ -253,25 +253,25 @@ public Action Event_WeaponFire(Handle event, const char[] name, bool dontBroadca
 		//Coach
 		if (StrEqual(clientModel, "models/survivors/survivor_coach.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_COACHSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_COACHSOUND);
 			EmitSoundToAll(sCoachSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		//Nick
 		else if (StrEqual(clientModel, "models/survivors/survivor_gambler.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_NICKSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_NICKSOUND);
 			EmitSoundToAll(sNickSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		//Rochelle
 		else if (StrEqual(clientModel, "models/survivors/survivor_producer.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_ROCHELLESOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_ROCHELLESOUND);
 			EmitSoundToAll(sRochelleSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		//Ellis
 		else if (StrEqual(clientModel, "models/survivors/survivor_mechanic.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_ELLISSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_ELLISSOUND);
 			EmitSoundToAll(sEllisSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		
@@ -280,25 +280,25 @@ public Action Event_WeaponFire(Handle event, const char[] name, bool dontBroadca
 		// Louis
 		else if (StrEqual(clientModel, "models/survivors/survivor_manager.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_LOUISSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_LOUISSOUND);
 			EmitSoundToAll(sLouisSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		// Zoey
 		else if (StrEqual(clientModel, "models/survivors/survivor_teenangst.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_ZOEYSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_ZOEYSOUND);
 			EmitSoundToAll(sZoeySound[rndPick], client, SNDCHAN_VOICE);
 		}
 		// Bill
 		else if (StrEqual(clientModel, "models/survivors/survivor_namvet.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_BILLSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_BILLSOUND);
 			EmitSoundToAll(sBillSound[rndPick], client, SNDCHAN_VOICE);
 		}
 		//Francis
 		else if (StrEqual(clientModel, "models/survivors/survivor_biker.mdl"))
 		{
-			int rndPick = GetRandomInt(0, MAX_FRANCISSOUND);
+			int rndPick = Math_GetRandomInt(0, MAX_FRANCISSOUND);
 			EmitSoundToAll(sFrancisSound[rndPick], client, SNDCHAN_VOICE);
 		}
 
@@ -343,4 +343,16 @@ public Action SoundHook(int clients[64], int &numClients, char sample[PLATFORM_M
 	if (iBlockFlags & BLOCK_SPLAT && StrContains(sample, "splat", false) != -1) return Plugin_Stop;
 	
 	return Plugin_Continue;
+}
+
+#define SIZE_OF_INT         2147483647 // without 0
+stock int Math_GetRandomInt(int min, int max)
+{
+	int random = GetURandomInt();
+
+	if (random == 0) {
+		random++;
+	}
+
+	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }

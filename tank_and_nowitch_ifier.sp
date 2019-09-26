@@ -115,7 +115,7 @@ public Action:AdjustBossFlow(Handle:timer) {
             new iPostIntervalLength = iCvarMaxFlow - iIntervalMax;
             new iTankFlowLength = iPreIntervalLength + iPostIntervalLength - 1;
 
-            iTankFlow = GetRandomInt(0, iTankFlowLength);
+            iTankFlow = Math_GetRandomInt(0, iTankFlowLength);
             
             PrintDebug("[AdjustBossFlow] iCvarMinFlow %i, iCvarMaxFlow %i", iCvarMinFlow, iCvarMaxFlow);
             PrintDebug("[AdjustBossFlow] iMinBanFlow %i, iMaxBanFlow %i", iMinBanFlow, iMaxBanFlow);
@@ -175,4 +175,16 @@ stock PrintDebug(const String:Message[], any:...) {
         PrintToChatAll(DebugBuff);
 #endif
     }
+}
+
+#define SIZE_OF_INT         2147483647 // without 0
+stock Math_GetRandomInt(min, max)
+{
+    new random = GetURandomInt();
+
+    if (random == 0) {
+        random++;
+    }
+
+    return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }
