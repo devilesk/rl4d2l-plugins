@@ -42,7 +42,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.9.0",
+    version = "0.10.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -122,6 +122,10 @@ public Native_GetTankPool(Handle:plugin, numParams) {
     
     // Remove players who've already had tank from the pool.
     RemoveSteamIdsFromArray(infectedPool, g_hWhosHadTank);
+    
+    // If the infected pool is empty, reset pool of players
+    if (!GetArraySize(infectedPool))
+        AddTeamSteamIdsToArray(infectedPool, TEAM_INFECTED);
     
     decl String:sSteamId[MAXSTEAMID];
     for (new i = 0; i < GetArraySize(infectedPool); i++) {
