@@ -131,6 +131,7 @@
   
 ## l4d_tank_rush.sp
 * Added cvar `l4d_no_tank_rush_debug` to [L4D2 No Tank Rush](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d_tank_rush.sp) for debug logging.
+* Fixed a bug where if survivors wiped to a 2nd half tank, then the next map would have its max points set to the previous map's max points.
 
 ## static_tank_control.sp
 * Requires l4d_tank_control_eq plugin and overrides its tank selection process with a predetermined one.
