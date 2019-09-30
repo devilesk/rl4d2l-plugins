@@ -13,7 +13,7 @@ public Plugin:myinfo = {
     name = "Saferoom Gnome",
     author = "devilesk",
     description = "Spawns a gnome in the saferoom that is removed when the round goes live.",
-    version = "1.0.0",
+    version = "1.1.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -98,9 +98,13 @@ public OnRoundIsLive() {
     
     // kill tracked gnome
     if (IsValidEdict(g_iGnome)) {
-        PrintDebug("[OnRoundIsLive] Killing gnome. g_iGnome %i", g_iGnome);
-        AcceptEntityInput(g_iGnome, "Kill");
-        g_iGnome = -1;
+        if (GetEdictClassname(g_iGnome, weapon_name, sizeof(weapon_name))) {
+            if (StrEqual(weapon_name, "weapon_gnome", false)) {
+                PrintDebug("[OnRoundIsLive] Killing gnome. g_iGnome %i", g_iGnome);
+                AcceptEntityInput(g_iGnome, "Kill");
+                g_iGnome = -1;
+            }
+        }
     }
     
     g_bRoundIsLive = true;
