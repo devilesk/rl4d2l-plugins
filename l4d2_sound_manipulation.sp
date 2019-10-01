@@ -39,7 +39,7 @@ public Plugin myinfo =
 	name = "Sound Manipulation",
 	author = "Sir, devilesk",
 	description = "Allows control over certain sounds",
-	version = "1.5b",
+	version = "1.5c",
 	url = "https://github.com/SirPlease/SirCoding"
 }
 

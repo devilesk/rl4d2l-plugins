@@ -42,7 +42,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.10.0",
+    version = "0.10.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 

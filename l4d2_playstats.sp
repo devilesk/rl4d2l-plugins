@@ -28,7 +28,7 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.16.0",
+    version = "0.16.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 

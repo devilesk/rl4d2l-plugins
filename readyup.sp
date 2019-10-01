@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.2.1",
+	version = "9.2.2",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
