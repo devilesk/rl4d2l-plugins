@@ -42,7 +42,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.10.1",
+    version = "0.10.2",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -506,11 +506,13 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis) {
  */
 public SetTankTickets(const String:steamId[], const tickets) {
     new tankClientId = GetValidInfectedClientBySteamId(steamId);
-    PrintDebug("[SetTankTickets] %L", tankClientId);
+    PrintDebug("[SetTankTickets] tankClientId: %i", tankClientId);
     
     for (new i = 1; i <= MaxClients; i++) {
-        if (IS_VALID_INFECTED(i) && !IsFakeClient(i))
+        if (IS_VALID_INFECTED(i) && !IsFakeClient(i)) {
             L4D2Direct_SetTankTickets(i, (i == tankClientId) ? tickets : 0);
+            PrintDebug("[SetTankTickets] %L", tankClientId);
+        }
     }
 }
 
