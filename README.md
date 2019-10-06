@@ -163,3 +163,10 @@
 
 ## pause.sp
 * Minor fix to check for valid client index in IsPlayer function in [Pause plugin](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) used in Zonemod.
+
+## whitelist.sp
+* Restricts server to Steam IDs in a whitelist database.
+* Adds server commands to add players to the whitelist database.
+  * `sm_vouchnext` - Autovouch the next unvouched player to join the server.
+  * `sm_vouchprev`, `sm_vouchlast` - Vouch the last unvouched player to join the server.
+  * `sm_vouch` - Vouch the given steam id.
