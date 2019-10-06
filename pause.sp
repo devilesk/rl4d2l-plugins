@@ -581,7 +581,7 @@ bool:CheckFullReady()
 
 stock IsPlayer(client)
 {
-	if (!IsClientInGame(client))
+	if (client <= 0 || client > MaxClients || !IsClientInGame(client))
 	{
 		return false;
 	}

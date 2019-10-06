@@ -160,3 +160,6 @@
 
 ## l4d2_godframes_control_merge.sp
 * Updated [L4D2 Godframes Control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_godframes_control_merge.sp) from L4D2 Competitive Rework v0.6.4.
+
+## pause.sp
+* Minor fix to check for valid client index in IsPlayer function in [Pause plugin](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) used in Zonemod.
