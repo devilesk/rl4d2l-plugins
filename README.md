@@ -173,3 +173,6 @@
   
 ## playermanagement.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/playermanagement.sp) version that fixes issues with creating bots and leaving the server full with bots called "k9Q6CK42".
+
+## l4d2_car_alarm_hittable_fix.sp
+* [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_car_alarm_hittable_fix.sp) version 1.1 with a minor edit to compile on older SourceMod versions.
