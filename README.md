@@ -170,3 +170,6 @@
   * `sm_vouchnext` - Autovouch the next unvouched player to join the server.
   * `sm_vouchprev`, `sm_vouchlast` - Vouch the last unvouched player to join the server.
   * `sm_vouch` - Vouch the given steam id.
+  
+## playermanagement.sp
+* [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/playermanagement.sp) version that fixes issues with creating bots and leaving the server full with bots called "k9Q6CK42".
