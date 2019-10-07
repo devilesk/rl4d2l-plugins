@@ -35,7 +35,7 @@ public Plugin:myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
     description = "Spawning pistols and/or axes for players.",
-    version = "0.7.0",
+    version = "0.8.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -45,6 +45,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_spawnpistol", Command_SpawnPistol, "Spawn a pistol for a player.");
     RegConsoleCmd("sm_spawnaxe", Command_SpawnAxe, "Spawn an axe for a player.");
     HookEvent("round_end", Event_RoundEnd);
+    LoadTranslations("common.phrases");
 }
 
 public OnLibraryRemoved(const String:name[]) {
