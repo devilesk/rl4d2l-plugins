@@ -179,3 +179,6 @@
 
 ## caster_assister.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/caster_assister.sp) v0.6.2 fixes throwing client errors due to clients not being in-game.
+
+## l4d2_nobhaps.sp
+* [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_nobhaps.sp) v0.6.2 fixes throwing client errors due to clients not being in-game.
