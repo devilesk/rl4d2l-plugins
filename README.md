@@ -185,3 +185,6 @@
 
 ## l4d2_uniform_spit.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_uniform_spit.sp) v0.5.4 renames l4d2_uniform_spit_zone back to l4d2_uniform_spit.
+
+## l4d2_duplicate_survivor_fix.sp
+* [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_duplicate_survivor_fix.sp) version 1.1 that fixes a loophole.
