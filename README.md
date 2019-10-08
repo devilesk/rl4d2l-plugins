@@ -170,7 +170,10 @@
   * `sm_vouchnext` - Autovouch the next unvouched player to join the server.
   * `sm_vouchprev`, `sm_vouchlast` - Vouch the last unvouched player to join the server.
   * `sm_vouch` - Vouch the given steam id.
-  
+
+## 8ball.sp
+* Modified spoon's [8ball](https://github.com/spoon-l4d2/Plugins/blob/master/source/8ball.sp) plugin to load responses from a config file.
+
 ## playermanagement.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/playermanagement.sp) version that fixes issues with creating bots and leaving the server full with bots called "k9Q6CK42".
 
