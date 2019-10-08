@@ -203,3 +203,6 @@
 
 ## l4d_votepoll_fix.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d_votepoll_fix.sp) v0.3.
+
+## l4d2_script_cmd_swap.sp
+* [Script Command Swap - Mem Leak Fix (1.0)](https://forums.alliedmods.net/showthread.php?p=2657025) plugin used in L4D2-Competitive-Rework.
