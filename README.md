@@ -197,3 +197,6 @@
 
 ## l4d2_fireworks_noise_block.sp
 * [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_fireworks_noise_block.sp) v0.5.5 fixes sound blocking.
+
+## l4d_rock_lagcomp.sp
+* Luckylock's [L4D(2) Tank Rock Lag Compensation](https://github.com/LuckyServ/sourcemod-plugins/blob/master/source/l4d_rock_lagcomp.sp) plugin with a minor edit to compile on older SourceMod versions.
