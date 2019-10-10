@@ -19,8 +19,6 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 new Handle:g_hCvarAutofix = INVALID_HANDLE;
 new Handle:g_hCvarAutofixMaxTries = INVALID_HANDLE;     // max number of restart attempts convar
 new Handle:hVote;                                       // restart vote handle
-new g_iSurvivorTeamIndex;
-new g_iInfectedTeamIndex;
 new g_iSurvivorScore;
 new g_iInfectedScore;
 new String:g_sMapName[MAXMAP] = "";
@@ -29,7 +27,7 @@ public Plugin:myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.5.0",
+    version = "0.6.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -78,12 +76,12 @@ public OnMapStart() {
     
     // Set scores if map restarted
     if (g_bIsMapRestarted) {
-        PrintDebug("[OnMapStart] Restarted. Setting scores... survivor: %i, score %i, infected: %i, score %i", g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
+        PrintDebug("[OnMapStart] Restarted. Setting scores... survivor score %i, infected score %i", g_iSurvivorScore, g_iInfectedScore);
         
         //Set the scores
         SDKCall(fSetCampaignScores, g_iSurvivorScore, g_iInfectedScore); //visible scores
-        L4D2Direct_SetVSCampaignScore(g_iSurvivorTeamIndex, g_iSurvivorScore); //real scores
-        L4D2Direct_SetVSCampaignScore(g_iInfectedTeamIndex, g_iInfectedScore);
+        L4D2Direct_SetVSCampaignScore(0, g_iSurvivorScore); //real scores
+        L4D2Direct_SetVSCampaignScore(1, g_iInfectedScore);
         
         g_bIsMapRestarted = false;
     }
@@ -104,17 +102,17 @@ public Action:CheckFlowBroken(Handle:timer) {
 }
 
 public RestartMap() {
-    g_iSurvivorTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 1 : 0;
-    g_iInfectedTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 0 : 1;
+    new iSurvivorTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 1 : 0;
+    new iInfectedTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 0 : 1;
 
-    g_iSurvivorScore = L4D2Direct_GetVSCampaignScore(g_iSurvivorTeamIndex);
-    g_iInfectedScore = L4D2Direct_GetVSCampaignScore(g_iInfectedTeamIndex);
+    g_iSurvivorScore = L4D2Direct_GetVSCampaignScore(iSurvivorTeamIndex);
+    g_iInfectedScore = L4D2Direct_GetVSCampaignScore(iInfectedTeamIndex);
     
     g_bIsMapRestarted = true;
     g_iMapRestarts++;
     
-    PrintToConsoleAll("[RestartMap] Restarting map. Attempt: %i of %i... survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
-    PrintDebug("[RestartMap] Restarting map. Attempt: %i of %i...  survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), g_iSurvivorTeamIndex, g_iSurvivorScore, g_iInfectedTeamIndex, g_iInfectedScore);
+    PrintToConsoleAll("[RestartMap] Restarting map. Attempt: %i of %i... survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), iSurvivorTeamIndex, g_iSurvivorScore, iInfectedTeamIndex, g_iInfectedScore);
+    PrintDebug("[RestartMap] Restarting map. Attempt: %i of %i...  survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), iSurvivorTeamIndex, g_iSurvivorScore, iInfectedTeamIndex, g_iInfectedScore);
     
     GetCurrentMapLower(g_sMapName, sizeof(g_sMapName));
     ServerCommand("changelevel %s", g_sMapName);
