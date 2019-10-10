@@ -126,6 +126,9 @@
     ```
 * Adds `l4d2_playstats_customcfg` cvar to store a confogl custom config name that will get logged and saved with stats.
 
+### l4d2_saferoom_detect.sp
+* Updated Tabun's [Saferoom Detect](https://github.com/Tabbernaut/L4D2-Plugins/tree/master/saferoom_detect) plugin replacing lgofnoc with confogl.
+
 ### l4d2_sound_manipulation.sp
 * Updated [Sound Manipulation](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_sound_manipulation.sp) to allow for more control over which sounds are blocked by using `sound_block_for_comp` to set flags.
   * Block flags: 1 - World, 2 - Look, 4 - Ask, 8 - Follow Me, 16 - Getting Revived, 32 - Give Item Alert, 64 - I'm With You, 128 - Laughter, 256 - Name, 512 - Lead On, 1024 - Move On, 2048 - Friendly Fire, 4096 - Splat.
