@@ -1,5 +1,11 @@
 ## Original Plugins
 
+### chat_spam_throttle.sp
+* Chat filter to prevent spamming the same message too often.
+  * `chat_spam_throttle_debug` - cvar for logging.
+  * `chat_spam_throttle_time` - cvar for time in seconds before a message can be repeated.
+  * `chat_spam_throttle_check_sender` - cvar to allow repeating messages sent by someone else.
+
 ### discord_scoreboard.sp
 * End of round scores reported to discord via webhook.
 * Requires discord_webhook plugin.
