@@ -778,11 +778,11 @@ UpdatePanel()
 					if (!inLiveCountdown) PrintHintText(client, "You are ready.\nSay !unready to unready.");
 					if (GetClientTeam(client) == 2)
 					{
-						Format(nameBuf, 64, "->☑ %s\n", nameBuf);
+						Format(nameBuf, 64, "->♦ %s\n", nameBuf);
 					}
 					else
 					{
-						Format(nameBuf, 64, "->☑ %s\n", nameBuf);
+						Format(nameBuf, 64, "->♦ %s\n", nameBuf);
 					}
 					if (GetClientTeam(client) == 2)
 					{
@@ -808,22 +808,22 @@ UpdatePanel()
 					{
 						if (GetClientTeam(client) == 2)
 						{
-							Format(nameBuf, 64, "->☐ %s [AFK]\n", nameBuf);
+							Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
 						}
 						else
 						{
-							Format(nameBuf, 64, "->☐ %s [AFK]\n", nameBuf);
+							Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
 						}
 					}
 					else
 					{
 						if (GetClientTeam(client) == 2)
 						{
-							Format(nameBuf, 64, "->☐ %s\n", nameBuf);
+							Format(nameBuf, 64, "->♢ %s\n", nameBuf);
 						}
 						else
 						{
-							Format(nameBuf, 64, "->☐ %s\n", nameBuf);
+							Format(nameBuf, 64, "->♢ %s\n", nameBuf);
 						}
 					}
 					if (GetClientTeam(client) == 2)
