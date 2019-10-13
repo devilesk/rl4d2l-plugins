@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.2.2",
+	version = "9.2.3",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -71,7 +71,6 @@ new Handle:sb_stop;
 new Handle:survivor_limit;
 new Handle:z_max_player_zombies;
 new Handle:sv_infinite_primary_ammo;
-new Handle:ServerNamer;
 
 new Handle:casterTrie;
 new Handle:liveForward;
@@ -87,11 +86,8 @@ new footerCounter = 0;
 new readyDelay;
 new Handle:allowedCastersTrie;
 new String:liveSound[256];
-new bool:bSkipWarp;
-new bool:bFrozenYet;
 new bool:blockSecretSpam[MAXPLAYERS + 1];
-new iCmd;
-new String:sCmd[32];
+new bool:bHostName;
 
 new String:countdownSound[MAX_SOUNDS][]=
 {
@@ -123,7 +119,7 @@ public OnPluginStart()
 	l4d_ready_delay = CreateConVar("l4d_ready_delay", "3", "Number of seconds to count down before the round goes live.", FCVAR_PLUGIN, true, 0.0);
 	l4d_ready_enable_sound = CreateConVar("l4d_ready_enable_sound", "1", "Enable sound during countdown & on live");
 	l4d_ready_chuckle = CreateConVar("l4d_ready_chuckle", "1", "Enable chuckle during countdown");
-	l4d_ready_live_sound = CreateConVar("l4d_ready_live_sound", "ui/bigreward.wav", "The sound that plays when a round goes live");
+	l4d_ready_live_sound = CreateConVar("l4d_ready_live_sound", "ui/survival_medal.wav", "The sound that plays when a round goes live");
 	HookConVarChange(l4d_ready_survivor_freeze, SurvFreezeChange);
 
 	HookEvent("round_start", RoundStart_Event);
@@ -138,7 +134,6 @@ public OnPluginStart()
 	survivor_limit = FindConVar("survivor_limit");
 	z_max_player_zombies = FindConVar("z_max_player_zombies");
 	sv_infinite_primary_ammo = FindConVar("sv_infinite_primary_ammo");
-	ServerNamer = FindConVar("sn_main_name");
 
 	RegAdminCmd("sm_caster", Caster_Cmd, ADMFLAG_BAN, "Registers a player as a caster so the round will not go live unless they are ready");
 	RegAdminCmd("sm_forcestart", ForceStart_Cmd, ADMFLAG_BAN, "Forces the round to start regardless of player ready status.  Players can unready to stop a force");
@@ -165,6 +160,13 @@ public OnPluginStart()
 #endif
 
 	LoadTranslations("common.phrases");
+	CreateTimer(0.2, CheckStuff);
+}
+
+public Action:CheckStuff(Handle:timer)
+{
+	bHostName = FindPluginByFile("optional/server_namer.smx") != INVALID_HANDLE;
+	return Plugin_Continue;
 }
 
 public Action:Say_Callback(client, String:command[], argc)
@@ -201,14 +203,6 @@ public OnMapStart()
 	
 	new String:sMap[64];
 	GetCurrentMap(sMap, 64);
-	if (StrEqual(sMap, "dprm1_milltown_a", false))
-	{
-		bSkipWarp = true;
-	}
-	else
-	{
-		bSkipWarp = false;
-	}
 }
 
 public Action:KickSpecs_Cmd(client, args)
@@ -608,17 +602,9 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 					SetClientFrozen(client, true);
 				}
 			}
-			else
+			if (GetEntityFlags(client) & FL_INWATER)
 			{
-				if (GetEntityFlags(client) & FL_INWATER)
-				{
-					ReturnPlayerToSaferoom(client, false);
-				}
-			}
-			if (bSkipWarp && !bFrozenYet)
-			{
-				SetTeamFrozen(L4D2Team:L4D2Team_Survivor, true);
-				bFrozenYet = true;
+				ReturnPlayerToSaferoom(client, false);
 			}
 		}
 	}
@@ -627,24 +613,13 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 public SurvFreezeChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
 	ReturnTeamToSaferoom(L4D2Team_Survivor);
-	if (bSkipWarp)
-	{
-		SetTeamFrozen(L4D2Team:L4D2Team_Survivor, true);
-	}
-	else
-	{
-		SetTeamFrozen(L4D2Team:L4D2Team_Survivor, GetConVarBool(convar));
-	}
+	SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(convar));
 }
 
 public Action:L4D_OnFirstSurvivorLeftSafeArea(client)
 {
 	if (inReadyUp)
 	{
-		if (bSkipWarp)
-		{
-			return Plugin_Handled;
-		}
 		ReturnPlayerToSaferoom(client, false);
 		return Plugin_Handled;
 	}
@@ -665,7 +640,6 @@ public Action:Return_Cmd(client, args)
 public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	InitiateReadyUp();
-	bFrozenYet = false;
 }
 
 public PlayerTeam_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -711,7 +685,6 @@ public Action:MenuCmd_Timer(Handle:timer)
 {
 	if (inReadyUp)
 	{
-		iCmd++;
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;
@@ -749,12 +722,12 @@ UpdatePanel()
 		menuPanel = INVALID_HANDLE;
 	}
 
-	new String:readyBuffer[800] = "";
-	new String:unreadyBuffer[800] = "";
+	new String:survivorBuffer[800] = "";
+	new String:infectedBuffer[800] = "";
 	new String:casterBuffer[500];
 	new String:specBuffer[500];
-	new readyCount = 0;
-	new unreadyCount = 0;
+	new survivorCount = 0;
+	new infectedCount = 0;
 	new casterCount;
 	new playerCount = 0;
 	new specCount = 0;
@@ -762,23 +735,19 @@ UpdatePanel()
 	menuPanel = CreatePanel();
 	
 	new String:ServerBuffer[128];
-	new String:ServerName[32];
+	new String:ServerName[64];
 	new String:cfgName[32];
-	PrintCmd();
-	if (ServerNamer)
+	if (bHostName)
 	{
-		GetConVarString(ServerNamer, ServerName, 32);
+		GetConVarString(FindConVar("sn_main_name"), ServerName, 64);
 	}
 	else
 	{
-		GetConVarString(FindConVar("hostname"), ServerName, 32);
+		GetConVarString(FindConVar("hostname"), ServerName, 64);
 	}
 	GetConVarString(l4d_ready_cfg_name, cfgName, 32);
 	Format(ServerBuffer, 128, "▸ Server: %s \n▸ Slots: %d/%d\n▸ Config: %s", ServerName, GetSeriousClientCount(), GetConVarInt(FindConVar("sv_maxplayers")), cfgName);
 	DrawPanelText(menuPanel, ServerBuffer);
-	DrawPanelText(menuPanel, " ");
-	DrawPanelText(menuPanel, "♟ Commands ♟");
-	DrawPanelText(menuPanel, sCmd);
 	DrawPanelText(menuPanel, " ");
 
 	decl String:nameBuf[MAX_NAME_LENGTH*2];
@@ -798,78 +767,140 @@ UpdatePanel()
 			{
 				if (isPlayerReady[client])
 				{
-					if (!inLiveCountdown) PrintHintText(client, "You are ready.\nSay !unready to unready.");
-					Format(nameBuf, sizeof(nameBuf), "->%d. %s\n", ++readyCount, nameBuf);
-					StrCat(readyBuffer, sizeof(readyBuffer), nameBuf);
-				}
-				else
-				{
-					if (!inLiveCountdown) PrintHintText(client, "You are not ready.\nSay !ready to ready up.");
-					if (fTime - g_fButtonTime[client] > 15.0)
+					if (GetClientTeam(client) == 2)
 					{
-						Format(nameBuf, sizeof(nameBuf), "->%d. %s [AFK]\n", ++unreadyCount, nameBuf);
+						survivorCount++;
 					}
 					else
 					{
-						Format(nameBuf, sizeof(nameBuf), "->%d. %s\n", ++unreadyCount, nameBuf);
+						infectedCount++;
 					}
-					StrCat(unreadyBuffer, 800, nameBuf);
+					if (!inLiveCountdown) PrintHintText(client, "You are ready.\nSay !unready to unready.");
+					if (GetClientTeam(client) == 2)
+					{
+						Format(nameBuf, 64, "->☑ %s\n", nameBuf);
+					}
+					else
+					{
+						Format(nameBuf, 64, "->☑ %s\n", nameBuf);
+					}
+					if (GetClientTeam(client) == 2)
+					{
+						StrCat(survivorBuffer, 800, nameBuf);
+					}
+					else
+					{
+						StrCat(infectedBuffer, 800, nameBuf);
+					}
+				}
+				else
+				{
+					if (GetClientTeam(client) == 2)
+					{
+						survivorCount++;
+					}
+					else
+					{
+						infectedCount++;
+					}
+					if (!inLiveCountdown) PrintHintText(client, "You are not ready.\nSay !ready to ready up.");
+					if (fTime - g_fButtonTime[client] > 15.0)
+					{
+						if (GetClientTeam(client) == 2)
+						{
+							Format(nameBuf, 64, "->☐ %s [AFK]\n", nameBuf);
+						}
+						else
+						{
+							Format(nameBuf, 64, "->☐ %s [AFK]\n", nameBuf);
+						}
+					}
+					else
+					{
+						if (GetClientTeam(client) == 2)
+						{
+							Format(nameBuf, 64, "->☐ %s\n", nameBuf);
+						}
+						else
+						{
+							Format(nameBuf, 64, "->☐ %s\n", nameBuf);
+						}
+					}
+					if (GetClientTeam(client) == 2)
+					{
+						StrCat(survivorBuffer, 800, nameBuf);
+					}
+					else
+					{
+						StrCat(infectedBuffer, 800, nameBuf);
+					}
 				}
 			}
 			else if (caster)
 			{
-				Format(nameBuf, 64, "->%d. %s\n", ++casterCount, nameBuf);
+				casterCount++;
+				Format(nameBuf, 64, "%s\n", nameBuf);
 				StrCat(casterBuffer, sizeof(casterBuffer), nameBuf);
 			}
 			else
 			{
-				++specCount;
-				if (playerCount <= GetConVarInt(l4d_ready_max_players))
-				{
-					Format(nameBuf, sizeof(nameBuf), "->%d. %s\n", specCount, nameBuf);
-					StrCat(specBuffer, sizeof(specBuffer), nameBuf);
-				}
+				specCount++;
+				Format(nameBuf, 64, "%s\n", nameBuf);
+				StrCat(specBuffer, 500, nameBuf);
 			}
 		}
 	}
 
-	new bufLen = strlen(readyBuffer);
+	new bufLen = strlen(survivorBuffer);
 	if (bufLen != 0)
 	{
-		readyBuffer[bufLen] = '\0';
-		ReplaceString(readyBuffer, sizeof(readyBuffer), "#buy", "<- TROLL");
-		ReplaceString(readyBuffer, sizeof(readyBuffer), "#", "_");
-		DrawPanelText(menuPanel, "READY");
-		DrawPanelText(menuPanel, readyBuffer);
+		survivorBuffer[bufLen] = '\0';
+		ReplaceString(survivorBuffer, sizeof(survivorBuffer), "#buy", "<- TROLL");
+		ReplaceString(survivorBuffer, sizeof(survivorBuffer), "#", "_");
+		DrawPanelText(menuPanel, "->1. Survivors");
+		DrawPanelText(menuPanel, survivorBuffer);
 	}
 
-	bufLen = strlen(unreadyBuffer);
+	bufLen = strlen(infectedBuffer);
 	if (bufLen != 0)
 	{
-		unreadyBuffer[bufLen] = '\0';
-		ReplaceString(unreadyBuffer, sizeof(unreadyBuffer), "#buy", "<- TROLL");
-		ReplaceString(unreadyBuffer, sizeof(unreadyBuffer), "#", "_");
-		DrawPanelText(menuPanel, "UNREADY");
-		DrawPanelText(menuPanel, unreadyBuffer);
+		infectedBuffer[bufLen] = '\0';
+		ReplaceString(infectedBuffer, sizeof(infectedBuffer), "#buy", "<- TROLL");
+		ReplaceString(infectedBuffer, sizeof(infectedBuffer), "#", "_");
+		DrawPanelText(menuPanel, "->2. Infected");
+		DrawPanelText(menuPanel, infectedBuffer);
+	}
+	if (casterCount > 0 || specCount > 0)
+	{
+		DrawPanelText(menuPanel, " ");
 	}
 	
-	bufLen = strlen(casterBuffer);		
-	if (bufLen)		
-	{		
-		casterBuffer[bufLen] = '\0';		
-		DrawPanelText(menuPanel, "CASTERS");		
-		ReplaceString(casterBuffer, sizeof(casterBuffer), "#", "_", true);		
-		DrawPanelText(menuPanel, casterBuffer);		
+	bufLen = strlen(casterBuffer);
+	if (bufLen)
+	{
+		casterBuffer[bufLen] = '\0';
+		ReplaceString(casterBuffer, 500, "#buy", "<- TROLL", true);
+		ReplaceString(casterBuffer, sizeof(casterBuffer), "#", "_", true);
+		DrawPanelText(menuPanel, "->3. Casters");
+		DrawPanelText(menuPanel, casterBuffer);	
 	}
 	
 	bufLen = strlen(specBuffer);
 	if (bufLen != 0)
 	{
 		specBuffer[bufLen] = '\0';
-		DrawPanelText(menuPanel, "SPECTATORS");
+		if (casterCount > 0)
+		{
+			DrawPanelText(menuPanel, "->4. Spectators");
+		}
+		else
+		{
+			DrawPanelText(menuPanel, "->3. Spectators");
+		}
+		ReplaceString(specBuffer, 500, "#buy", "<- TROLL", true);
 		ReplaceString(specBuffer, sizeof(specBuffer), "#", "_");
 		if (playerCount > GetConVarInt(l4d_ready_max_players))
-			FormatEx(specBuffer, sizeof(specBuffer), "->1. Many (%d)", specCount);
+			FormatEx(specBuffer, sizeof(specBuffer), "Many (%d)", specCount);
 		DrawPanelText(menuPanel, specBuffer);
 	}
 
@@ -920,57 +951,6 @@ InitiateReadyUp()
 	L4D2_CTimerStart(L4D2CT_VersusStartTimer, 99999.9);
 }
 
-PrintCmd()
-{
-	if (iCmd > 9)
-	{
-		iCmd = 1;
-	}
-	switch (iCmd)
-	{
-		case 1:
-		{
-			Format(sCmd, sizeof(sCmd), "->1. !kickspecs");
-		}
-		case 2:
-		{
-			Format(sCmd, sizeof(sCmd), "->2. !slots #");
-		}
-		case 3:
-		{
-			Format(sCmd, sizeof(sCmd), "->3. !voteboss <tank> <witch>");
-		}
-		case 4:
-		{
-			Format(sCmd, sizeof(sCmd), "->4. !rmatch");
-		}
-		case 5:
-		{
-			Format(sCmd, sizeof(sCmd), "->5. !cast / !uncast");
-		}
-		case 6:
-		{
-			Format(sCmd, sizeof(sCmd), "->6. !setscores <survs> <inf>");
-		}
-		case 7:
-		{
-			Format(sCmd, sizeof(sCmd), "->7. !lerps");
-		}
-		case 8:
-		{
-			Format(sCmd, sizeof(sCmd), "->8. !secondary");
-		}
-		case 9:
-		{
-			Format(sCmd, sizeof(sCmd), "->9. !changelog");
-		}
-		default:
-		{
-		}
-	}
-	return 0;
-}
-
 InitiateLive(bool:real = true)
 {
 	inReadyUp = false;
@@ -986,7 +966,8 @@ InitiateLive(bool:real = true)
 	SetConVarBool(god, false);
 	SetConVarFlags(god, GetConVarFlags(god) | FCVAR_NOTIFY);
 	SetConVarBool(sb_stop, false);
-
+	new String:GameMode[32];
+	GetConVarString(FindConVar("mp_gamemode"), GameMode, 32);
 	L4D2_CTimerStart(L4D2CT_VersusStartTimer, 60.0);
 
 	for (new i = 0; i < 4; i++)
@@ -1120,7 +1101,7 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 		PrintHintTextToAll("Live in: %d\nSay !unready to cancel", readyDelay);
 		if (GetConVarBool(l4d_ready_enable_sound))
 		{
-			EmitSoundToAll("buttons/blip1.wav", _, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.5);
+			EmitSoundToAll("weapons/hegrenade/beep.wav", _, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.5);
 		}
 		readyDelay--;
 		return Plugin_Continue;
@@ -1146,14 +1127,7 @@ CancelFullReady()
 {
 	if (readyCountdownTimer != INVALID_HANDLE)
 	{
-		if (bSkipWarp)
-		{
-			SetTeamFrozen(L4D2Team:L4D2Team_Survivor, true);
-		}
-		else
-		{
-			SetTeamFrozen(L4D2Team:L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
-		}
+		SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
 		inLiveCountdown = false;
 		CloseHandle(readyCountdownTimer);
 		readyCountdownTimer = INVALID_HANDLE;
