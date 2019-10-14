@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.2.3",
+	version = "9.2.4",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -207,7 +207,7 @@ public OnMapStart()
 
 public Action:KickSpecs_Cmd(client, args)
 {
-	if (IsClientInGame(client) && GetClientTeam(client) != 1)
+	if (IsClientInGame(client) && L4D2Team:GetClientTeam(client) != L4D2Team_Spectator)
 	{
 		if (IsNewBuiltinVoteAllowed())
 		{
@@ -215,7 +215,7 @@ public Action:KickSpecs_Cmd(client, args)
 			decl iPlayers[MaxClients];
 			for (new i = 1; i <= MaxClients; i++)
 			{
-				if (!IsClientInGame(i) || IsFakeClient(i) || GetClientTeam(i) == 1)
+				if (!IsClientInGame(i) || IsFakeClient(i) || L4D2Team:GetClientTeam(i) == L4D2Team_Spectator)
 					continue;
 				iNumPlayers++;
 				iPlayers[iNumPlayers] = i;
@@ -726,8 +726,6 @@ UpdatePanel()
 	new String:infectedBuffer[800] = "";
 	new String:casterBuffer[500];
 	new String:specBuffer[500];
-	new survivorCount = 0;
-	new infectedCount = 0;
 	new casterCount;
 	new playerCount = 0;
 	new specCount = 0;
@@ -752,8 +750,9 @@ UpdatePanel()
 
 	decl String:nameBuf[MAX_NAME_LENGTH*2];
 	decl String:authBuffer[64];
-	decl bool:caster;
-	decl dummy;
+	new bool:caster;
+	new dummy;
+	new L4D2Team:team;
 	new Float:fTime = GetEngineTime();
 	for (new client = 1; client <= MaxClients; client++)
 	{
@@ -763,77 +762,33 @@ UpdatePanel()
 			GetClientName(client, nameBuf, sizeof(nameBuf));
 			GetClientAuthId(client, AuthId_Steam2, authBuffer, sizeof(authBuffer));
 			caster = GetTrieValue(casterTrie, authBuffer, dummy);
+			team = L4D2Team:GetClientTeam(client);
 			if (IsPlayer(client))
 			{
 				if (isPlayerReady[client])
 				{
-					if (GetClientTeam(client) == 2)
-					{
-						survivorCount++;
-					}
-					else
-					{
-						infectedCount++;
-					}
 					if (!inLiveCountdown) PrintHintText(client, "You are ready.\nSay !unready to unready.");
-					if (GetClientTeam(client) == 2)
-					{
-						Format(nameBuf, 64, "->♦ %s\n", nameBuf);
-					}
-					else
-					{
-						Format(nameBuf, 64, "->♦ %s\n", nameBuf);
-					}
-					if (GetClientTeam(client) == 2)
-					{
-						StrCat(survivorBuffer, 800, nameBuf);
-					}
-					else
-					{
-						StrCat(infectedBuffer, 800, nameBuf);
-					}
+					Format(nameBuf, 64, "->♦ %s\n", nameBuf);
 				}
 				else
 				{
-					if (GetClientTeam(client) == 2)
-					{
-						survivorCount++;
-					}
-					else
-					{
-						infectedCount++;
-					}
 					if (!inLiveCountdown) PrintHintText(client, "You are not ready.\nSay !ready to ready up.");
 					if (fTime - g_fButtonTime[client] > 15.0)
 					{
-						if (GetClientTeam(client) == 2)
-						{
-							Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
-						}
-						else
-						{
-							Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
-						}
+						Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
 					}
 					else
 					{
-						if (GetClientTeam(client) == 2)
-						{
-							Format(nameBuf, 64, "->♢ %s\n", nameBuf);
-						}
-						else
-						{
-							Format(nameBuf, 64, "->♢ %s\n", nameBuf);
-						}
+						Format(nameBuf, 64, "->♢ %s\n", nameBuf);
 					}
-					if (GetClientTeam(client) == 2)
-					{
-						StrCat(survivorBuffer, 800, nameBuf);
-					}
-					else
-					{
-						StrCat(infectedBuffer, 800, nameBuf);
-					}
+				}
+				if (team == L4D2Team_Survivor)
+				{
+					StrCat(survivorBuffer, 800, nameBuf);
+				}
+				else if (team == L4D2Team_Infected)
+				{
+					StrCat(infectedBuffer, 800, nameBuf);
 				}
 			}
 			else if (caster)

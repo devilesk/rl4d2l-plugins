@@ -164,6 +164,7 @@
 ### readyup.sp
 * Reconstructed L4D2 Ready-Up v9.2 used in [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/plugins/optional/zonemod/readyup.smx).
 * Applied spoon's [bugfix](https://github.com/spoon-l4d2/Plugins/blob/19b55c3c3122333bba0ce2e2cec202b4af623cab/source/readyup.sp#L1409) to prevent unbreakable doors from being made breakable.
+* Replace checkboxes with diamonds from spoon's version.
 
 ---
 
