@@ -15,6 +15,7 @@ new     bool:   g_bReadyUpAvailable     = false;
 new     bool:   g_bPauseAvailable       = false;
 new     bool:   g_bSkillDetectLoaded    = false;
 new     bool:   g_bSystem2Loaded        = false;
+new     bool:   g_bDiscordScoreboardAvailable = false;
 
 new     bool:   g_bCMTActive            = false;                                        // whether custom map transitions is running a mapset
 new     bool:   g_bCMTSwapped           = false;                                        // whether A/B teams have been swapped

@@ -11,6 +11,7 @@
 #include <readyup>
 #include <lgofnoc>
 #include <system2>
+#include <discord_scoreboard>
 #define REQUIRE_PLUGIN
 
 #include "l4d2_playstats/globals.sp"
@@ -28,7 +29,7 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.16.1",
+    version = "0.16.2",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -75,6 +76,7 @@ public OnAllPluginsLoaded() {
     g_bPauseAvailable = LibraryExists("pause");
     g_bSkillDetectLoaded = LibraryExists("skill_detect");
     g_bSystem2Loaded = LibraryExists("system2");
+    g_bDiscordScoreboardAvailable = LibraryExists("discord_scoreboard");
 }
 public OnLibraryRemoved(const String:name[]) {
     if ( StrEqual(name, "lgofnoc") ) { g_bLGOAvailable = false; }
@@ -82,6 +84,7 @@ public OnLibraryRemoved(const String:name[]) {
     else if ( StrEqual(name, "pause") ) { g_bPauseAvailable = false; }
     else if ( StrEqual(name, "skill_detect") ) { g_bSkillDetectLoaded = false; }
     else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = false; }
+    else if ( StrEqual(name, "discord_scoreboard") ) { g_bDiscordScoreboardAvailable = false; }
 }
 public OnLibraryAdded(const String:name[]) {
     if ( StrEqual(name, "lgofnoc") ) { g_bLGOAvailable = true; }
@@ -89,6 +92,7 @@ public OnLibraryAdded(const String:name[]) {
     else if ( StrEqual(name, "pause") ) { g_bPauseAvailable = true; }
     else if ( StrEqual(name, "skill_detect") ) { g_bSkillDetectLoaded = true; }
     else if ( StrEqual(name, "system2") ) { g_bSystem2Loaded = true; }
+    else if ( StrEqual(name, "discord_scoreboard") ) { g_bDiscordScoreboardAvailable = true; }
 }
 
 public OnPluginStart() {

@@ -406,3 +406,11 @@ stock Math_GetRandomInt(min, max)
 
     return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }
+
+public FilterColorCode(String:text[], maxlength) {
+    ReplaceString(text, maxlength, "\x01", "");
+    ReplaceString(text, maxlength, "\x03", "");
+    ReplaceString(text, maxlength, "\x04", "");
+    ReplaceString(text, maxlength, "\x05", "");
+    PrintDebug(2, "[FilterColorCode] text: %s", text);
+}

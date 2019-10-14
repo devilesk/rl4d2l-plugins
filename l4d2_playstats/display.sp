@@ -730,6 +730,14 @@ stock DisplayStatsFunFactChat( client, bool:bRound = true, bool:bTeam = true, iT
     
     if ( client == -1 ) {
         PrintToServer("\x01%s", printBuffer);
+
+        if (g_bDiscordScoreboardAvailable) {
+            decl String:strippedBuffer[1024];
+            strcopy(strippedBuffer, sizeof(strippedBuffer), printBuffer);
+            FilterColorCode(strippedBuffer, sizeof(strippedBuffer));
+            ReplaceString(strippedBuffer, sizeof(strippedBuffer), "\n", "");
+            AddEmbed("Fun Fact", strippedBuffer, "", 1815868);
+        }
     }
 
     // PrintToChatAll has a max length. Split it in to individual lines to output separately

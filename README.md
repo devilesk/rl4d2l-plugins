@@ -131,6 +131,7 @@
     }
     ```
 * Adds `l4d2_playstats_customcfg` cvar to store a confogl custom config name that will get logged and saved with stats.
+* Added discord_scoreboard plugin integration to send a fun fact embed.
 
 ### l4d2_saferoom_detect.sp
 * Updated Tabun's [Saferoom Detect](https://github.com/Tabbernaut/L4D2-Plugins/tree/master/saferoom_detect) plugin replacing lgofnoc with confogl.
