@@ -25,6 +25,11 @@
   }
   ```
 
+### l4d2_practice.sp
+* Combined several features from existing plugins for use in a practice config.
+* `sm_goto`, `sm_bring` - Teleport players around.
+* Switch zombieclass with MOUSE2.
+
 ### l4d2_restartmap.sp
 * Adds `sm_restartmap` to restart the current map. Preserves scores and who has played tank. Automatically restarts map when broken flow detected.
   * `sm_restartmap_debug` cvar for logging.
