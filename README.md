@@ -83,6 +83,9 @@
 ### basevotes.sp
 * Updated to optionally use Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin if it is loaded.
 
+### confoglcompmod.sp
+* Updated [confoglcompmod](https://github.com/devilesk/confoglcompmod/tree/rl4d2l) forked from [v2.2.3](https://github.com/epilimic/confoglcompmod) merged with optional l4d2_changelevel and bugfixes from [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/confoglcompmod.sp).
+
 ### eq_finale_tanks.sp
 * Modified Visor's [EQ2 Finale Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/eq_finale_tanks.sp).
   Reworked to no longer manage flow tanks, since that can be handled by the `static_tank_map` cvar used in the [tank\_and\_nowitch\_ifier](https://github.com/devilesk/rl4d2l-plugins/blob/master/tank_and_nowitch_ifier.sp) plugin. Cvars:
