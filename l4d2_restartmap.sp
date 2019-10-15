@@ -4,6 +4,9 @@
 #include <sdktools>
 #include <l4d2_direct>
 #include <builtinvotes>
+#undef REQUIRE_PLUGIN
+#include <l4d2_changelevel>
+#define REQUIRE_PLUGIN
 #include "includes/rl4d2l_util"
 
 #define TEAM_SPECTATOR          1
@@ -22,6 +25,7 @@ new Handle:hVote;                                       // restart vote handle
 new g_iSurvivorScore;
 new g_iInfectedScore;
 new String:g_sMapName[MAXMAP] = "";
+new bool:g_L4D2ChangeLevelAvailable = false;
 
 public Plugin:myinfo = {
     name = "L4D2 Restart Map",
@@ -58,6 +62,16 @@ public OnPluginStart() {
     else {
         LogError("Function 'SetCampaignScores' not found.");
     }
+}
+
+public OnAllPluginsLoaded() {
+    g_L4D2ChangeLevelAvailable = LibraryExists("l4d2_changelevel");
+}
+public OnLibraryRemoved(const String:name[]) {
+    if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = false; }
+}
+public OnLibraryAdded(const String:name[]) {
+    if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = true; }
 }
 
 public OnMapStart() {
@@ -115,7 +129,11 @@ public RestartMap() {
     PrintDebug("[RestartMap] Restarting map. Attempt: %i of %i...  survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), iSurvivorTeamIndex, g_iSurvivorScore, iInfectedTeamIndex, g_iInfectedScore);
     
     GetCurrentMapLower(g_sMapName, sizeof(g_sMapName));
-    ServerCommand("changelevel %s", g_sMapName);
+
+    if (g_L4D2ChangeLevelAvailable)
+        L4D2_ChangeLevel(g_sMapName);
+    else
+        ServerCommand("changelevel %s", g_sMapName);
 }
 
 IsSpectator(client) {

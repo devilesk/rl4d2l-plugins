@@ -31,6 +31,7 @@
   * `sm_restartmap_autofix` cvar for autofix. Enabled by default.
   * `sm_restartmap_autofix_max_tries` cvar for max autofix map restart attempts.
 * Score setting based on Visor's [SetScores](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_setscores.sp).
+* Optional requirement: Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin.
 
 ### saferoom_gnome.sp
 * Spawns a gnome in the saferoom that is removed when the round goes live.
@@ -75,6 +76,12 @@
 
 ### 8ball.sp
 * Modified spoon's [8ball](https://github.com/spoon-l4d2/Plugins/blob/master/source/8ball.sp) v1.2.7 to load responses from a config file.
+
+### basecommands.sp
+* Updated to optionally use Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin if it is loaded.
+
+### basevotes.sp
+* Updated to optionally use Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin if it is loaded.
 
 ### eq_finale_tanks.sp
 * Modified Visor's [EQ2 Finale Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/eq_finale_tanks.sp).

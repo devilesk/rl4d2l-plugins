@@ -114,7 +114,10 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	ResetPack(dp);
 	ReadPackString(dp, map, sizeof(map));
 
-	ForceChangeLevel(map, "sm_map Command");
+	if (g_L4D2ChangeLevelAvailable)
+		L4D2_ChangeLevel(map);
+	else
+		ForceChangeLevel(map, "sm_map Command");
 
 	return Plugin_Stop;
 }

@@ -35,6 +35,7 @@
 
 #include <sourcemod>
 #undef REQUIRE_PLUGIN
+#include <l4d2_changelevel>
 #include <adminmenu>
 
 public Plugin:myinfo =
@@ -81,6 +82,8 @@ new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
 TopMenu hTopMenu;
 
+new bool:g_L4D2ChangeLevelAvailable = false;
+
 #include "basevotes/votekick.sp"
 #include "basevotes/voteban.sp"
 #include "basevotes/votemap.sp"
@@ -125,6 +128,19 @@ public OnPluginStart()
 	decl String:mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_votemap menu", mapListPath);
+}
+
+public OnAllPluginsLoaded()
+{
+	g_L4D2ChangeLevelAvailable = LibraryExists("l4d2_changelevel");
+}
+public OnLibraryRemoved(const String:name[])
+{
+	if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = false; }
+}
+public OnLibraryAdded(const String:name[])
+{
+	if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = true; }
 }
 
 public OnConfigsExecuted()
@@ -407,7 +423,10 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	ResetPack(dp);
 	ReadPackString(dp, mapname, sizeof(mapname));
 	
-	ForceChangeLevel(mapname, "sm_votemap Result");
+	if (g_L4D2ChangeLevelAvailable)
+		L4D2_ChangeLevel(mapname);
+	else
+		ForceChangeLevel(mapname, "sm_votemap Result");
 	
 	return Plugin_Stop;
 }

@@ -35,6 +35,7 @@
 
 #include <sourcemod>
 #undef REQUIRE_PLUGIN
+#include <l4d2_changelevel>
 #include <adminmenu>
 
 public Plugin:myinfo =
@@ -50,6 +51,8 @@ TopMenu hTopMenu;
 
 Menu g_MapList;
 new Handle:g_ProtectedVars;
+
+new bool:g_L4D2ChangeLevelAvailable = false;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
@@ -93,6 +96,23 @@ public OnPluginStart()
 	ProtectVar("rcon_password");
 	ProtectVar("sm_show_activity");
 	ProtectVar("sm_immunity_mode");
+}
+
+public OnAllPluginsLoaded()
+{
+	g_L4D2ChangeLevelAvailable = LibraryExists("l4d2_changelevel");
+}
+public OnLibraryRemoved(const String:name[])
+{
+	if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = false; }
+	if (strcmp(name, "adminmenu") == 0)
+	{
+		hTopMenu = null;
+	}
+}
+public OnLibraryAdded(const String:name[])
+{
+	if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = true; }
 }
 
 public OnMapStart()
@@ -182,14 +202,6 @@ public OnAdminMenuReady(Handle aTopMenu)
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
 		hTopMenu.AddItem("sm_cancelvote", AdminMenu_CancelVote, voting_commands, "sm_cancelvote", ADMFLAG_VOTE);
-	}
-}
-
-public OnLibraryRemoved(const String:name[])
-{
-	if (strcmp(name, "adminmenu") == 0)
-	{
-		hTopMenu = null;
 	}
 }
 
