@@ -42,7 +42,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.10.2",
+    version = "0.10.3",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -475,10 +475,13 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis) {
             else
                 CPrintToChat(i, "{red}<{default}Tank Rage{red}> {default}({green}%N{default}'s) {olive}Rage Meter {red}Refilled", tank_index);
         }
-        
+
         SetTankFrustration(tank_index, 100);
-        L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
-        
+
+        new tankPassCount = L4D2Direct_GetTankPassedCount() + 1;
+        PrintDebug("[L4D_OnTryOfferingTankBot] tankPassCount: %i", tankPassCount);
+        L4D2Direct_SetTankPassedCount(tankPassCount);
+
         return Plugin_Handled;
     }
     
