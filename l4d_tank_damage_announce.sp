@@ -11,6 +11,8 @@
 #include <discord_scoreboard>
 #define REQUIRE_PLUGIN
 
+#define TANK_CHECK_DELAY        0.5
+
 new     const           TEAM_SURVIVOR               = 2;
 new     const           TEAM_INFECTED               = 3;
 new     const           ZOMBIECLASS_TANK            = 8;                // Zombie class of the tank, used to find tank after he have been passed to another player
@@ -33,6 +35,7 @@ new Handle:fwdOnTankDeath                = INVALID_HANDLE;
 new             bool:   g_bDiscordScoreboardAvailable = false;
 new             String:sTitle[256];
 new             String:description[2048];
+new Handle:g_hCvarDebug = INVALID_HANDLE;
 
 /*
 * Version 0.6.6
@@ -49,11 +52,12 @@ public Plugin:myinfo =
 	name = "Tank Damage Announce L4D2",
 	author = "Griffin and Blade, Sir, devilesk",
 	description = "Announce damage dealt to tanks by survivors",
-	version = "0.6.7"
+	version = "0.6.8"
 }
 
 public OnPluginStart()
 {
+	g_hCvarDebug = CreateConVar("l4d_tank_damage_announce_debug", "0", "Tank Damage Announce L4D2 debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	g_bIsTankInPlay = false;
 	g_bAnnounceTankDamage = false;
 	g_iTankClient = 0;
@@ -103,7 +107,8 @@ public OnMapStart()
 public OnClientDisconnect_Post(client)
 {
 	if (!g_bIsTankInPlay || client != g_iTankClient) return;
-	CreateTimer(0.1, Timer_CheckTank, client); // Use a delayed timer due to bugs where the tank passes to another player
+	PrintDebug("[OnClientDisconnect_Post] client: %L", client);
+	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, client); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
 public Cvar_Enabled(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -169,13 +174,15 @@ public Event_PlayerKilled(Handle:event, const String:name[], bool:dontBroadcast)
 	if(!IsFakeClient(victim)) g_iWasTank[victim] = 1;
 	else g_iWasTankAI = 1;
 	// Damage announce could probably happen right here...
-	CreateTimer(0.1, Timer_CheckTank, victim); // Use a delayed timer due to bugs where the tank passes to another player
+	PrintDebug("[Event_PlayerKilled] victim: %L", victim);
+	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, victim); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
 public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	g_iTankClient = client;
+	PrintDebug("[Event_TankSpawn] g_iTankClient: %L", g_iTankClient);
 	
 	if (g_bIsTankInPlay) return; // Tank passed
 	
@@ -198,6 +205,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 // When survivors wipe or juke tank, announce damage
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	PrintDebug("[Event_RoundEnd] g_bAnnounceTankDamage: %i", g_bAnnounceTankDamage);
 	// But only if a tank that hasn't been killed exists
 	if (g_bAnnounceTankDamage)
 	{
@@ -209,9 +217,11 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:Timer_CheckTank(Handle:timer, any:oldtankclient)
 {
+	PrintDebug("[Timer_CheckTank] oldtankclient: %i", oldtankclient);
 	if (g_iTankClient != oldtankclient) return; // Tank passed
 	
 	new tankclient = FindTankClient();
+	PrintDebug("[Timer_CheckTank] tankclient: %i", tankclient);
 	if (tankclient && tankclient != oldtankclient)
 	{
 		g_iTankClient = tankclient;
@@ -254,6 +264,7 @@ PrintRemainingHealth()
 
 PrintTankDamage()
 {
+	PrintDebug("[PrintTankDamage] bPrintedHealth: %i", bPrintedHealth);
 	description[0] = '\0';
 	if (!g_bEnabled) return;
 	
@@ -276,6 +287,10 @@ PrintTankDamage()
 			}
 			g_iWasTankAI = 0;
 		}
+	}
+	else
+	{
+		strcopy(sTitle, sizeof(sTitle), "Damage dealt to Tank");
 	}
 	
 	new client;
@@ -366,4 +381,14 @@ public SortByDamageDesc(elem1, elem2, const array[], Handle:hndl)
 	else if (elem1 > elem2) return -1;
 	else if (elem2 > elem1) return 1;
 	return 0;
+}
+
+stock PrintDebug(const String:Message[], any:...)
+{
+	if (GetConVarBool(g_hCvarDebug))
+	{
+		decl String:DebugBuff[256];
+		VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
+		LogMessage(DebugBuff);
+	}
 }
