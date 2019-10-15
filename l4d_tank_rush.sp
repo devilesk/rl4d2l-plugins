@@ -6,6 +6,7 @@
 #include <l4d2util>
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
+#define TANK_CHECK_DELAY        0.5
 
 const TANK_ZOMBIE_CLASS = 8;
 
@@ -20,7 +21,7 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 public Plugin:myinfo = {
     name = "L4D2 No Tank Rush",
     author = "Jahze, vintik, devilesk",
-    version = "1.4",
+    version = "1.5",
     description = "Stops distance points accumulating whilst the tank is alive"
 };
 
@@ -89,13 +90,13 @@ public Action:TankSpawn( Handle:event, const String:name[], bool:dontBroadcast )
 public Action:PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast ) {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     if ( IS_VALID_CLIENT(client) && IsTank(client) ) {
-        CreateTimer(0.1, CheckForTanksDelay, TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(TANK_CHECK_DELAY, CheckForTanksDelay, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
 public OnClientDisconnect( client ) {
     if ( IS_VALID_CLIENT(client) && IsTank(client) ) {
-        CreateTimer(0.1, CheckForTanksDelay, TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(TANK_CHECK_DELAY, CheckForTanksDelay, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
