@@ -255,11 +255,7 @@ PrintRemainingHealth()
 	if (IsFakeClient(tankclient)) name = "AI";
 	else GetClientName(tankclient, name, sizeof(name));
 	CPrintToChatAll("{default}[{green}!{default}] {blue}Tank {default}({olive}%s{default}) had {green}%d {default}health remaining", name, g_iLastTankHealth);
-
-	if (g_bDiscordScoreboardAvailable)
-	{
-		Format(sTitle, sizeof(sTitle), "Tank (%s) had %d health remaining", name, g_iLastTankHealth);
-	}
+	Format(sTitle, sizeof(sTitle), "Tank (%s) had %d health remaining", name, g_iLastTankHealth);
 }
 
 PrintTankDamage()
@@ -270,6 +266,8 @@ PrintTankDamage()
 	
 	if (!bPrintedHealth)
 	{
+		strcopy(sTitle, sizeof(sTitle), "Damage dealt to Tank");
+
 		for (new i = 1; i <= MaxClients; i++)
 		{
 			if(g_iWasTank[i] > 0)
@@ -287,10 +285,6 @@ PrintTankDamage()
 			}
 			g_iWasTankAI = 0;
 		}
-	}
-	else
-	{
-		strcopy(sTitle, sizeof(sTitle), "Damage dealt to Tank");
 	}
 	
 	new client;
