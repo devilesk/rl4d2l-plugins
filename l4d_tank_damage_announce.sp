@@ -52,7 +52,7 @@ public Plugin:myinfo =
 	name = "Tank Damage Announce L4D2",
 	author = "Griffin and Blade, Sir, devilesk",
 	description = "Announce damage dealt to tanks by survivors",
-	version = "0.6.8"
+	version = "0.6.9"
 }
 
 public OnPluginStart()
@@ -107,7 +107,7 @@ public OnMapStart()
 public OnClientDisconnect_Post(client)
 {
 	if (!g_bIsTankInPlay || client != g_iTankClient) return;
-	PrintDebug("[OnClientDisconnect_Post] client: %L", client);
+	PrintDebug("[OnClientDisconnect_Post] client: %i", client);
 	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, client); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
