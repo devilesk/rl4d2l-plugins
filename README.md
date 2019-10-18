@@ -25,6 +25,18 @@
   }
   ```
 
+### l4d2_ladder_editor.sp
+* Commands for cloning and moving special infected ladders.
+* `sm_edit` - Toggle edit mode on or off.
+  * While in edit mode, ladders you are aiming at can be selected using MOUSE1 and moved using WASD, USE, and RELOAD.
+* `sm_step <size>` - Number of units to move when moving ladders in edit mode.
+* `sm_select` - Select the ladder you are aiming at.
+* `sm_clone` - Clone the selected ladder.
+* `sm_move <x> <y> <z>` - Move the selected ladder to the given coordinate on the map.
+* `sm_nudge <x> <y> <z>` - Move the selected ladder relative to its current position.
+* `sm_kill` - Remove the selected ladder.
+* `sm_info` - Display info about the selected ladder entity.
+
 ### l4d2_practice.sp
 * Combined several features from existing plugins for use in a practice config.
 * `sm_goto`, `sm_bring` - Teleport players around.
