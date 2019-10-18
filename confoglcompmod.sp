@@ -3,7 +3,7 @@
 #if defined(AUTOVERSION)
 #include "version.inc"
 #else
-#define PLUGIN_VERSION	"2.2.4"
+#define PLUGIN_VERSION	"2.2.5"
 #endif
 
 #if !defined(DEBUG_ALL)
@@ -55,7 +55,7 @@ public Plugin:myinfo =
 	author = "Confogl Team",
 	description = "A competitive mod for L4D2. RL4D2L fork.",
 	version = PLUGIN_VERSION,
-	url = "https://github.com/devilesk/confoglcompmod"
+	url = "https://github.com/devilesk/confoglcompmod/tree/rl4d2l"
 }
 
 public OnAllPluginsLoaded()

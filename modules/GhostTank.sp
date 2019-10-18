@@ -58,7 +58,13 @@ public IsTankInPlay()
 Action:GT_OnTankSpawn_Forward()
 {
     if(IsPluginEnabled() && GetConVarBool(g_hGT_RemoveEscapeTank) && g_bGT_FinaleVehicleIncoming)
+    {
+        if(IsDebugEnabled())
+        {
+            LogMessage("[GT] Blocking tank spawn as rescue vehicle is incoming.");
+        }
         return Plugin_Handled;
+    }
     return Plugin_Continue;
 }
 
@@ -126,7 +132,14 @@ Action:GT_OnTryOfferingTankBot(& bool:enterStasis)
     if(IsPluginEnabled())
     {
         if(GetConVarBool(g_hGT_Enabled)) enterStasis=false;
-        if(GetConVarBool(g_hGT_RemoveEscapeTank) && g_bGT_FinaleVehicleIncoming) return Plugin_Handled;
+        if(GetConVarBool(g_hGT_RemoveEscapeTank) && g_bGT_FinaleVehicleIncoming)
+        {
+            if(IsDebugEnabled())
+            {
+                LogMessage("[GT] Blocking bot tank offer as rescue vehicle is incoming.");
+            }
+            return Plugin_Handled;
+        }
     }
     return Plugin_Continue;
 }
@@ -136,6 +149,10 @@ public GT_FinaleVehicleIncoming(Handle:event, const String:name[], bool:dontBroa
     g_bGT_FinaleVehicleIncoming = true;
     if(g_bGT_TankIsInPlay && IsFakeClient(g_iGT_TankClient))
     {
+        if(IsDebugEnabled())
+        {
+            LogMessage("[GT] Kicking bot tank client %i as rescue vehicle is incoming.", g_iGT_TankClient);
+        }
         KickClient(g_iGT_TankClient);
         GT_Reset();
     }
