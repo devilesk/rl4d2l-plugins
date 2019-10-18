@@ -31,7 +31,7 @@ public Plugin:myinfo =
 		name = "Finale Can't Spawn Glitch Fix",
 		author = "ProdigySim, modified by Wicket and devilesk",
 		description = "Fixing Waiting For Survivors To Start The Finale or w/e",
-		version = "1.2.0",
+		version = "1.2.1",
 		url = "https://github.com/devilesk/rl4d2l-plugins/blob/master/suicideblitzfinalefix.sp"
 }
  
@@ -68,7 +68,7 @@ public RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast)
 FixAllInfected()
 {
 	PrintToChatAll("Fixing Waiting For Finale to Start issue for all infected");
-	for (new i = 1; i < MaxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == 3) 
 		{

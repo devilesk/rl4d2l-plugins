@@ -24,7 +24,7 @@ public Plugin:myinfo =
 	name = "L4D2 Practice",
 	author = "devilesk",
 	description = "Practice features",
-	version = "0.1.0",
+	version = "0.1.1",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -46,7 +46,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 new Handle:g_hSetClass;
 new Handle:g_hCreateAbility;
 new g_oAbility;
-new bool:in_attack2[MAXPLAYERS];
+new bool:in_attack2[MAXPLAYERS + 1];
 
 public OnPluginStart()
 {
