@@ -28,7 +28,7 @@
 ### l4d2_ladder_editor.sp
 * Commands for cloning and moving special infected ladders.
 * `sm_edit` - Toggle edit mode on or off.
-  * While in edit mode, ladders you are aiming at can be selected using MOUSE1 and moved using WASD, USE, and RELOAD.
+  * While in edit mode, ladders you are aiming at can be selected using MOUSE1 and moved using MOUSE2 or WASD, USE, and RELOAD.
 * `sm_step <size>` - Number of units to move when moving ladders in edit mode.
 * `sm_select` - Select the ladder you are aiming at.
 * `sm_clone` - Clone the selected ladder.
