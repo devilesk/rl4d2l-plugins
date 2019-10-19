@@ -17,7 +17,7 @@ new bool:in_attack2[MAXPLAYERS + 1];
 public Plugin:myinfo = {
     name = "L4D2 Ladder Editor",
     author = "devilesk",
-    version = "0.2.0",
+    version = "0.3.0",
     description = "Clone and move special infected ladders.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -199,9 +199,11 @@ public Action Command_Kill(int client, int args)
     new entity = selectedLadder[client];
     if (IsValidEntity(entity)) {
         GetEntityClassname(entity, classname, MAX_STR_LEN);
+        new Float:normal[3];
         new Float:origin[3];
         new Float:position[3];
         decl Float:mins[3], Float:maxs[3];
+        GetEntPropVector(entity, Prop_Send, "m_climbableNormal", normal);
         GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
         GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
         GetEntPropVector(entity,Prop_Send,"m_vecMaxs",maxs);
@@ -213,7 +215,7 @@ public Action Command_Kill(int client, int args)
         decl String:key[8];
         IntToString(entity, key, 8);
         RemoveFromTrie(hLadders, key);
-        PrintToChat(client, "Killed ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2]);
+        PrintToChat(client, "Killed ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f). normal: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2], normal[0], normal[1], normal[2]);
     }
     else {
         PrintToChat(client, "No ladder selected.");
@@ -230,23 +232,25 @@ public Action Command_Info(int client, int args)
         GetEntityClassname(entity, classname, MAX_STR_LEN);
         if (StrEqual(classname, "func_simpleladder", false)) {
             GetEntPropString(entity, Prop_Data, "m_ModelName", modelname, 128);
+            new Float:normal[3];
             new Float:origin[3];
             new Float:position[3];
             decl Float:mins[3], Float:maxs[3];
+            GetEntPropVector(entity, Prop_Send, "m_climbableNormal", normal);
             GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
             GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
             GetEntPropVector(entity,Prop_Send,"m_vecMaxs",maxs);
             position[0] = origin[0] + (mins[0] + maxs[0]) * 0.5;
             position[1] = origin[1] + (mins[1] + maxs[1]) * 0.5;
             position[2] = origin[1] + (mins[2] + maxs[2]) * 0.5;
-            PrintToChat(client, "Ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2]);
+            PrintToChat(client, "Ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f). normal: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2], normal[0], normal[1], normal[2]);
 
             PrintToChat(client, "add:");
             PrintToChat(client, "{");
             PrintToChat(client, "    \"model\" \"%s\"", modelname);
-            PrintToChat(client, "    \"normal.z\" \"0.000000\"");
-            PrintToChat(client, "    \"normal.y\" \"-1.000000\"");
-            PrintToChat(client, "    \"normal.x\" \"0.000000\"");
+            PrintToChat(client, "    \"normal.z\" \"%.2f\"", normal[2]);
+            PrintToChat(client, "    \"normal.y\" \"%.2f\"", normal[1]);
+            PrintToChat(client, "    \"normal.x\" \"%.2f\"", normal[0]);
             PrintToChat(client, "    \"team\" \"2\"");
             PrintToChat(client, "    \"classname\" \"func_simpleladder\"");
             PrintToChat(client, "    \"origin\" \"%.2f %.2f %.2f\"", origin[0], origin[1], origin[2]);
@@ -352,6 +356,7 @@ public Action Command_Move(int client, int args)
 public Action Command_Clone(int client, int args)
 {
     decl String:modelname[128];
+    decl String:buf[32];
     new String:classname[MAX_STR_LEN];
     new sourceEnt = selectedLadder[client];
     if (IsValidEntity(sourceEnt)) {
@@ -363,6 +368,8 @@ public Action Command_Clone(int client, int args)
         }
         GetEntPropString(sourceEnt, Prop_Data, "m_ModelName", modelname, 128);
         PrecacheModel(modelname,true);
+        new Float:normal[3];
+        GetEntPropVector(sourceEnt, Prop_Send, "m_climbableNormal", normal);
         new entity = CreateEntityByName("func_simpleladder");
         if (entity == -1)
         {
@@ -370,9 +377,12 @@ public Action Command_Clone(int client, int args)
             return Plugin_Handled;
         }
         DispatchKeyValue(entity, "model", modelname);
-        DispatchKeyValue(entity, "normal.z", "0.000000");
-        DispatchKeyValue(entity, "normal.y", "-1.000000");
-        DispatchKeyValue(entity, "normal.x", "0.000000");
+        Format(buf, sizeof(buf), "%.6f", normal[2]);
+        DispatchKeyValue(entity, "normal.z", buf);
+        Format(buf, sizeof(buf), "%.6f", normal[1]);
+        DispatchKeyValue(entity, "normal.y", buf);
+        Format(buf, sizeof(buf), "%.6f", normal[0]);
+        DispatchKeyValue(entity, "normal.x", buf);
         DispatchKeyValue(entity, "team", "2");
         DispatchKeyValue(entity, "origin", "50 0 0");
 
@@ -399,16 +409,18 @@ public Action Command_Select(int client, int args)
         if (StrEqual(classname, "func_simpleladder", false)) {
             GetEntPropString(entity, Prop_Data, "m_ModelName", modelname, 128);
             selectedLadder[client] = entity;
+            new Float:normal[3];
             new Float:origin[3];
             new Float:position[3];
             decl Float:mins[3], Float:maxs[3];
+            GetEntPropVector(entity, Prop_Send, "m_climbableNormal", normal);
             GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
             GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
             GetEntPropVector(entity,Prop_Send,"m_vecMaxs",maxs);
             position[0] = origin[0] + (mins[0] + maxs[0]) * 0.5;
             position[1] = origin[1] + (mins[1] + maxs[1]) * 0.5;
             position[2] = origin[1] + (mins[2] + maxs[2]) * 0.5;
-            PrintToChat(client, "Selected ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2]);
+            PrintToChat(client, "Selected ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f). normal: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2], normal[0], normal[1], normal[2]);
         }
         else {
             selectedLadder[client] = -1;
