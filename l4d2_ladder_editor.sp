@@ -12,11 +12,12 @@ static bEditMode[MAXPLAYERS + 1];
 static Float:stepSize[MAXPLAYERS + 1];
 new Handle:hLadders;
 new bool:in_attack[MAXPLAYERS + 1];
+new bool:in_attack2[MAXPLAYERS + 1];
 
 public Plugin:myinfo = {
     name = "L4D2 Ladder Editor",
     author = "devilesk",
-    version = "0.1.0",
+    version = "0.2.0",
     description = "Clone and move special infected ladders.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -36,6 +37,7 @@ public OnPluginStart() {
         selectedLadder[i] = -1;
         bEditMode[i] = false;
         in_attack[i] = false;
+        in_attack2[i] = false;
         stepSize[i] = DEFAULT_STEP_SIZE;
     }
 }
@@ -45,6 +47,7 @@ public OnMapStart() {
         selectedLadder[i] = -1;
         bEditMode[i] = false;
         in_attack[i] = false;
+        in_attack2[i] = false;
         stepSize[i] = DEFAULT_STEP_SIZE;
     }
     ClearTrie(hLadders);
@@ -54,6 +57,7 @@ public OnClientDisconnect_Post(client)
 {
     bEditMode[client] = false;
     in_attack[client] = false;
+    in_attack2[client] = false;
     stepSize[client] = DEFAULT_STEP_SIZE;
 }
 
@@ -62,12 +66,33 @@ stock SetClientFrozen(client, freeze)
     SetEntityMoveType(client, freeze ? MOVETYPE_NONE : MOVETYPE_WALK);
 }
 
+public bool:GetEndPosition(client, Float:end[3])
+{
+    decl Float:start[3], Float:angle[3];
+    GetClientEyePosition(client, start);
+    GetClientEyeAngles(client, angle);
+    TR_TraceRayFilter(start, angle, MASK_SOLID, RayType_Infinite, TraceEntityFilterPlayer, client);
+    if (TR_DidHit(INVALID_HANDLE))
+    {
+        TR_GetEndPosition(end, INVALID_HANDLE);
+        return true;
+    }
+    return false;
+}
+
+public bool:TraceEntityFilterPlayer(entity, contentsMask, any:data)
+{
+    return entity > MaxClients;
+}
+
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon) {
     if (client <= 0 || client > MaxClients) return Plugin_Continue;
     if (!IsClientInGame(client)) return Plugin_Continue;
     if (IsFakeClient(client)) return Plugin_Continue;
     if (!bEditMode[client]) return Plugin_Continue;
-    
+
+    new prevButtons = buttons;
+
     // Player was holding m1, and now isn't. (Released)
     if (buttons & IN_ATTACK != IN_ATTACK && in_attack[client]) {
         in_attack[client] = false;
@@ -77,39 +102,43 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
     if (buttons & IN_ATTACK == IN_ATTACK && !in_attack[client]) {
         in_attack[client] = true;
     }
-    
-    new bool:bChanged = false;
+
+    // Player was holding m2, and now isn't. (Released)
+    if (buttons & IN_ATTACK2 != IN_ATTACK2 && in_attack2[client]) {
+        in_attack2[client] = false;
+        decl Float:end[3];
+        if (GetEndPosition(client, end))
+            Move(client, end[0], end[1], end[2], true);
+        else
+            PrintToChat(client, "Invalid end position.");
+    }
+    // Player was not holding m2, and now is. (Pressed)
+    if (buttons & IN_ATTACK2 == IN_ATTACK2 && !in_attack2[client]) {
+        in_attack2[client] = true;
+    }
+
     if (buttons & IN_MOVELEFT == IN_MOVELEFT) {
         Nudge(client, -stepSize[client], 0.0, 0.0, false);
-        buttons &= ~IN_MOVELEFT;
-        bChanged = true;
     }
     if (buttons & IN_MOVERIGHT == IN_MOVERIGHT) {
         Nudge(client, stepSize[client], 0.0, 0.0, false);
-        buttons &= ~IN_MOVERIGHT;
-        bChanged = true;
     }
     if (buttons & IN_FORWARD == IN_FORWARD) {
         Nudge(client, 0.0, stepSize[client], 0.0, false);
-        buttons &= ~IN_FORWARD;
-        bChanged = true;
     }
     if (buttons & IN_BACK == IN_BACK) {
         Nudge(client, 0.0, -stepSize[client], 0.0, false);
-        buttons &= ~IN_BACK;
-        bChanged = true;
     }
     if (buttons & IN_USE == IN_USE) {
         Nudge(client, 0.0, 0.0, stepSize[client], false);
-        buttons &= ~IN_USE;
-        bChanged = true;
     }
     if (buttons & IN_RELOAD == IN_RELOAD) {
         Nudge(client, 0.0, 0.0, -stepSize[client], false);
-        buttons &= ~IN_RELOAD;
-        bChanged = true;
     }
-    if (bChanged) {
+
+    buttons &= ~(IN_ATTACK | IN_ATTACK2 | IN_USE | IN_RELOAD);
+
+    if (prevButtons != buttons) {
         return Plugin_Changed;
     }
     return Plugin_Continue;
@@ -189,6 +218,7 @@ public Action Command_Kill(int client, int args)
     else {
         PrintToChat(client, "No ladder selected.");
     }
+    return Plugin_Handled;
 }
 
 public Action Command_Info(int client, int args)
@@ -210,6 +240,17 @@ public Action Command_Info(int client, int args)
             position[1] = origin[1] + (mins[1] + maxs[1]) * 0.5;
             position[2] = origin[1] + (mins[2] + maxs[2]) * 0.5;
             PrintToChat(client, "Ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2]);
+
+            PrintToChat(client, "add:");
+            PrintToChat(client, "{");
+            PrintToChat(client, "    \"model\" \"%s\"", modelname);
+            PrintToChat(client, "    \"normal.z\" \"0.000000\"");
+            PrintToChat(client, "    \"normal.y\" \"-1.000000\"");
+            PrintToChat(client, "    \"normal.x\" \"0.000000\"");
+            PrintToChat(client, "    \"team\" \"2\"");
+            PrintToChat(client, "    \"classname\" \"func_simpleladder\"");
+            PrintToChat(client, "    \"origin\" \"%.2f %.2f %.2f\"", origin[0], origin[1], origin[2]);
+            PrintToChat(client, "}");
         }
         else {
             PrintToChat(client, "Not looking at a ladder. Entity %i, classname: %s", entity, classname);
@@ -218,6 +259,7 @@ public Action Command_Info(int client, int args)
     else {
         PrintToChat(client, "Looking at invalid entity %i", entity);
     }
+    return Plugin_Handled;
 }
 
 public Nudge(int client, float x, float y, float z, bool bPrint)
@@ -255,6 +297,44 @@ public Action Command_Nudge(int client, int args)
     return Plugin_Handled;
 }
 
+public Move(int client, float x, float y, float z, bool bPrint)
+{
+    new entity = selectedLadder[client];
+    if (IsValidEntity(entity)) {
+        new sourceEnt;
+        decl String:key[8];
+        IntToString(entity, key, 8);
+        if (!GetTrieValue(hLadders, key, sourceEnt)) {
+            if (bPrint)
+                PrintToChat(client, "Original ladder not found.");
+            return;
+        }
+        new Float:sourcePos[3];
+        decl Float:mins[3], Float:maxs[3];
+        GetEntPropVector(sourceEnt, Prop_Send, "m_vecOrigin", sourcePos);
+        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMins",mins);
+        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMaxs",maxs);
+        sourcePos[0] += (mins[0] + maxs[0]) * 0.5;
+        sourcePos[1] += (mins[1] + maxs[1]) * 0.5;
+        sourcePos[2] += (mins[2] + maxs[2]) * 0.5;
+        if (bPrint)
+            PrintToChat(client, "Original ladder entity %i at (%.2f,%.2f,%.2f)", sourceEnt, sourcePos[0], sourcePos[1], sourcePos[2]);
+        
+        new Float:origin[3];
+        origin[0] = x - sourcePos[0];
+        origin[1] = y - sourcePos[1];
+        origin[2] = z - sourcePos[2];
+    
+        TeleportEntity(entity, origin, NULL_VECTOR, NULL_VECTOR);
+        if (bPrint)
+            PrintToChat(client, "Moved ladder entity %i. Origin (%.2f,%.2f,%.2f)", entity, origin[0], origin[1], origin[2]);
+    }
+    else {
+        if (bPrint)
+            PrintToChat(client, "No ladder selected.");
+    }
+}
+
 public Action Command_Move(int client, int args)
 {
     if (args != 3) {
@@ -265,36 +345,7 @@ public Action Command_Move(int client, int args)
     GetCmdArg(1, x, sizeof(x));
     GetCmdArg(2, y, sizeof(y));
     GetCmdArg(3, z, sizeof(z));
-    new entity = selectedLadder[client];
-    if (IsValidEntity(entity)) {
-        new sourceEnt;
-        decl String:key[8];
-        IntToString(entity, key, 8);
-        if (!GetTrieValue(hLadders, key, sourceEnt)) {
-            PrintToChat(client, "Original ladder not found.");
-            return Plugin_Handled;
-        }
-        new Float:sourcePos[3];
-        decl Float:mins[3], Float:maxs[3];
-        GetEntPropVector(sourceEnt, Prop_Send, "m_vecOrigin", sourcePos);
-        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMins",mins);
-        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMaxs",maxs);
-        sourcePos[0] += (mins[0] + maxs[0]) * 0.5;
-        sourcePos[1] += (mins[1] + maxs[1]) * 0.5;
-        sourcePos[2] += (mins[2] + maxs[2]) * 0.5;
-        PrintToChat(client, "Original ladder entity %i at (%.2f,%.2f,%.2f)", sourceEnt, sourcePos[0], sourcePos[1], sourcePos[2]);
-        
-        new Float:origin[3];
-        origin[0] = StringToFloat(x) - sourcePos[0];
-        origin[1] = StringToFloat(y) - sourcePos[1];
-        origin[2] = StringToFloat(z) - sourcePos[2];
-    
-        TeleportEntity(entity, origin, NULL_VECTOR, NULL_VECTOR);
-        PrintToChat(client, "Moved ladder entity %i. Origin (%.2f,%.2f,%.2f)", entity, origin[0], origin[1], origin[2]);
-    }
-    else {
-        PrintToChat(client, "No ladder selected.");
-    }
+    Move(client, StringToFloat(x), StringToFloat(y), StringToFloat(z), true);
     return Plugin_Handled;
 }
 
@@ -368,4 +419,5 @@ public Action Command_Select(int client, int args)
         selectedLadder[client] = -1;
         PrintToChat(client, "Looking at invalid entity %i", entity);
     }
+    return Plugin_Handled;
 }
