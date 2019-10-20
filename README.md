@@ -34,6 +34,7 @@
 * `sm_clone` - Clone the selected ladder.
 * `sm_move <x> <y> <z>` - Move the selected ladder to the given coordinate on the map.
 * `sm_nudge <x> <y> <z>` - Move the selected ladder relative to its current position.
+* `sm_rotate <x> <y> <z>` - Rotate the selected ladder.
 * `sm_kill` - Remove the selected ladder.
 * `sm_info` - Display info about the selected ladder entity.
 

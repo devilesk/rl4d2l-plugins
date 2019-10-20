@@ -2,6 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <smlib>
 
 #define MAX_STR_LEN             100
 #define DEFAULT_STEP_SIZE       1.0
@@ -29,6 +30,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_clone", Command_Clone);
     RegConsoleCmd("sm_move", Command_Move);
     RegConsoleCmd("sm_nudge", Command_Nudge);
+    RegConsoleCmd("sm_rotate", Command_Rotate);
     RegConsoleCmd("sm_kill", Command_Kill);
     RegConsoleCmd("sm_info", Command_Info);
     HookEvent("player_team", PlayerTeam_Event);
@@ -235,26 +237,29 @@ public Action Command_Info(int client, int args)
             new Float:normal[3];
             new Float:origin[3];
             new Float:position[3];
+            new Float:angles[3];
             decl Float:mins[3], Float:maxs[3];
             GetEntPropVector(entity, Prop_Send, "m_climbableNormal", normal);
             GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
             GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
             GetEntPropVector(entity,Prop_Send,"m_vecMaxs",maxs);
+            GetEntPropVector(entity,Prop_Send,"m_angRotation",angles);
             position[0] = origin[0] + (mins[0] + maxs[0]) * 0.5;
             position[1] = origin[1] + (mins[1] + maxs[1]) * 0.5;
             position[2] = origin[1] + (mins[2] + maxs[2]) * 0.5;
-            PrintToChat(client, "Ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f). normal: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2], normal[0], normal[1], normal[2]);
+            PrintToChat(client, "Ladder entity %i, %s at (%.2f,%.2f,%.2f). origin: (%.2f,%.2f,%.2f). normal: (%.2f,%.2f,%.2f). angles: (%.2f,%.2f,%.2f)", entity, modelname, position[0], position[1], position[2], origin[0], origin[1], origin[2], normal[0], normal[1], normal[2], angles[0], angles[1], angles[2]);
 
-            PrintToChat(client, "add:");
-            PrintToChat(client, "{");
-            PrintToChat(client, "    \"model\" \"%s\"", modelname);
-            PrintToChat(client, "    \"normal.z\" \"%.2f\"", normal[2]);
-            PrintToChat(client, "    \"normal.y\" \"%.2f\"", normal[1]);
-            PrintToChat(client, "    \"normal.x\" \"%.2f\"", normal[0]);
-            PrintToChat(client, "    \"team\" \"2\"");
-            PrintToChat(client, "    \"classname\" \"func_simpleladder\"");
-            PrintToChat(client, "    \"origin\" \"%.2f %.2f %.2f\"", origin[0], origin[1], origin[2]);
-            PrintToChat(client, "}");
+            PrintToConsole(client, "add:");
+            PrintToConsole(client, "{");
+            PrintToConsole(client, "    \"model\" \"%s\"", modelname);
+            PrintToConsole(client, "    \"normal.z\" \"%.2f\"", normal[2]);
+            PrintToConsole(client, "    \"normal.y\" \"%.2f\"", normal[1]);
+            PrintToConsole(client, "    \"normal.x\" \"%.2f\"", normal[0]);
+            PrintToConsole(client, "    \"team\" \"2\"");
+            PrintToConsole(client, "    \"classname\" \"func_simpleladder\"");
+            PrintToConsole(client, "    \"origin\" \"%.2f %.2f %.2f\"", origin[0], origin[1], origin[2]);
+            PrintToConsole(client, "    \"angles\" \"%.2f %.2f %.2f\"", angles[0], angles[1], angles[2]);
+            PrintToConsole(client, "}");
         }
         else {
             PrintToChat(client, "Not looking at a ladder. Entity %i, classname: %s", entity, classname);
@@ -287,18 +292,69 @@ public Nudge(int client, float x, float y, float z, bool bPrint)
     }
 }
 
-public Action Command_Nudge(int client, int args)
+public Rotate(int client, float x, float y, float z, bool bPrint)
 {
-    if (args != 3) {
-        PrintToChat(client, "[SM] Usage: sm_nudge <x> <y> <z>");
-        return Plugin_Handled;
+    new entity = selectedLadder[client];
+    if (IsValidEntity(entity)) {
+        new sourceEnt;
+        decl String:key[8];
+        IntToString(entity, key, 8);
+        if (!GetTrieValue(hLadders, key, sourceEnt)) {
+            if (bPrint)
+                PrintToChat(client, "Original ladder not found.");
+            return;
+        }
+        new Float:sourcePos[3];
+        decl Float:mins[3], Float:maxs[3];
+        GetEntPropVector(sourceEnt, Prop_Send, "m_vecOrigin", sourcePos);
+        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMins",mins);
+        GetEntPropVector(sourceEnt,Prop_Send,"m_vecMaxs",maxs);
+        sourcePos[0] += (mins[0] + maxs[0]) * 0.5;
+        sourcePos[1] += (mins[1] + maxs[1]) * 0.5;
+        sourcePos[2] += (mins[2] + maxs[2]) * 0.5;
+        if (bPrint)
+            PrintToChat(client, "Original ladder entity %i at (%.2f,%.2f,%.2f)", sourceEnt, sourcePos[0], sourcePos[1], sourcePos[2]);
+        
+        new Float:position[3];
+        new Float:origin[3];
+        new Float:currAngle[3];
+        GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
+        GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
+        GetEntPropVector(entity,Prop_Send,"m_vecMaxs",maxs);
+        GetEntPropVector(entity,Prop_Send,"m_angRotation",currAngle);
+        Math_RotateVector(mins, currAngle, mins);
+        Math_RotateVector(maxs, currAngle, maxs);
+        position[0] = origin[0] + (mins[0] + maxs[0]) * 0.5;
+        position[1] = origin[1] + (mins[1] + maxs[1]) * 0.5;
+        position[2] = origin[2] + (mins[2] + maxs[2]) * 0.5;
+        
+        new Float:angles[3];
+        angles[0] = x;
+        angles[1] = y;
+        angles[2] = z;
+        
+        new Float:rotatedPos[3];
+        Math_RotateVector(sourcePos, angles, rotatedPos);
+        //Math_RotateVector(position, currAngle, position);
+        
+        origin[0] = -rotatedPos[0] + position[0];
+        origin[1] = -rotatedPos[1] + position[1];
+        origin[2] = -rotatedPos[2] + position[2];
+    
+        TeleportEntity(entity, origin, angles, NULL_VECTOR);
+        
+        new Float:normal[3];
+        GetEntPropVector(sourceEnt, Prop_Send, "m_climbableNormal", normal);
+        Math_RotateVector(normal, angles, normal);
+        SetEntPropVector(entity, Prop_Send, "m_climbableNormal", normal);
+        
+        if (bPrint)
+            PrintToChat(client, "Rotated ladder entity %i. Origin (%.2f,%.2f,%.2f). Angles (%.2f,%.2f,%.2f). Normal (%.2f,%.2f,%.2f)", entity, origin[0], origin[1], origin[2], angles[0], angles[1], angles[2], normal[0], normal[1], normal[2]);
     }
-    char x[8], y[8], z[8];
-    GetCmdArg(1, x, sizeof(x));
-    GetCmdArg(2, y, sizeof(y));
-    GetCmdArg(3, z, sizeof(z));
-    Nudge(client, StringToFloat(x), StringToFloat(y), StringToFloat(z), true);
-    return Plugin_Handled;
+    else {
+        if (bPrint)
+            PrintToChat(client, "No ladder selected.");
+    }
 }
 
 public Move(int client, float x, float y, float z, bool bPrint)
@@ -337,6 +393,34 @@ public Move(int client, float x, float y, float z, bool bPrint)
         if (bPrint)
             PrintToChat(client, "No ladder selected.");
     }
+}
+
+public Action Command_Rotate(int client, int args)
+{
+    if (args != 3) {
+        PrintToChat(client, "[SM] Usage: sm_rotate <x> <y> <z>");
+        return Plugin_Handled;
+    }
+    char x[8], y[8], z[8];
+    GetCmdArg(1, x, sizeof(x));
+    GetCmdArg(2, y, sizeof(y));
+    GetCmdArg(3, z, sizeof(z));
+    Rotate(client, StringToFloat(x), StringToFloat(y), StringToFloat(z), true);
+    return Plugin_Handled;
+}
+
+public Action Command_Nudge(int client, int args)
+{
+    if (args != 3) {
+        PrintToChat(client, "[SM] Usage: sm_nudge <x> <y> <z>");
+        return Plugin_Handled;
+    }
+    char x[8], y[8], z[8];
+    GetCmdArg(1, x, sizeof(x));
+    GetCmdArg(2, y, sizeof(y));
+    GetCmdArg(3, z, sizeof(z));
+    Nudge(client, StringToFloat(x), StringToFloat(y), StringToFloat(z), true);
+    return Plugin_Handled;
 }
 
 public Action Command_Move(int client, int args)
