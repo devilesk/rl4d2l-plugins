@@ -29,6 +29,7 @@
 * Commands for cloning and moving special infected ladders.
 * `sm_edit` - Toggle edit mode on or off.
   * While in edit mode, ladders you are aiming at can be selected using MOUSE1 and moved using MOUSE2 or WASD, USE, and RELOAD.
+  * TAB to toggle edit mode. SHIFT to rotate ladders in 90 degree increments.
 * `sm_step <size>` - Number of units to move when moving ladders in edit mode.
 * `sm_select` - Select the ladder you are aiming at.
 * `sm_clone` - Clone the selected ladder.
@@ -37,6 +38,7 @@
 * `sm_rotate <x> <y> <z>` - Rotate the selected ladder.
 * `sm_kill` - Remove the selected ladder.
 * `sm_info` - Display info about the selected ladder entity.
+* `sm_togglehud` - Toggle selected ladder info HUD on or off.
 
 ### l4d2_practice.sp
 * Combined several features from existing plugins for use in a practice config.
