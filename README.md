@@ -221,7 +221,9 @@
 *No change or minor edits to allow compilation on older SourceMod version.*
 
 ### caster_assister.sp
-* Caster Assister v2.1 from [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/caster_assister.sp) v0.6.2 fixes throwing client errors due to clients not being in-game.
+* Caster Assister v2.2 from [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/caster_assister.sp).
+  * executes sm_spechud for casters joining server
+  * fixes throwing client errors due to clients not being in-game.
 
 ### l4d_rock_lagcomp.sp
 * Luckylock's [L4D(2) Tank Rock Lag Compensation](https://github.com/LuckyServ/sourcemod-plugins/blob/master/source/l4d_rock_lagcomp.sp) v1.10 with a minor edit to compile on older SourceMod versions.
