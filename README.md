@@ -217,6 +217,10 @@
 ### l4d2_godframes_control_merge.sp
 * Minor edit to [L4D2 Godframes Control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_godframes_control_merge.sp) v0.6 from L4D2 Competitive Rework v0.6.4.
 
+### l4d2_static_shotgun_spread.sp
+* Recompiled [L4D2 Static Shotgun Spread](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_static_shotgun_spread.sp) v1.0 with an updated code_patcher include.
+  * The code_patcher.inc change fixes the plugin name not being used in the method names according to the [wiki](https://wiki.alliedmods.net/Optional_Requirements_(SourceMod_Scripting)#Creating_a_Dependency), but I don't think it makes a difference here.
+
 ### tankdoorfix.sp
 * Minor edit to Dr. Greg House's [TankDoorFix](https://forums.alliedmods.net/showthread.php?t=225087) v1.4 to fix `Array index is out of bounds` error.
 
