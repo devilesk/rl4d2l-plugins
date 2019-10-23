@@ -159,6 +159,50 @@ new const String:WeaponNames[WeaponId][] =
     "ammo", "upgrade_item"                                                                   // 54
 };
 
+// Long weapon names
+new const String:LongWeaponNames[WeaponId][] =
+{
+    "None", "Pistol", "Uzi",                                                                 // 0
+    "Pump", "Autoshotgun", "M-16",                                                           // 3
+    "Hunting Rifle", "Mac", "Chrome",                                                        // 6
+    "Desert Rifle", "Military Sniper", "SPAS Shotgun",                                       // 9
+    "First Aid Kit", "Molotov", "Pipe Bomb",                                                 // 12
+    "Pills", "Gascan", "Propane Tank",                                                       // 15
+    "Oxygen Tank", "Melee", "Chainsaw",                                                      // 18
+    "Grenade Launcher", "Ammo Pack", "Adrenaline",                                           // 21
+    "Defibrillator", "Bile Bomb", "AK-47",                                                   // 24
+    "Gnome", "Cola Bottles", "Fireworks",                                                    // 27
+    "Incendiary Ammo Pack", "Explosive Ammo Pack", "Deagle",                                 // 30
+    "MP5", "SG552", "AWP",                                                                   // 33
+    "Scout", "M60", "Tank Claw",                                                             // 36
+    "Hunter Claw", "Charger Claw", "Boomer Claw",                                            // 39
+    "Smoker Claw", "Spitter Claw", "Jockey Claw",                                            // 42
+    "Turret", "vomit", "splat",                                                              // 45
+    "pounce", "lounge", "pull",                                                              // 48
+    "choke", "rock", "physics",                                                              // 51
+    "ammo", "upgrade_item"                                                                   // 54
+};
+
+// Long melee weapon names
+new const String:LongMeleeWeaponNames[MeleeWeaponId][] =
+{
+    "None",
+    "Knife",
+    "Baseball Bat",
+    "Chainsaw",
+    "Cricket Bat",
+    "Crowbar",
+    "didgeridoo", // derp
+    "Guitar",
+    "Axe",
+    "Frying Pan",
+    "Golf Club",
+    "Katana",
+    "Machete",
+    "Riot Shield",
+    "Tonfa"
+};
+
 // Internal names for melee weapons
 new const String:MeleeWeaponNames[MeleeWeaponId][] =
 {

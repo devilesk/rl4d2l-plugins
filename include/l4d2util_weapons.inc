@@ -4,7 +4,9 @@
 #define l4d2_weapons_inc_
 
 #define GETWEAPONNAME(%0) (IsValidWeaponId(WeaponId:(%0)) ? (WeaponNames[_:(%0)]) : "")
+#define GETLONGWEAPONNAME(%0) (IsValidWeaponId(WeaponId:(%0)) ? (LongWeaponNames[_:(%0)]) : "")
 #define GETMELEEWEAPONNAME(%0) (IsValidMeleeWeaponId(MeleeWeaponId:(%0)) ? (MeleeWeaponNames[_:(%0)]) : "")
+#define GETLONGMELEEWEAPONNAME(%0) (IsValidMeleeWeaponId(MeleeWeaponId:(%0)) ? (LongMeleeWeaponNames[_:(%0)]) : "")
 #define GETWEAPONMODEL(%0) (HasValidWeaponModel(WeaponId:(%0)) ? (WeaponModels[_:(%0)]) : "")
 #define GETMELEEWEAPONMODEL(%0) (HasValidMeleeWeaponModel(MeleeWeaponId:(%0)) ? (MeleeWeaponModels[_:(%0)]) : "")
 
@@ -131,6 +133,32 @@ stock GetWeaponName(WeaponId:wepid, String:nameBuffer[], length)
 stock GetMeleeWeaponName(MeleeWeaponId:wepid, String:nameBuffer[], length)
 {
     strcopy(nameBuffer, length, GETMELEEWEAPONNAME(wepid));
+}
+
+/**
+ * Tries to look up L4D2's internal weapon name for a given WeaponId.
+ *
+ * @param wepid            WeaponId To get name of.
+ * @param nameBuffer    String buffer to write the weapon name to.
+ * @param length        Max length which can be written to the buffer.
+ * @return                Number of bytes written to buffer, or 0 for invalid weaponId.
+ */
+stock GetLongWeaponName(WeaponId:wepid, String:nameBuffer[], length)
+{
+    strcopy(nameBuffer, length, GETLONGWEAPONNAME(wepid));
+}
+
+/**
+ * Tries to look up L4D2's internal weapon name for a given MeleeWeaponId.
+ *
+ * @param wepid            MeleeWeaponId To get name of.
+ * @param nameBuffer    String buffer to write the weapon name to.
+ * @param length        Max length which can be written to the buffer.
+ * @return                Number of bytes written to buffer, or 0 for invalid weaponId.
+ */
+stock GetLongMeleeWeaponName(MeleeWeaponId:wepid, String:nameBuffer[], length)
+{
+    strcopy(nameBuffer, length, GETLONGMELEEWEAPONNAME(wepid));
 }
 
 /**
