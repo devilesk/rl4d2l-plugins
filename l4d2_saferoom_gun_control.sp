@@ -15,10 +15,10 @@ new     Handle:g_hSafeSpawnEnts         = INVALID_HANDLE; //adt_array for the id
 public Plugin:myinfo = 
 {
     name = "Saferoom Gun Control",
-    author = "High Cookie and Standalone",
+    author = "High Cookie and Standalone, devilesk",
     description = "Attempts to replace existing weapon spawn entities with new weapon spawns specified in the config/saferoom_gun_control.txt",
-    version = "1",
-    url = ""
+    version = "1.1",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 /***********************
@@ -93,7 +93,7 @@ bool:KV_Load()
 
 public KV_SwapGuns()
 {
-    if ( g_hKVData == INVALID_HANDLE ) return false;
+    if ( g_hKVData == INVALID_HANDLE ) return;
 
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
@@ -111,7 +111,7 @@ public KV_SwapGuns()
     
     if (KvGotoFirstSubKey(g_hKVData, false)) {
         decl String: valuebuffer[64];
-        new count = 0, safeSpawnsCount, weaponId;
+        new count = 0, safeSpawnsCount, WeaponId:weaponId;
         
         BuildSafeWeaponSpawnEnts();
         
@@ -174,7 +174,7 @@ stock BuildSafeWeaponSpawnEnts()
         ClearArray(g_hSafeSpawnEnts);
     }
     
-    for (new i = 1; i < GetEntityCount(); i++)
+    for (new i = 1; i <= GetEntityCount(); i++)
     {
         if (!IsValidEntity(i)) { continue; }
         

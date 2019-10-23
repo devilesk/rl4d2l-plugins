@@ -11,10 +11,10 @@
 public Plugin:myinfo =
 {
 	name = "Blind Infected",
-	author = "CanadaRox, ProdigySim",
+	author = "CanadaRox, ProdigySim, devilesk",
 	description = "Hides specified weapons from the infected team until they are (possibly) visible to one of the survivors to prevent SI scouting the map",
-	version = "1.0",
-	url = "https://github.com/CanadaRox/sourcemod-plugins/tree/master/blind_infected_l4d2"
+	version = "1.1",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 enum EntInfo
@@ -101,7 +101,7 @@ public Action:RoundStartDelay_Timer(Handle:timer)
 	decl WeaponId:weapon;
 	new psychonic = GetEntityCount();
 
-	for (new i = MaxClients; i < psychonic; i++)
+	for (new i = MaxClients+1; i <= psychonic; i++)
 	{
 		weapon = IdentifyWeapon(i);
 		if (weapon)

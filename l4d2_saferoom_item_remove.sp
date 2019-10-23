@@ -14,10 +14,10 @@
 public Plugin:myinfo = 
 {
     name = "Saferoom Item Remover",
-    author = "Tabun, Sir",
+    author = "Tabun, Sir, devilesk",
     description = "Removes any saferoom item (start or end).",
-    version = "0.0.6",
-    url = ""
+    version = "0.0.7",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 
@@ -72,7 +72,7 @@ RemoveEndSaferoomItems()
     new iCountEnd = 0;
     new iCountStart = 0;
     
-    for (new i=1; i < entityCount; i++)
+    for (new i=1; i <= entityCount; i++)
     {
         if (!IsValidEntity(i)) { continue; }
         

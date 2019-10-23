@@ -12,10 +12,10 @@
 public Plugin:myinfo =
 {
 	name = "L4D Weapon Limits",
-	author = "CanadaRox, Stabby",
+	author = "CanadaRox, Stabby, devilesk",
 	description = "Restrict weapons individually or together",
-	version = "1.3",
-	url = "https://www.github.com/CanadaRox/sourcemod-plugins/tree/master/weapon_limits"
+	version = "1.4",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 enum LimitArrayEntry
@@ -239,7 +239,7 @@ stock FindAmmoSpawn()
 {
 	new psychonic = GetEntityCount();
 	decl String:classname[64];
-	for (new i = MaxClients; i < psychonic; ++i)
+	for (new i = MaxClients+1; i <= psychonic; ++i)
 	{
 		if (IsValidEntity(i))
 		{
