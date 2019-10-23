@@ -4,9 +4,9 @@
 #define l4d2_weapons_inc_
 
 #define GETWEAPONNAME(%0) (IsValidWeaponId(WeaponId:(%0)) ? (WeaponNames[_:(%0)]) : "")
-#define GETMELEEWEAPONNAME(%0) (IsValidWeaponId(MeleeWeaponId:(%0)) ? (MeleeWeaponNames[_:(%0)]) : "")
+#define GETMELEEWEAPONNAME(%0) (IsValidMeleeWeaponId(MeleeWeaponId:(%0)) ? (MeleeWeaponNames[_:(%0)]) : "")
 #define GETWEAPONMODEL(%0) (HasValidWeaponModel(WeaponId:(%0)) ? (WeaponModels[_:(%0)]) : "")
-#define GETMELEEWEAPONMODEL(%0) (HasValidWeaponModel(MeleeWeaponId:(%0)) ? (MeleeWeaponModels[_:(%0)]) : "")
+#define GETMELEEWEAPONMODEL(%0) (HasValidMeleeWeaponModel(MeleeWeaponId:(%0)) ? (MeleeWeaponModels[_:(%0)]) : "")
 
 static Handle:hWeaponNamesTrie = INVALID_HANDLE;
 static Handle:hMeleeWeaponNamesTrie = INVALID_HANDLE;
@@ -35,13 +35,21 @@ stock InitWeaponNamesTrie()
  * @param wepid        WeaponId to check for validity
  * @return True if wepid is valid, false otherwise.
  */
-stock bool:IsValidWeaponId(WeaponId:wepid, tagType = tagof(wepid))
+stock bool:IsValidWeaponId(WeaponId:wepid)
 {
-    if (tagType == tagof(MeleeWeaponId))
-    {
-        return MeleeWeaponId:wepid >= WEPID_MELEE_NONE && MeleeWeaponId:wepid < MeleeWeaponId;
-    }
     return wepid >= WEPID_NONE && wepid < WeaponId;
+}
+
+/**
+ * Performs bounds checking to determine if a MeleeWeaponId is valid
+ * @remark Simple check to see if wepid has a garbage value
+ *
+ * @param wepid        MeleeWeaponId to check for validity
+ * @return True if wepid is valid, false otherwise.
+ */
+stock bool:IsValidMeleeWeaponId(MeleeWeaponId:wepid)
+{
+    return wepid >= WEPID_MELEE_NONE && wepid < MeleeWeaponId;
 }
 
 /**
@@ -62,13 +70,21 @@ stock GetSlotFromWeaponId(WeaponId:wepid)
  * @param wepid        WeaponId to check for a known weapon model for.
  * @return True if a valid weapon model exists for wepid, false otherwise.
  */
-stock bool:HasValidWeaponModel(WeaponId:wepid, tagType = tagof(wepid))
+stock bool:HasValidWeaponModel(WeaponId:wepid)
 {
-    if (tagType == tagof(MeleeWeaponId))
-    {
-        return IsValidWeaponId(MeleeWeaponId:wepid) && MeleeWeaponModels[MeleeWeaponId:wepid][0] != '\0';
-    }
     return IsValidWeaponId(wepid) && WeaponModels[wepid][0] != '\0';
+}
+
+/**
+ * Checks to see if a given weaponid has a known MeleeWeaponModel in this file's model array
+ * @remark Some weapons (like weapon_melee) have multiple valid models, and this will report false for them.
+ *
+ * @param wepid        MeleeWeaponId to check for a known weapon model for.
+ * @return True if a valid weapon model exists for wepid, false otherwise.
+ */
+stock bool:HasValidMeleeWeaponModel(MeleeWeaponId:wepid)
+{
+    return IsValidMeleeWeaponId(wepid) && MeleeWeaponModels[wepid][0] != '\0';
 }
 
 /**
@@ -99,16 +115,22 @@ stock WeaponId:WeaponNameToId(const String:weaponName[])
  * @param length        Max length which can be written to the buffer.
  * @return                Number of bytes written to buffer, or 0 for invalid weaponId.
  */
-stock GetWeaponName(WeaponId:wepid, String:nameBuffer[], length, tagType = tagof(wepid))
+stock GetWeaponName(WeaponId:wepid, String:nameBuffer[], length)
 {
-    if (tagType == tagof(MeleeWeaponId))
-    {
-        strcopy(nameBuffer, length, GETMELEEWEAPONNAME(wepid));
-    }
-    else
-    {
-        strcopy(nameBuffer, length, GETWEAPONNAME(wepid));
-    }
+    strcopy(nameBuffer, length, GETWEAPONNAME(wepid));
+}
+
+/**
+ * Tries to look up L4D2's internal weapon name for a given MeleeWeaponId.
+ *
+ * @param wepid            MeleeWeaponId To get name of.
+ * @param nameBuffer    String buffer to write the weapon name to.
+ * @param length        Max length which can be written to the buffer.
+ * @return                Number of bytes written to buffer, or 0 for invalid weaponId.
+ */
+stock GetMeleeWeaponName(MeleeWeaponId:wepid, String:nameBuffer[], length)
+{
+    strcopy(nameBuffer, length, GETMELEEWEAPONNAME(wepid));
 }
 
 /**
@@ -120,16 +142,23 @@ stock GetWeaponName(WeaponId:wepid, String:nameBuffer[], length, tagType = tagof
  * @param length        Max length which can be written to the buffer.
  * @return                Number of bytes written to buffer, or 0 for invalid weaponid or no weapon model available.
  */
-stock GetWeaponModel(WeaponId:wepid, String:modelBuffer[], length, tagType = tagof(wepid))
+stock GetWeaponModel(WeaponId:wepid, String:modelBuffer[], length)
 {
-    if (tagType == tagof(MeleeWeaponId))
-    {
-        strcopy(modelBuffer, length, GETMELEEWEAPONMODEL(wepid));
-    }
-    else
-    {
-        strcopy(modelBuffer, length, GETWEAPONMODEL(wepid));
-    }
+    strcopy(modelBuffer, length, GETWEAPONMODEL(wepid));
+}
+
+/**
+ * Tries to look up the weapon model for a given MeleeWeaponId.
+ * @remarks You should use HasValidMeleeWeaponModel to make sure the MeleeWeaponId you're looking up has a valid model associated with it.
+ *
+ * @param wepid            MeleeWeaponId To get name of.
+ * @param nameBuffer    String buffer to write the weapon name to.
+ * @param length        Max length which can be written to the buffer.
+ * @return                Number of bytes written to buffer, or 0 for invalid weaponid or no weapon model available.
+ */
+stock GetMeleeWeaponModel(MeleeWeaponId:wepid, String:modelBuffer[], length)
+{
+    strcopy(modelBuffer, length, GETMELEEWEAPONMODEL(wepid));
 }
 
 /**
