@@ -1,3 +1,7 @@
+# RL4D2L Plugins
+
+Original and modified plugins used by the RL4D2L servers currently running SM 1.7.3 using Sir's [Server4Dead Project](https://github.com/SirPlease/Server4Dead-Project) and a [slightly modified ZoneMod](https://github.com/devilesk/ZoneMod/blob/master/CHANGELOG.md) config.
+
 ## Original Plugins
 
 ### chat_spam_throttle.sp
@@ -198,7 +202,7 @@
 * Replace checkboxes with diamonds from spoon's version.
 
 ### spechud.sp
-* Reconstructed [Hyper-V HUD Manager](https://github.com/MatthewClair/l4d2readyup/blob/master/pause.sp) v3.0 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) with fix to health, damage, and pills bonus not displaying.
+* Reconstructed [Hyper-V HUD Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/spechud.sp) v3.0 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) with fix to health, damage, and pills bonus not displaying.
 * Refactored to use `l4d2util` include library and merged `l4d2_weapon_stocks.inc` into `l4d2util_weapons.inc`
 
 ---
