@@ -205,8 +205,6 @@
 
 *Insignificant changes*
 
-### l4d2\_horde\_equaliser.sp
-* Minor edit to [L4D2 Horde Equaliser](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_horde_equaliser.sp) v3.0.7 from L4D2 Competitive Rework v0.6.5.
 
 ### l4d_stuckzombiemeleefix.sp
 * Minor edit to AtomicStryker's [Stuck Zombie Melee Fix](http://forums.alliedmods.net/showthread.php?p=932416) to use recommended datapack timer practices described in the wiki and eliminate possible handle leak.
@@ -216,6 +214,9 @@
 
 ### l4d2_godframes_control_merge.sp
 * Minor edit to [L4D2 Godframes Control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_godframes_control_merge.sp) v0.6 from L4D2 Competitive Rework v0.6.4.
+
+### l4d2\_horde\_equaliser.sp
+* Minor edit to [L4D2 Horde Equaliser](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_horde_equaliser.sp) v3.0.7 from L4D2 Competitive Rework v0.6.5.
 
 ### l4d2_static_shotgun_spread.sp
 * Recompiled [L4D2 Static Shotgun Spread](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_static_shotgun_spread.sp) v1.0 with an updated code_patcher include.
