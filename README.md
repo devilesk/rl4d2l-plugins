@@ -197,6 +197,10 @@
 * Applied spoon's [bugfix](https://github.com/spoon-l4d2/Plugins/blob/19b55c3c3122333bba0ce2e2cec202b4af623cab/source/readyup.sp#L1409) to prevent unbreakable doors from being made breakable.
 * Replace checkboxes with diamonds from spoon's version.
 
+### spechud.sp
+* Reconstructed [Hyper-V HUD Manager](https://github.com/MatthewClair/l4d2readyup/blob/master/pause.sp) v3.0 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) with fix to health, damage, and pills bonus not displaying.
+* Refactored to use `l4d2util` include library and merged `l4d2_weapon_stocks.inc` into `l4d2util_weapons.inc`
+
 ---
 
 *Insignificant changes*

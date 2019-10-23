@@ -3,46 +3,31 @@
 #include <sourcemod>
 #include <sdktools>
 #include <l4d2_direct>
-#include <l4d2_weapon_stocks>
+#include <l4d2util>
 #include <readyup>
 #include <pause>
 #include <colors>
+#undef REQUIRE_PLUGIN
+#include <l4d2_hybrid_scoremod_zone>
 
 #define SPECHUD_DRAW_INTERVAL   0.5
 
-#define ZOMBIECLASS_NAME(%0) (L4D2SI_Names[(%0)])
+#define ZOMBIECLASS_NAME(%0) (L4D2_InfectedNames[_:(%0)-1])
+
+enum L4D2WeaponSlot
+{
+	L4D2WeaponSlot_Primary,
+	L4D2WeaponSlot_Secondary,
+	L4D2WeaponSlot_Throwable,
+	L4D2WeaponSlot_HeavyHealthItem,
+	L4D2WeaponSlot_LightHealthItem
+};
 
 enum L4D2Gamemode
 {
 	L4D2Gamemode_None,
 	L4D2Gamemode_Versus,
 	L4D2Gamemode_Scavenge
-};
-
-enum L4D2SI 
-{
-	ZC_None,
-	ZC_Smoker,
-	ZC_Boomer,
-	ZC_Hunter,
-	ZC_Spitter,
-	ZC_Jockey,
-	ZC_Charger,
-	ZC_Witch,
-	ZC_Tank
-};
-
-static const String:L4D2SI_Names[][] = 
-{
-	"None",
-	"Smoker",
-	"Boomer",
-	"Hunter",
-	"Spitter",
-	"Jockey",
-	"Charger",
-	"Witch",
-	"Tank"
 };
 
 new Handle:survivor_limit;
@@ -52,14 +37,15 @@ new bool:bSpecHudActive[MAXPLAYERS + 1];
 new bool:bSpecHudHintShown[MAXPLAYERS + 1];
 new bool:bTankHudActive[MAXPLAYERS + 1];
 new bool:bTankHudHintShown[MAXPLAYERS + 1];
+new bool:hybridScoringAvailable;
 
 public Plugin:myinfo = 
 {
 	name = "Hyper-V HUD Manager [Public Version]",
-	author = "Visor",
+	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "2.9",
-	url = "https://github.com/Attano/smplugins"
+	version = "3.1",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() 
@@ -73,7 +59,26 @@ public OnPluginStart()
 	CreateTimer(SPECHUD_DRAW_INTERVAL, HudDrawTimer, _, TIMER_REPEAT);
 }
 
-public OnClientAuthorized(client, const String:auth[])
+public OnAllPluginsLoaded()
+{
+	hybridScoringAvailable = LibraryExists("l4d2_hybrid_scoremod_zone");
+}
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "l4d2_hybrid_scoremod_zone", true))
+	{
+		hybridScoringAvailable = false;
+	}
+}
+public OnLibraryAdded(const String:name[])
+{
+	if (StrEqual(name, "l4d2_hybrid_scoremod_zone", true))
+	{
+		hybridScoringAvailable = true;
+	}
+}
+
+public OnClientConnected(client)
 {
 	bSpecHudActive[client] = false;
 	bSpecHudHintShown[client] = false;
@@ -136,7 +141,10 @@ public Action:HudDrawTimer(Handle:hTimer)
 	
 	new Handle:tankHud = CreatePanel();
 	if (!FillTankInfo(tankHud, true)) // No tank -- no HUD
+	{
+		CloseHandle(tankHud);
 		return Plugin_Handled;
+	}
 
 	for (new i = 1; i <= MaxClients; i++) 
 	{
@@ -239,6 +247,19 @@ FillSurvivorInfo(Handle:hSpecHud)
 		survivorCount++;
 		DrawPanelText(hSpecHud, info);
 	}
+	if (hybridScoringAvailable)
+	{
+		new healthBonus = SMPlus_GetHealthBonus();
+		new damageBonus = SMPlus_GetDamageBonus();
+		new pillsBonus = SMPlus_GetPillsBonus();
+		DrawPanelText(hSpecHud, " ");
+		Format(info, 512, "HB: %i <%.1f%%>", healthBonus, ToPercent(healthBonus, SMPlus_GetMaxHealthBonus()));
+		DrawPanelText(hSpecHud, info);
+		Format(info, 512, "DB: %i <%.1f%%>", damageBonus, ToPercent(damageBonus, SMPlus_GetMaxDamageBonus()));
+		DrawPanelText(hSpecHud, info);
+		Format(info, 512, "Pills: %i <%.1f%%>", pillsBonus, ToPercent(pillsBonus, SMPlus_GetMaxPillsBonus()));
+		DrawPanelText(hSpecHud, info);
+	}
 }
 
 FillInfectedInfo(Handle:hSpecHud) 
@@ -278,8 +299,8 @@ FillInfectedInfo(Handle:hSpecHud)
 		}
 		else 
 		{
-			new L4D2SI:zClass = GetInfectedClass(client);
-			if (zClass == ZC_Tank)
+			new L4D2_Infected:zClass = GetInfectedClass(client);
+			if (zClass == L4D2Infected_Tank)
 				continue;
 
 			if (IsInfectedGhost(client))
@@ -406,9 +427,6 @@ FillGameInfo(Handle:hSpecHud)
 		Format(info, sizeof(info), "%s (%s round)", info, (InSecondHalfOfRound() ? "2nd" : "1st"));
 		DrawPanelText(hSpecHud, info);
 
-		Format(info, sizeof(info), "Natural horde: %is", CTimer_HasStarted(L4D2Direct_GetMobSpawnTimer()) ? RoundFloat(CTimer_GetRemainingTime(L4D2Direct_GetMobSpawnTimer())) : 0);
-		DrawPanelText(hSpecHud, info);
-
 		Format(info, sizeof(info), "Survivor progress: %i%%", RoundToNearest(GetHighestSurvivorFlow() * 100.0));
 		DrawPanelText(hSpecHud, info);
 
@@ -448,6 +466,11 @@ FillGameInfo(Handle:hSpecHud)
 
 /* Stocks */
 
+Float:ToPercent(score, maxbonus)
+{
+	return score < 1 ? 0.0 : float(score) / float(maxbonus) * 100.0;
+}
+
 GetClientFixedName(client, String:name[], length) 
 {
 	GetClientName(client, name, length);
@@ -476,11 +499,6 @@ GetRealClientCount()
 		if (IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i)) clients++;
 	}
 	return clients;
-}
-
-InSecondHalfOfRound()
-{
-	return GameRules_GetProp("m_bInSecondHalfOfRound");
 }
 
 GetScavengeRoundNumber()
@@ -523,13 +541,13 @@ bool:RoundHasFlowWitch()
 
 Float:GetTankFlow() 
 {
-	return L4D2Direct_GetVSTankFlowPercent(0) -
+	return L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) -
 		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
 }
 
 Float:GetWitchFlow() 
 {
-	return L4D2Direct_GetVSWitchFlowPercent(0) -
+	return L4D2Direct_GetVSWitchFlowPercent(InSecondHalfOfRound()) -
 		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
 }
 
@@ -538,61 +556,20 @@ bool:IsSpectator(client)
 	return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 1;
 }
 
-bool:IsSurvivor(client)
-{
-	return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 2;
-}
-
-bool:IsInfected(client)
-{
-	return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 3;
-}
-
-bool:IsInfectedGhost(client) 
-{
-	return bool:GetEntProp(client, Prop_Send, "m_isGhost");
-}
-
-L4D2SI:GetInfectedClass(client)
-{
-	return IsInfected(client) ? (L4D2SI:GetEntProp(client, Prop_Send, "m_zombieClass")) : ZC_None;
-}
-
 FindTank() 
 {
 	for (new i = 1; i <= MaxClients; i++) 
 	{
-		if (IsInfected(i) && GetInfectedClass(i) == ZC_Tank && IsPlayerAlive(i))
+		if (IsInfected(i) && GetInfectedClass(i) == L4D2Infected_Tank && IsPlayerAlive(i))
 			return i;
 	}
 
 	return -1;
 }
 
-GetTankFrustration(tank)
-{
-	return (100 - GetEntProp(tank, Prop_Send, "m_frustration"));
-}
-
-bool:IsIncapacitated(client)
-{
-	return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated");
-}
-
 bool:IsSurvivorHanging(client)
 {
 	return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") | GetEntProp(client, Prop_Send, "m_isFallingFromLedge"));
-}
-
-GetSurvivorIncapCount(client)
-{
-	return GetEntProp(client, Prop_Send, "m_currentReviveCount");
-}
-
-GetSurvivorTemporaryHealth(client)
-{
-	new temphp = RoundToCeil(GetEntPropFloat(client, Prop_Send, "m_healthBuffer") - ((GetGameTime() - GetEntPropFloat(client, Prop_Send, "m_healthBufferTime")) * GetConVarFloat(FindConVar("pain_pills_decay_rate")))) - 1;
-	return (temphp > 0 ? temphp : 0);
 }
 
 GetSurvivorHealth(client)
