@@ -86,6 +86,7 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 * Adds `sm_teleporttank [x] [y] [z]` command.
   * xyz arguments optional. If not provided, teleports tank to where it spawned.
 * Adds `sm_teleport_tank_debug` cvar for logging.
+* Adds `sm_spawntank` to set flow tank % to zero and spawn tank.
 
 ### whitelist.sp
 * Restricts server to Steam IDs in a whitelist database.

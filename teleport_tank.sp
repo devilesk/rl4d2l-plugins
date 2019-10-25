@@ -3,12 +3,21 @@
 #include <sourcemod>
 #include <sdktools>
 #include <builtinvotes>
+#include <l4d2_direct>
+#define L4D2UTIL_STOCKS_ONLY
+#include <l4d2util>
 
 #define TEAM_SPECTATOR          1
 #define TEAM_INFECTED           3
 #define ZOMBIECLASS_TANK        8
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
+
+enum VoteType
+{
+    VoteType_SpawnTank,
+    VoteType_TeleportTank
+}
 
 new g_iTankClient = 0;
 new bool:g_bIsTankInPlay = false;
@@ -17,6 +26,7 @@ new Float:g_vecSpawnPosition[3];
 new Float:g_vecTeleportDestination[3];
 new Handle:hVote = INVALID_HANDLE;
 new Handle:g_hCvarDebug = INVALID_HANDLE;
+new VoteType:g_VoteType;
 
 public Plugin:myinfo = {
     name = "Teleport Tank",
@@ -35,6 +45,7 @@ public OnPluginStart() {
     HookEvent("tank_killed", Event_TankKilled,  EventHookMode_Post);
     HookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
     RegConsoleCmd("sm_teleporttank", Command_Teleport);
+    RegConsoleCmd("sm_spawntank", Command_Spawn);
 }
 
 Reset() {
@@ -85,6 +96,44 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) 
     }
 }
 
+public Action:Command_Spawn(client, args)  {
+    if (g_bIsTankInPlay) {
+        PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank already spawned.");
+        return Plugin_Handled;
+    }
+    
+    new bool:bIsAdmin = CheckCommandAccess(client, "sm_spawntank", ADMFLAG_KICK, true);
+    
+    if (!bIsAdmin) {
+        if (IsSpectator(client)) {
+            PrintToChat(client, "\x01[\x04Teleport Tank\x01] Vote can only be started by a player!");
+            return Plugin_Handled;
+        }
+        else if (!IsNewBuiltinVoteAllowed()) {
+            PrintToChat(client, "\x01[\x04Teleport Tank\x01] Vote cannot be started now.");
+            return Plugin_Handled;
+        }
+    }
+    else {
+        if (IsBuiltinVoteInProgress()) {
+            PrintToChat(client, "\x01[\x04Teleport Tank\x01] There is a vote in progress.");
+            return Plugin_Handled;
+        }
+    }
+    
+    if (bIsAdmin) {
+        SpawnTank();
+    }
+    else {
+        new String:prompt[100];
+        Format(prompt, sizeof(prompt), "Spawn tank?");
+        StartVote(client, prompt, VoteType_SpawnTank);
+        FakeClientCommand(client, "Vote Yes");
+    }
+    
+    return Plugin_Handled; 
+}
+
 public Action:Command_Teleport(client, args)  {
     if (!g_bIsTankInPlay) {
         PrintToChat(client, "\x01[\x04Teleport Tank\x01] Tank not spawned.");
@@ -105,7 +154,7 @@ public Action:Command_Teleport(client, args)  {
     }
     else {
         if (IsBuiltinVoteInProgress()) {
-            PrintToChat(client, "\x01[\x04Teleport Tank\x01] There is a teleport vote in progress.");
+            PrintToChat(client, "\x01[\x04Teleport Tank\x01] There is a vote in progress.");
             return Plugin_Handled;
         }
     }
@@ -135,14 +184,14 @@ public Action:Command_Teleport(client, args)  {
     else {
         new String:prompt[100];
         Format(prompt, sizeof(prompt), "Teleport tank to point (%.2f,%.2f,%.2f)?", g_vecTeleportDestination[0], g_vecTeleportDestination[1], g_vecTeleportDestination[2]);
-        StartVote(client, prompt);
+        StartVote(client, prompt, VoteType_TeleportTank);
         FakeClientCommand(client, "Vote Yes");
     }
     
     return Plugin_Handled; 
 }
 
-public StartVote(client, const String:sVoteHeader[]) {
+public StartVote(client, const String:sVoteHeader[], VoteType:voteType) {
     new iNumPlayers;
     decl players[MaxClients];
     for (new i = 1; i <= MaxClients; i++) {
@@ -152,6 +201,7 @@ public StartVote(client, const String:sVoteHeader[]) {
         players[iNumPlayers++] = i;
     }
 
+    g_VoteType = voteType;
     hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
     SetBuiltinVoteArgument(hVote, sVoteHeader);
     SetBuiltinVoteInitiator(hVote, client);
@@ -178,12 +228,27 @@ public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[
                 DisplayBuiltinVotePass(vote, "Teleporting tank...");
                 PrintToChatAll("\x01[\x04Teleport Tank\x01] Vote passed! Teleporting tank...");
                 PrintDebug("[VoteResultHandler] Vote passed! Teleporting tank...");
-                TeleportTank();
+                if (g_VoteType == VoteType_SpawnTank)
+                    SpawnTank();
+                else if (g_VoteType == VoteType_TeleportTank)
+                    TeleportTank();
                 return;
             }
         }
     }
     DisplayBuiltinVoteFail(vote, BuiltinVoteFail_Loses);
+}
+
+SpawnTank() {
+    if (g_bIsTankInPlay) {
+        PrintToChatAll("\x01[\x04Teleport Tank\x01] Spawn tank failed. Tank already spawned.");
+        PrintDebug("[TeleportTank] Spawn tank failed. Tank already spawned.");
+        return;
+    }
+    PrintToChatAll("\x01[\x04Teleport Tank\x01] Setting tank %% to zero.");
+    PrintDebug("[TeleportTank] Setting tank %% to zero.");
+    new round = InSecondHalfOfRound();
+    L4D2Direct_SetVSTankFlowPercent(round, 0.0);
 }
 
 TeleportTank() {
@@ -239,25 +304,12 @@ GetTankClient() {
     new tankclient = g_iTankClient;
  
     if (!IsClientInGame(tankclient)) {  // If tank somehow is no longer in the game (kicked, hence events didn't fire)
-        tankclient = FindTankClient(); // find the tank client
-        if (!tankclient) return 0;
+        tankclient = FindTankClient(-1); // find the tank client
+        if (tankclient != -1) return 0;
         g_iTankClient = tankclient;
     }
  
     return tankclient;
-}
-
-FindTankClient() {
-    for (new client = 1; client <= MaxClients; client++) {
-            if (!IsClientInGame(client) ||
-                GetClientTeam(client) != TEAM_INFECTED ||
-                !IsPlayerAlive(client) ||
-                GetEntProp(client, Prop_Send, "m_zombieClass") != ZOMBIECLASS_TANK)
-                continue;
- 
-            return client; // Found tank, return
-    }
-    return 0;
 }
 
 void CopyVector(const float vecSrc[3], float vecDest[3]) {
