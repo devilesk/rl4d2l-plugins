@@ -4,7 +4,7 @@
 #include <sdktools>
 #define DEBUG 0
 
-#define PLUGIN_VERSION "1.0.5"
+#define PLUGIN_VERSION "1.0.6"
 
 public Plugin:myinfo = 
 {
@@ -31,7 +31,7 @@ public Action:HookSound_Callback(Clients[64], &NumClients, String:StrSample[PLAT
 	if (StrContains(StrSample, "Swish", false) == -1) return Plugin_Continue;
 	//so the client has the melee sound playing. OMG HES MELEEING!
 	
-	if (Entity > MAXPLAYERS) return Plugin_Continue; // bugfix for some people on L4D2
+	if (Entity > MaxClients) return Plugin_Continue; // bugfix for some people on L4D2
 	
 	//add in a 1 second delay so this doesnt fire every frame
 	if (MeleeDelay[Entity]) return Plugin_Continue; //note 'Entity' means 'client' here
