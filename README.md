@@ -57,6 +57,9 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 * Score setting based on Visor's [SetScores](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_setscores.sp).
 * Optional requirement: Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin.
 
+### parish_finale_ladder_fix.sp
+* Fixes infected ladders on the Parish finale bridge disappearing in the second round.
+
 ### saferoom_gnome.sp
 * Spawns a gnome in the saferoom that is removed when the round goes live.
 
