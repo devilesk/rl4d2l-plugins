@@ -18,20 +18,18 @@
 #pragma semicolon 1
  
 #include <sourcemod>
-#include "includes/rl4d2l_util"
  
 // Offset of the prop we're looking for from m_ghostSpawnState,
 // since its relative offset should be more stable than other stuff...
 const OFFS_FROM_SPAWNSTATE = 0x26;
 new g_SawSurvivorsOutsideBattlefieldOffset;
-new bool:g_bAutoFixThisMap = false;
 
 public Plugin:myinfo =
 {
 		name = "Finale Can't Spawn Glitch Fix",
 		author = "ProdigySim, modified by Wicket and devilesk",
 		description = "Fixing Waiting For Survivors To Start The Finale or w/e",
-		version = "1.2.1",
+		version = "1.2.2",
 		url = "https://github.com/devilesk/rl4d2l-plugins/blob/master/suicideblitzfinalefix.sp"
 }
  
@@ -44,24 +42,14 @@ public OnPluginStart()
 	HookEvent("round_start", RoundStartEvent);
 }
 
-public OnMapStart()
-{
-	decl String:mapname[200];
-	g_bAutoFixThisMap = false;
-	if(GetCurrentMapLower(mapname, sizeof(mapname)) > 0)
-	{
-		if(StrEqual("l4d2_stadium5_stadium", mapname, false))
-		{
-			g_bAutoFixThisMap = true;
-		}
-	}
-}
-
 public RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(g_bAutoFixThisMap) 
+	decl String:mapname[200];
+	if (GetCurrentMap(mapname, sizeof(mapname)) > 0)
 	{
-		FixAllInfected();
+		if (StrEqual("l4d2_stadium5_stadium", mapname, false)) {
+			FixAllInfected();
+		}
 	}
 }
 
