@@ -84,7 +84,7 @@ stock PrintCurrentToTeam(L4D2_Team:team)
 stock Float:GetBossProximity()
 {
 	new Float:proximity = GetMaxSurvivorCompletion() + (GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance());
-	return MAX(proximity, 1.0);
+	return proximity > 1.0 ? 1.0 : proximity;
 }
 
 stock Float:GetMaxSurvivorCompletion()
