@@ -111,6 +111,9 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 ### confoglcompmod.sp
 * Updated [confoglcompmod](https://github.com/devilesk/confoglcompmod/tree/rl4d2l) forked from [v2.2.3](https://github.com/epilimic/confoglcompmod) merged with optional l4d2_changelevel and bugfixes from [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/confoglcompmod.sp).
 
+### current.sp
+* Updated [L4D2 Survivor Progress](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/current.sp) v2.0.1 used in ZoneMod 1.9.3 with changes from [v2.2](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/current.sp).
+
 ### eq_finale_tanks.sp
 * Modified Visor's [EQ2 Finale Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/eq_finale_tanks.sp).
   Reworked to no longer manage flow tanks, since that can be handled by the `static_tank_map` cvar used in the [tank\_and\_nowitch\_ifier](https://github.com/devilesk/rl4d2l-plugins/blob/master/tank_and_nowitch_ifier.sp) plugin. Cvars:

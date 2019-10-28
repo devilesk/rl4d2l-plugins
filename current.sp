@@ -17,8 +17,8 @@ public Plugin:myinfo =
     name = "L4D2 Survivor Progress",
     author = "CanadaRox, Visor",
     description = "Print survivor progress in flow percents ",
-    version = "2.0.1",
-    url = "https://github.com/Attano/ProMod"
+    version = "2.2.1",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart()
@@ -90,21 +90,11 @@ stock Float:GetBossProximity()
 stock Float:GetMaxSurvivorCompletion()
 {
 	new Float:flow = 0.0;
-	decl Float:tmp_flow;
-	decl Float:origin[3];
-	decl Address:pNavArea;
-	for (new client = 1; client <= MaxClients; client++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(client) &&
-			L4D2_Team:GetClientTeam(client) == L4D2Team_Survivor)
+		if (IsSurvivor(i))
 		{
-			GetClientAbsOrigin(client, origin);
-			pNavArea = L4D2Direct_GetTerrorNavArea(origin);
-			if (pNavArea != Address_Null)
-			{
-				tmp_flow = L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
-				flow = MAX(flow, tmp_flow);
-			}
+			flow = MAX(flow, L4D2Direct_GetFlowDistance(i));
 		}
 	}
 	return (flow / L4D2Direct_GetMapMaxFlowDistance());
