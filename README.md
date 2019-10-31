@@ -57,6 +57,10 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 * Score setting based on Visor's [SetScores](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d2_setscores.sp).
 * Optional requirement: Lux's [l4d2_changelevel](https://github.com/LuxLuma/Left-4-fix/tree/master/left%204%20fix/l4d2_levelchanging) plugin.
 
+### l4d2_tank_spawn_fix.sp
+* Fixes inconsistency between rounds where teams have to reach slightly different locations to spawn the same tank.
+* The plugin accounts for the variation in total map distance that can exist between rounds and adjusts the second round tank flow % to make the spawn trigger location match the first round.
+
 ### parish_finale_ladder_fix.sp
 * Fixes infected ladders on the Parish finale bridge disappearing in the second round.
 
