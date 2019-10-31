@@ -201,6 +201,10 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 * Added `sm_tank_nowitch_debug` cvar for logging.
 * Added `sm_tank_nowitch_debug_info` command for dumping info on current spawn configuration.
   * Requires `sm_tank_nowitch_debug` set to 1.
+* Added support for two additional tank ban ranges defined in mapinfo:
+  * `tank_ban_flow_min_b`, `tank_ban_flow_max_b`
+  * `tank_ban_flow_min_c`, `tank_ban_flow_max_c`
+* Added support for `versus_boss_flow_min` and `versus_boss_flow_max` overrides defined in mapinfo.
 
 ---
 

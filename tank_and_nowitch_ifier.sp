@@ -17,7 +17,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.1.3",
+    version = "2.2.0",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -27,6 +27,7 @@ new Handle:g_hVsBossFlowMax;
 new Handle:g_hVsBossFlowMin;
 new Handle:hStaticTankMaps;
 new Handle:g_hCvarDebug = INVALID_HANDLE;
+new bool:bValidSpawn[101];
 
 public OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_tank_nowitch_debug", "0", "Tank and no Witch ifier debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -88,70 +89,66 @@ public Action:AdjustBossFlow(Handle:timer) {
     decl dummy;
     GetCurrentMapLower(sCurMap, sizeof(sCurMap));
 
-    new iCvarMinFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMin) * 100);
-    new iCvarMaxFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMax) * 100);
-
-    // javascript implementation to test algorithm: https://jsfiddle.net/c8qdn03e/3/
-    new iTankFlow = -1;
+    // javascript implementation to test algorithm: https://jsfiddle.net/4ncw70Lv/
 
     if (!GetTrieValue(hStaticTankMaps, sCurMap, dummy)) {
         PrintDebug("[AdjustBossFlow] Not static tank map. Flow tank enabled.");
-        
-        new iMinBanFlow = L4D2_GetMapValueInt("tank_ban_flow_min", 0);
-        new iMaxBanFlow = L4D2_GetMapValueInt("tank_ban_flow_max", 0);
-        if (iMaxBanFlow <= 0) {
-            iMaxBanFlow = iCvarMinFlow - 1;
+
+        new iCvarMinFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMin) * 100);
+        new iCvarMaxFlow = RoundFloat(GetConVarFloat(g_hVsBossFlowMax) * 100);
+
+        // mapinfo override
+        iCvarMinFlow = L4D2_GetMapValueInt("versus_boss_flow_min", iCvarMinFlow);
+        iCvarMaxFlow = L4D2_GetMapValueInt("versus_boss_flow_max", iCvarMaxFlow);
+
+        new iMinBanFlow = L4D2_GetMapValueInt("tank_ban_flow_min", -1);
+        new iMaxBanFlow = L4D2_GetMapValueInt("tank_ban_flow_max", -1);
+        new iMinBanFlowB = L4D2_GetMapValueInt("tank_ban_flow_min_b", -1);
+        new iMaxBanFlowB = L4D2_GetMapValueInt("tank_ban_flow_max_b", -1);
+        new iMinBanFlowC = L4D2_GetMapValueInt("tank_ban_flow_min_c", -1);
+        new iMaxBanFlowC = L4D2_GetMapValueInt("tank_ban_flow_max_c", -1);
+
+        // check each array index to see if it is within a ban range
+        new iValidSpawnTotal = 0;
+        for (new i = 0; i <= 100; i++) {
+            bValidSpawn[i] = (iCvarMinFlow <= i && i <= iCvarMaxFlow) && !(iMinBanFlow <= i && i <= iMaxBanFlow) && !(iMinBanFlowB <= i && i <= iMaxBanFlowB) && !(iMinBanFlowC <= i && i <= iMaxBanFlowC);
+            if (bValidSpawn[i]) iValidSpawnTotal++;
         }
-        if (iMinBanFlow <= iCvarMinFlow && iMaxBanFlow >= iCvarMaxFlow) {
+
+        if (iValidSpawnTotal == 0) {
             L4D2Direct_SetVSTankToSpawnThisRound(0, false);
             L4D2Direct_SetVSTankToSpawnThisRound(1, false);
-
             PrintDebug("[AdjustBossFlow] Ban range covers entire flow range. Flow tank disabled.");
         }
         else {
-            new iIntervalMin = MAX( iCvarMinFlow, iMinBanFlow );
-            new iIntervalMax = MIN( iCvarMaxFlow, iMaxBanFlow );
-            new iPreIntervalLength = iIntervalMin - iCvarMinFlow;
-            new iPostIntervalLength = iCvarMaxFlow - iIntervalMax;
-            new iTankFlowLength = iPreIntervalLength + iPostIntervalLength - 1;
+            new n = Math_GetRandomInt(1, iValidSpawnTotal);
 
-            iTankFlow = Math_GetRandomInt(0, iTankFlowLength);
-            
-            PrintDebug("[AdjustBossFlow] iCvarMinFlow %i, iCvarMaxFlow %i", iCvarMinFlow, iCvarMaxFlow);
-            PrintDebug("[AdjustBossFlow] iMinBanFlow %i, iMaxBanFlow %i", iMinBanFlow, iMaxBanFlow);
-            PrintDebug("[AdjustBossFlow] iIntervalMin %i, iIntervalMax %i", iIntervalMin, iIntervalMax);
-            PrintDebug("[AdjustBossFlow] iPreIntervalLength %i, iPostIntervalLength %i", iPreIntervalLength, iPostIntervalLength);
-            PrintDebug("[AdjustBossFlow] iTankFlowLength %i, iTankFlow_pre %i", iTankFlowLength, iTankFlow);
-            
-            if (iPreIntervalLength == 0) {
-                iTankFlow += iMaxBanFlow + 1;
-            }
-            else {
-                iTankFlow += iCvarMinFlow;
-                if (iPostIntervalLength > 0 && iTankFlow >= iIntervalMin) {
-                    iTankFlow += (iIntervalMax - iIntervalMin + 1);
+            // the nth valid spawn index is the chosen tank flow %
+            for (new iTankFlow = 0; iTankFlow <= 100; iTankFlow++) {
+                if (bValidSpawn[iTankFlow]) {
+                    n--;
+                    if (n == 0) {
+                        new Float:fTankFlow = iTankFlow / 100.0;
+                        PrintDebug("[AdjustBossFlow] iTankFlow: %i, fTankFlow: %f", iTankFlow, fTankFlow);
+                        L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+                        L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+                        L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
+                        L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
+                        break;
+                    }
                 }
             }
-            
-            new Float:fTankFlow = iTankFlow / 100.0;
-            
-            PrintDebug("[AdjustBossFlow] iTankFlow_post: %i, fTankFlow: %f", iTankFlow, fTankFlow);
-
-            L4D2Direct_SetVSTankToSpawnThisRound(0, true);
-            L4D2Direct_SetVSTankToSpawnThisRound(1, true);
-            L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
-            L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
         }
     }
     else {
         L4D2Direct_SetVSTankToSpawnThisRound(0, false);
         L4D2Direct_SetVSTankToSpawnThisRound(1, false);
-        
+
         PrintDebug("[AdjustBossFlow] Static tank map. Flow tank disabled.");
     }
     L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
     L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
-    
+
     PrintDebugInfoDump();
 }
 
