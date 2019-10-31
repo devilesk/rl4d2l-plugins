@@ -17,7 +17,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.1.1",
+    version = "2.1.2",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -156,7 +156,7 @@ public Action:AdjustBossFlow(Handle:timer) {
 }
 
 stock Float:GetTankFlow(round) {
-    return L4D2Direct_GetVSTankFlowPercent(round) - Float:GetConVarInt(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
+    return L4D2Direct_GetVSTankFlowPercent(round) - GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
 }
 
 stock PrintDebugInfoDump() {

@@ -44,7 +44,7 @@ public Plugin:myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "3.1",
+	version = "3.1.1",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -542,13 +542,13 @@ bool:RoundHasFlowWitch()
 Float:GetTankFlow() 
 {
 	return L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) -
-		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
+		(GetConVarFloat(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
 }
 
 Float:GetWitchFlow() 
 {
 	return L4D2Direct_GetVSWitchFlowPercent(InSecondHalfOfRound()) -
-		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
+		(GetConVarFloat(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
 }
 
 bool:IsSpectator(client)

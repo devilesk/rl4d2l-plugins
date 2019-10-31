@@ -11,10 +11,10 @@
 public Plugin:myinfo =
 {
 	name = "L4D2 Boss Flow Announce (Back to roots edition)",
-	author = "ProdigySim, Jahze, Stabby, CircleSquared, CanadaRox, Visor, Sir",
-	version = "1.6.2",
+	author = "ProdigySim, Jahze, Stabby, CircleSquared, CanadaRox, Visor, Sir, devilesk",
+	version = "1.6.3",
 	description = "Announce boss flow percents!",
-	url = "https://github.com/Attano/Equilibrium"
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 new iWitchPercent = 0;
@@ -401,13 +401,13 @@ SetBoss()
 stock Float:GetTankFlow(round)
 {
 	return L4D2Direct_GetVSTankFlowPercent(round) -
-		( Float:GetConVarInt(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
+		( GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
 }
 
 stock Float:GetWitchFlow(round)
 {
 	return L4D2Direct_GetVSWitchFlowPercent(round) -
-		( Float:GetConVarInt(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
+		( GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
 }
 
 bool:IsDKR()

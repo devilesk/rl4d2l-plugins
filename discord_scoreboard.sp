@@ -45,7 +45,7 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.4.0",
+    version = "1.4.1",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
@@ -193,7 +193,7 @@ bool GetMapName(const char[] mapId, char[] mapName, int iLength)
 
 stock Float:GetTankFlow(round)
 {
-	return L4D2Direct_GetVSTankFlowPercent(round) - Float:GetConVarInt(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
+    return L4D2Direct_GetVSTankFlowPercent(round) - GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
 }
 
 public Native_AddEmbed(Handle:plugin, numParams)
