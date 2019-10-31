@@ -45,7 +45,7 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.4.1",
+    version = "1.4.2",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 

@@ -207,8 +207,8 @@ stock L4D2Direct_SetVSCampaignScore( teamNumber , score )
 stock Float:L4D2Direct_GetVSTankFlowPercent( roundNumber )
 {
 	if(roundNumber < 0 || roundNumber > 1) return -1.0;
-	
-	return Float:LoadFromAddress( L4D2Direct_GetVSTankFlowAddr() + Address:(roundNumber * 4) , NumberType_Int32 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	return Float:LoadFromAddress( L4D2Direct_GetVSTankFlowAddr() + Address:(teamNumber * 4) , NumberType_Int32 );
 }
 
 /**
@@ -226,8 +226,8 @@ stock Float:L4D2Direct_GetVSTankFlowPercent( roundNumber )
 stock L4D2Direct_SetVSTankFlowPercent( roundNumber , Float:flow )
 {
 	if(roundNumber < 0 || roundNumber > 1) return;
-	
-	StoreToAddress( L4D2Direct_GetVSTankFlowAddr() + Address:(roundNumber * 4) , _:flow , NumberType_Int32 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	StoreToAddress( L4D2Direct_GetVSTankFlowAddr() + Address:(teamNumber * 4) , _:flow , NumberType_Int32 );
 }
 
 /**
@@ -240,8 +240,8 @@ stock L4D2Direct_SetVSTankFlowPercent( roundNumber , Float:flow )
 stock bool:L4D2Direct_GetVSTankToSpawnThisRound( roundNumber )
 {
 	if(roundNumber < 0 || roundNumber > 1) return false;
-	
-	return bool:LoadFromAddress( L4D2Direct_GeVSTankToSpawnAddr() + Address:roundNumber , NumberType_Int8 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	return bool:LoadFromAddress( L4D2Direct_GeVSTankToSpawnAddr() + Address:teamNumber , NumberType_Int8 );
 }
 
 /**
@@ -257,8 +257,8 @@ stock bool:L4D2Direct_GetVSTankToSpawnThisRound( roundNumber )
 stock L4D2Direct_SetVSTankToSpawnThisRound( roundNumber , bool:spawn )
 {
 	if(roundNumber < 0 || roundNumber > 1) return;
-	
-	StoreToAddress( L4D2Direct_GeVSTankToSpawnAddr() + Address:roundNumber , _:spawn, NumberType_Int8 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	StoreToAddress( L4D2Direct_GeVSTankToSpawnAddr() + Address:teamNumber , _:spawn, NumberType_Int8 );
 }
 
 /**
@@ -275,8 +275,8 @@ stock L4D2Direct_SetVSTankToSpawnThisRound( roundNumber , bool:spawn )
 stock Float:L4D2Direct_GetVSWitchFlowPercent( roundNumber )
 {
 	if(roundNumber < 0 || roundNumber > 1) return -1.0;
-
-	return Float:LoadFromAddress( L4D2Direct_GetVSWitchFlowAddr() + Address:(roundNumber * 4) , NumberType_Int32 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	return Float:LoadFromAddress( L4D2Direct_GetVSWitchFlowAddr() + Address:(teamNumber * 4) , NumberType_Int32 );
 }
 
 /**
@@ -294,8 +294,8 @@ stock Float:L4D2Direct_GetVSWitchFlowPercent( roundNumber )
 stock L4D2Direct_SetVSWitchFlowPercent( roundNumber , Float:flow )
 {
 	if(roundNumber < 0 || roundNumber > 1) return;
-	
-	StoreToAddress( L4D2Direct_GetVSWitchFlowAddr() + Address:(roundNumber * 4) , _:flow , NumberType_Int32 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	StoreToAddress( L4D2Direct_GetVSWitchFlowAddr() + Address:(teamNumber * 4) , _:flow , NumberType_Int32 );
 }
 
 /**
@@ -308,8 +308,8 @@ stock L4D2Direct_SetVSWitchFlowPercent( roundNumber , Float:flow )
 stock bool:L4D2Direct_GetVSWitchToSpawnThisRound( roundNumber )
 {
 	if(roundNumber < 0 || roundNumber > 1) return false;
-	
-	return bool:LoadFromAddress( L4D2Direct_GetVSWitchToSpawnAddr() + Address:roundNumber , NumberType_Int8 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	return bool:LoadFromAddress( L4D2Direct_GetVSWitchToSpawnAddr() + Address:teamNumber , NumberType_Int8 );
 }
 
 /**
@@ -325,8 +325,8 @@ stock bool:L4D2Direct_GetVSWitchToSpawnThisRound( roundNumber )
 stock L4D2Direct_SetVSWitchToSpawnThisRound( roundNumber , bool:spawn )
 {
 	if(roundNumber < 0 || roundNumber > 1) return;
-	
-	StoreToAddress( L4D2Direct_GetVSWitchToSpawnAddr() + Address:roundNumber , _:spawn , NumberType_Int8 );
+	new teamNumber = roundNumber ^ _:(GameRules_GetProp("m_bInSecondHalfOfRound") != GameRules_GetProp("m_bAreTeamsFlipped"));
+	StoreToAddress( L4D2Direct_GetVSWitchToSpawnAddr() + Address:teamNumber , _:spawn , NumberType_Int8 );
 }
 
 /**

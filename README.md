@@ -200,6 +200,10 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 
 *Fixes applied to reconstructed sources from decompiled plugins*
 
+### l4d_boss_percent.sp
+* Reconstructed [L4D2 Boss Flow Announce](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/l4d_boss_percent.sp) v1.6.2 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/l4d_boss_percent.smx).
+* Recompiled with a fixed `l4d2_direct` include that addresses this [issue](https://github.com/ConfoglTeam/l4d2_direct/issues/13).
+
 ### pause.sp
 * Reconstructed [Pause](https://github.com/MatthewClair/l4d2readyup/blob/master/pause.sp) v6.1 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) with a minor fix to check for valid client index in IsPlayer function.
 
@@ -291,3 +295,9 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 
 ### sv_consistency_fix.sp
 * sv_consistency fixes v1.3 from [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/sv_consistency_fix.sp) v0.6.4 fixes wrongly formatted chat printout.
+
+## Include Library Updates
+
+### l4d2_direct.inc
+* Fixed an off by one error in the valid client check for `L4D2Direct_DoAnimationEvent`.
+* Fixed round related functions [not accounting for flipped teams](https://github.com/ConfoglTeam/l4d2_direct/issues/13).

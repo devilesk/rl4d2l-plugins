@@ -44,7 +44,7 @@ public Plugin:myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "3.1.1",
+	version = "3.1.2",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 

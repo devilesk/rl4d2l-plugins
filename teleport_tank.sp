@@ -31,7 +31,7 @@ new VoteType:g_VoteType;
 public Plugin:myinfo = {
     name = "Teleport Tank",
     author = "devilesk",
-    version = "1.7.0",
+    version = "1.7.1",
     description = "Adds sm_teleporttank to teleport tank to its original spawn point or to a given point.",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
