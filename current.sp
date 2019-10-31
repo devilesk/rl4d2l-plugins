@@ -5,110 +5,88 @@
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 
+#define DEBUG 0
 #define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
+#define MAX_PRECISION    3
+#define MIN_PRECISION    0
 
-new Handle:hCvarPrintToEveryone;
-new Handle:survivor_limit;
-new Handle:z_max_player_zombies;
-new Handle:g_hVsBossBuffer;
+new Handle:g_hVsBossBuffer = INVALID_HANDLE;
+new Handle:hCvarPrecision = INVALID_HANDLE;
 
 public Plugin:myinfo =
 {
     name = "L4D2 Survivor Progress",
-    author = "CanadaRox, Visor",
-    description = "Print survivor progress in flow percents ",
-    version = "2.2.1",
+    author = "CanadaRox, Visor, Sir, devilesk",
+    description = "Print survivor progress in flow percents.",
+    version = "2.3.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart()
 {
-	g_hVsBossBuffer = FindConVar("versus_boss_buffer");
-
-	hCvarPrintToEveryone =
-		CreateConVar("l4d_global_percent", "1",
-				"Display boss percentages to entire team when using commands",
-				FCVAR_PLUGIN);
-
-	RegConsoleCmd("sm_cur", CurrentCmd);
-	RegConsoleCmd("sm_current", CurrentCmd);
-
-	survivor_limit = FindConVar("survivor_limit");
-	z_max_player_zombies = FindConVar("z_max_player_zombies");
+    RegConsoleCmd("sm_cur", CurrentCmd);
+    RegConsoleCmd("sm_current", CurrentCmd);
+    g_hVsBossBuffer = FindConVar("versus_boss_buffer");
+    hCvarPrecision = CreateConVar("current_precision", "1", "Number of decimal places to display.", FCVAR_PLUGIN, true, float(MIN_PRECISION), true, float(MAX_PRECISION));
 }
 
 public Action:CurrentCmd(client, args)
 {
-	new L4D2_Team:team = L4D2_Team:GetClientTeam(client);
-	if (team == L4D2Team_Spectator)
-	{
-		PrintCurrentToClient(client);
-	}
-	else
-	{
-		if (GetConVarBool(hCvarPrintToEveryone))
-		{
-			PrintCurrentToTeam(team);
-		}
-		else
-		{
-			PrintCurrentToClient(client);
-		}
-	}
+    new precision = GetConVarInt(hCvarPrecision);
+    if (args) {
+        char x[8];
+        GetCmdArg(1, x, sizeof(x));
+        precision = StringToInt(x);
+        if (precision < MIN_PRECISION) precision = MIN_PRECISION;
+        if (precision > MAX_PRECISION) precision = MAX_PRECISION;
+    }
+    new Float:proximity = RoundToNearestN(GetProximity() * 100.0, precision);
+    decl String:msg[128];
+    Format(msg, sizeof(msg), "\x01Current: \x04%%.%df%%%%", precision);
+    PrintToChat(client, msg, proximity);
+
+#if DEBUG
+    PrintDebug("Round: %i. Flipped? %i", InSecondHalfOfRound(), GameRules_GetProp("m_bAreTeamsFlipped"));
+    PrintDebug("Tank Enabled? %i %i", L4D2Direct_GetVSTankToSpawnThisRound(0), L4D2Direct_GetVSTankToSpawnThisRound(1));
+    PrintDebug("Tank Flow %%: %i %i", L4D2Direct_GetVSTankFlowPercent(0), L4D2Direct_GetVSTankFlowPercent(1));
+    PrintDebug("Witch Enabled? %i %i", L4D2Direct_GetVSWitchToSpawnThisRound(0), L4D2Direct_GetVSWitchToSpawnThisRound(1));
+    PrintDebug("Witch Flow %%: %i %i", L4D2Direct_GetVSWitchFlowPercent(0), L4D2Direct_GetVSWitchFlowPercent(1));
+#endif
+
+    return Plugin_Handled;
 }
 
-stock PrintCurrentToClient(client)
-{
-	new boss_proximity = RoundToNearest(GetBossProximity() * 100.0);
-	PrintToChat(client, "\x01Current: \x04%d%%", boss_proximity);
+stock Float:RoundToNearestN(Float:value, places) {
+    new Float:power = Pow(10.0, float(places));
+    return RoundToNearest(value * power) / power;
 }
 
-stock PrintCurrentToTeam(L4D2_Team:team)
+stock Float:GetProximity()
 {
-	new members_found;
-	new team_max = GetTeamMaxHumans(team);
-	new boss_proximity = RoundToNearest(GetBossProximity() * 100.0);
-	for (new client = 1;
-			client <= MaxClients && members_found < team_max;
-			client++)
-	{
-		if(IsClientInGame(client) && !IsFakeClient(client) &&
-				L4D2_Team:GetClientTeam(client) == team)
-		{
-			members_found++;
-			PrintToChat(client, "\x01Current: \x04%d%%", boss_proximity);
-		}
-	}
-}
-
-stock Float:GetBossProximity()
-{
-	new Float:proximity = GetMaxSurvivorCompletion() + (GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance());
-	return proximity > 1.0 ? 1.0 : proximity;
+    new Float:proximity = GetMaxSurvivorCompletion();
+    if (proximity > 1.0) proximity = 1.0;
+    if (proximity < 0.0) proximity = 0.0;
+    return proximity;
 }
 
 stock Float:GetMaxSurvivorCompletion()
 {
-	new Float:flow = 0.0;
-	for (new i = 1; i <= MaxClients; i++)
-	{
-		if (IsSurvivor(i))
-		{
-			flow = MAX(flow, L4D2Direct_GetFlowDistance(i));
-		}
-	}
-	return (flow / L4D2Direct_GetMapMaxFlowDistance());
+    new Float:flow = 0.0;
+    for (new i = 1; i <= MaxClients; i++)
+    {
+        if (IsSurvivor(i))
+        {
+            flow = MAX(flow, L4D2Direct_GetFlowDistance(i));
+        }
+    }
+    return (flow + GetConVarFloat(g_hVsBossBuffer)) / L4D2Direct_GetMapMaxFlowDistance();
 }
 
-stock GetTeamMaxHumans(L4D2_Team:team)
-{
-	if (team == L4D2Team_Survivor)
-	{
-		return GetConVarInt(survivor_limit);
-	}
-	else if (team == L4D2Team_Infected)
-	{
-		return GetConVarInt(z_max_player_zombies);
-	}
-	return MaxClients;
+#if DEBUG
+stock PrintDebug(const String:Message[], any:...) {
+    decl String:DebugBuff[256];
+    VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
+    LogMessage(DebugBuff);
+    PrintToChatAll(DebugBuff);
 }
+#endif

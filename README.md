@@ -120,6 +120,8 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 
 ### current.sp
 * Updated [L4D2 Survivor Progress](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/current.sp) v2.0.1 used in ZoneMod 1.9.3 with changes from [v2.2](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/current.sp).
+* Added optional precision argument `sm_current <precision>` to display 0 to 3 decimal places.
+* Added `current_precision` cvar that specifies the default precision to use if no precision argument is given.
 
 ### eq_finale_tanks.sp
 * Modified Visor's [EQ2 Finale Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/eq_finale_tanks.sp).
