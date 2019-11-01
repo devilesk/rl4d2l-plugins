@@ -18,7 +18,7 @@ public Plugin:myinfo =
     name = "L4D2 Survivor Progress",
     author = "CanadaRox, Visor, Sir, devilesk",
     description = "Print survivor progress in flow percents.",
-    version = "2.3.0",
+    version = "2.3.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -48,9 +48,9 @@ public Action:CurrentCmd(client, args)
 #if DEBUG
     PrintDebug("Round: %i. Flipped? %i", InSecondHalfOfRound(), GameRules_GetProp("m_bAreTeamsFlipped"));
     PrintDebug("Tank Enabled? %i %i", L4D2Direct_GetVSTankToSpawnThisRound(0), L4D2Direct_GetVSTankToSpawnThisRound(1));
-    PrintDebug("Tank Flow %%: %i %i", L4D2Direct_GetVSTankFlowPercent(0), L4D2Direct_GetVSTankFlowPercent(1));
+    PrintDebug("Tank Flow %%: %f %f", L4D2Direct_GetVSTankFlowPercent(0), L4D2Direct_GetVSTankFlowPercent(1));
     PrintDebug("Witch Enabled? %i %i", L4D2Direct_GetVSWitchToSpawnThisRound(0), L4D2Direct_GetVSWitchToSpawnThisRound(1));
-    PrintDebug("Witch Flow %%: %i %i", L4D2Direct_GetVSWitchFlowPercent(0), L4D2Direct_GetVSWitchFlowPercent(1));
+    PrintDebug("Witch Flow %%: %f %f", L4D2Direct_GetVSWitchFlowPercent(0), L4D2Direct_GetVSWitchFlowPercent(1));
 #endif
 
     return Plugin_Handled;
@@ -79,6 +79,9 @@ stock Float:GetMaxSurvivorCompletion()
             flow = MAX(flow, L4D2Direct_GetFlowDistance(i));
         }
     }
+#if DEBUG
+    PrintDebug("Flow: %f. Max Dist: %f. Progress: %f", flow, L4D2Direct_GetMapMaxFlowDistance(), (flow + GetConVarFloat(g_hVsBossBuffer)) / L4D2Direct_GetMapMaxFlowDistance());
+#endif
     return (flow + GetConVarFloat(g_hVsBossBuffer)) / L4D2Direct_GetMapMaxFlowDistance();
 }
 

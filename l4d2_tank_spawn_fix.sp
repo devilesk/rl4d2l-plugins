@@ -20,7 +20,7 @@ new Float:g_fTankFlow;
 public Plugin:myinfo = {
     name = "L4D2 Tank Spawn Fix",
     author = "devilesk",
-    version = "1.0.0",
+    version = "1.0.1",
     description = "Fixes inconsistent tank spawns between rounds.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -82,6 +82,12 @@ public Action:L4D_OnSpawnTank(const Float:vector[3], const Float:qangle[3]) {
         GetMaxSurvivorNavInfo(g_pTankSpawnNav, g_fTankSpawnOrigin, g_fNavAreaFlow, g_fMapMaxFlowDistance, g_fTankFlow);
         g_bFirstFlowTankSpawned = true;
     }
+#if DEBUG
+    if (InSecondHalfOfRound() && L4D2Direct_GetVSTankToSpawnThisRound(1)) {
+        new Address:pNavArea, Float:origin[3], Float:fNavAreaFlow, Float:fMapMaxFlowDistance, Float:fTankFlow;
+        GetMaxSurvivorNavInfo(pNavArea, origin, fNavAreaFlow, fMapMaxFlowDistance, fTankFlow);
+    }
+#endif
 }
 
 /*
@@ -112,6 +118,7 @@ public GetMaxSurvivorNavInfo(&Address:pNavArea, Float:origin[], &Float:fNavAreaF
     fMapMaxFlowDistance = L4D2Direct_GetMapMaxFlowDistance();
     fTankFlow = (fNavAreaFlow + GetConVarFloat(g_hVsBossBuffer)) / fMapMaxFlowDistance;
 
+    PrintDebug("[MaxSurvNav] Round: %i", InSecondHalfOfRound());
     PrintDebug("[MaxSurvNav] Origin: %f %f %f", origin[0], origin[1], origin[2]);
     PrintDebug("[MaxSurvNav] NavArea: %i", pNavArea);
     PrintDebug("[MaxSurvNav] NavAreaFlow: %f", fNavAreaFlow);
