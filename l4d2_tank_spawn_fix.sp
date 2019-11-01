@@ -20,7 +20,7 @@ new Float:g_fTankFlow;
 public Plugin:myinfo = {
     name = "L4D2 Tank Spawn Fix",
     author = "devilesk",
-    version = "1.0.1",
+    version = "1.0.2",
     description = "Fixes inconsistent tank spawns between rounds.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -35,7 +35,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
     if (!InSecondHalfOfRound()) g_bFirstFlowTankSpawned = false;
 
     // Delayed flow check due to L4D2Direct_GetMapMaxFlowDistance not returning a consistent value if called immediately on round start
-    CreateTimer(3.0, CheckFlow, _, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(8.0, CheckFlow, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /*
@@ -63,8 +63,8 @@ public Action:CheckFlow(Handle:timer) {
     PrintDebug("[CheckFlow] TankFlow: %f %f %i", g_fTankFlow, fTankFlow, g_fTankFlow == fTankFlow);
     PrintDebug("[CheckFlow] MapFlowDist: %f %f %i", g_fMapMaxFlowDistance, fMapMaxFlowDistance, g_fMapMaxFlowDistance == fMapMaxFlowDistance);
     
-    // update tank flow if nav area flows or map distances don't match between rounds
-    if (g_fNavAreaFlow != fNavAreaFlow || g_fMapMaxFlowDistance != fMapMaxFlowDistance) {
+    // update tank flow if nav area flows or map distances don't match between rounds or if the tank flow randomly changes during rounds
+    if (g_fNavAreaFlow != fNavAreaFlow || g_fMapMaxFlowDistance != fMapMaxFlowDistance || L4D2Direct_GetVSTankFlowPercent(0) != L4D2Direct_GetVSTankFlowPercent(1)) {
         PrintDebug("[CheckFlow] Fixing tank flow.");
         L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
     }
