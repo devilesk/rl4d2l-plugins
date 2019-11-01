@@ -311,3 +311,7 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 ### l4d2_direct.inc
 * Fixed an off by one error in the valid client check for `L4D2Direct_DoAnimationEvent`.
 * Fixed round related functions [not accounting for flipped teams](https://github.com/ConfoglTeam/l4d2_direct/issues/13).
+
+### l4d2util.inc
+* Added `GetLongWeaponName` and `GetLongMeleeWeaponName` functions from `l4d2_weapon_stocks.inc`.
+* Removed tag check from all the weapon functions and added melee weapon function equivalents for each of them.
