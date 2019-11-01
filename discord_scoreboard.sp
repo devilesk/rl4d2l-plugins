@@ -28,7 +28,6 @@
 new     bool:   g_bInRound              = false;
 new iTankPercent = 0;
 new scoreTotals[2];
-new Handle:g_hVsBossBuffer;
 new String:sPlayers[2][512];
 new String:titles[2][64];
 new String:sEmbedRequest[CONBUFSIZELARGE];
@@ -45,7 +44,7 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.4.2",
+    version = "1.4.4",
     url = "https://steamcommunity.com/groups/RL4D2L"
 };
 
@@ -60,7 +59,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 public OnPluginStart()
 {
     g_hCvarWebhookConfig = CreateConVar("discord_scoreboard_webhook_cfg", "discord_scoreboard", "Name of webhook keyvalue entry to use in discord_webhook.cfg", FCVAR_NONE);
-    g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
 }
@@ -193,7 +191,7 @@ bool GetMapName(const char[] mapId, char[] mapName, int iLength)
 
 stock Float:GetTankFlow(round)
 {
-    return L4D2Direct_GetVSTankFlowPercent(round) - GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
+    return L4D2Direct_GetVSTankFlowPercent(round);
 }
 
 public Native_AddEmbed(Handle:plugin, numParams)

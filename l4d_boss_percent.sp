@@ -13,7 +13,7 @@ public Plugin:myinfo =
 {
 	name = "L4D2 Boss Flow Announce (Back to roots edition)",
 	author = "ProdigySim, Jahze, Stabby, CircleSquared, CanadaRox, Visor, Sir, devilesk",
-	version = "1.6.4",
+	version = "1.6.5",
 	description = "Announce boss flow percents!",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -26,7 +26,6 @@ new bool:bTank;
 new bool:bWitch;
 new bool:bDKR;
 
-new Handle:g_hVsBossBuffer;
 new Handle:hCvarPrintToEveryone;
 new Handle:hCvarTankPercent;
 new Handle:hCvarWitchPercent;
@@ -45,8 +44,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-	g_hVsBossBuffer = FindConVar("versus_boss_buffer");
-
 	hCvarPrintToEveryone = CreateConVar("l4d_global_percent", "1", "Display boss percentages to entire team when using commands", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	hCvarTankPercent = CreateConVar("l4d_tank_percent", "1", "Display Tank flow percentage in chat", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	hCvarWitchPercent = CreateConVar("l4d_witch_percent", "1", "Display Witch flow percentage in chat", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -400,14 +397,12 @@ SetBoss()
 
 stock Float:GetTankFlow(round)
 {
-	return L4D2Direct_GetVSTankFlowPercent(round) -
-		( GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
+	return L4D2Direct_GetVSTankFlowPercent(round);
 }
 
 stock Float:GetWitchFlow(round)
 {
-	return L4D2Direct_GetVSWitchFlowPercent(round) -
-		( GetConVarFloat(g_hVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance() );
+	return L4D2Direct_GetVSWitchFlowPercent(round);
 }
 
 bool:IsDKR()
