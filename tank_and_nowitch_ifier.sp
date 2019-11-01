@@ -17,7 +17,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.2.0",
+    version = "2.2.1",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -61,7 +61,9 @@ public Action:StaticTank_Command(args) {
     GetCmdArg(1, mapname, sizeof(mapname));
     StrToLower(mapname);
     SetTrieValue(hStaticTankMaps, mapname, true);
+#if DEBUG
     PrintDebug("[StaticTank_Command] Added: %s", mapname);
+#endif
 }
 
 public Action:Reset_Command(args) {
@@ -108,6 +110,8 @@ public Action:AdjustBossFlow(Handle:timer) {
         new iMinBanFlowC = L4D2_GetMapValueInt("tank_ban_flow_min_c", -1);
         new iMaxBanFlowC = L4D2_GetMapValueInt("tank_ban_flow_max_c", -1);
 
+        PrintDebug("[AdjustBossFlow] flow: (%i, %i). ban (%i, %i). ban b (%i, %i). ban c (%i, %i)", iCvarMinFlow, iCvarMaxFlow, iMinBanFlow, iMaxBanFlow, iMinBanFlowB, iMaxBanFlowB, iMinBanFlowC, iMaxBanFlowC);
+
         // check each array index to see if it is within a ban range
         new iValidSpawnTotal = 0;
         for (new i = 0; i <= 100; i++) {
@@ -129,7 +133,7 @@ public Action:AdjustBossFlow(Handle:timer) {
                     n--;
                     if (n == 0) {
                         new Float:fTankFlow = iTankFlow / 100.0;
-                        PrintDebug("[AdjustBossFlow] iTankFlow: %i, fTankFlow: %f", iTankFlow, fTankFlow);
+                        PrintDebug("[AdjustBossFlow] iTankFlow: %i, fTankFlow: %f. iValidSpawnTotal: %i", iTankFlow, fTankFlow, iValidSpawnTotal);
                         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
                         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
                         L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
