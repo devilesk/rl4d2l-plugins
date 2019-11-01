@@ -44,7 +44,7 @@ public Plugin:myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "3.1.2",
+	version = "3.1.3",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -432,13 +432,13 @@ FillGameInfo(Handle:hSpecHud)
 
 		if (RoundHasFlowTank())
 		{
-			Format(info, sizeof(info), "Tank: %i%%", RoundToNearest(GetTankFlow() * 100.0));
+			Format(info, sizeof(info), "Tank: %i%% (%i%%)", RoundToNearest(L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) * 100.0), RoundToNearest(GetTankFlow() * 100.0));
 			DrawPanelText(hSpecHud, info);
 		}
 
 		if (RoundHasFlowWitch())
 		{
-			Format(info, sizeof(info), "Witch: %i%%", RoundToNearest(GetWitchFlow() * 100.0));
+			Format(info, sizeof(info), "Witch: %i%% (%i%%)", RoundToNearest(L4D2Direct_GetVSWitchFlowPercent(InSecondHalfOfRound()) * 100.0), RoundToNearest(GetWitchFlow() * 100.0));
 			DrawPanelText(hSpecHud, info);
 		}
 	}
