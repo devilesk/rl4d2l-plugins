@@ -221,6 +221,7 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 * Reconstructed L4D2 Ready-Up v9.2 used in [L4D2-Competitive-Rework](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/plugins/optional/zonemod/readyup.smx).
 * Applied spoon's [bugfix](https://github.com/spoon-l4d2/Plugins/blob/19b55c3c3122333bba0ce2e2cec202b4af623cab/source/readyup.sp#L1409) to prevent unbreakable doors from being made breakable.
 * Replace checkboxes with diamonds from spoon's version.
+* Added `l4d_ready_autostart` cvar to automatically force start rounds after a certain amount of time after the first ready up.
 
 ### spechud.sp
 * Reconstructed [Hyper-V HUD Manager](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/spechud.sp) v3.0 used in [Zonemod 1.9.3](https://github.com/SirPlease/ZoneMod/blob/master/addons/sourcemod/plugins/optional/zonemod/pause.smx) with fix to health, damage, and pills bonus not displaying.

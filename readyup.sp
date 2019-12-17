@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.2.4",
+	version = "9.3",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -60,6 +60,7 @@ new Handle:l4d_ready_max_players;
 new Handle:l4d_ready_enable_sound;
 new Handle:l4d_ready_delay;
 new Handle:l4d_ready_chuckle;
+new Handle:l4d_ready_autostart;
 new Handle:l4d_ready_live_sound;
 new Handle:g_hVote;
 
@@ -76,6 +77,7 @@ new Handle:casterTrie;
 new Handle:liveForward;
 new Handle:menuPanel;
 new Handle:readyCountdownTimer;
+new Handle:autoStartCountdownTimer;
 new String:readyFooter[MAX_FOOTERS][MAX_FOOTER_LEN];
 new bool:hiddenPanel[MAXPLAYERS + 1];
 new bool:hiddenManually[MAXPLAYERS + 1];
@@ -84,6 +86,8 @@ new bool:inReadyUp;
 new bool:isPlayerReady[MAXPLAYERS + 1];
 new footerCounter = 0;
 new readyDelay;
+new autoStartDelay;
+new bool:bAutoStarted = false;
 new Handle:allowedCastersTrie;
 new String:liveSound[256];
 new bool:blockSecretSpam[MAXPLAYERS + 1];
@@ -119,6 +123,7 @@ public OnPluginStart()
 	l4d_ready_delay = CreateConVar("l4d_ready_delay", "3", "Number of seconds to count down before the round goes live.", FCVAR_PLUGIN, true, 0.0);
 	l4d_ready_enable_sound = CreateConVar("l4d_ready_enable_sound", "1", "Enable sound during countdown & on live");
 	l4d_ready_chuckle = CreateConVar("l4d_ready_chuckle", "1", "Enable chuckle during countdown");
+	l4d_ready_autostart = CreateConVar("l4d_ready_autostart", "90", "Auto start timer. 0 = disabled", FCVAR_PLUGIN, true, 0.0);
 	l4d_ready_live_sound = CreateConVar("l4d_ready_live_sound", "ui/survival_medal.wav", "The sound that plays when a round goes live");
 	HookConVarChange(l4d_ready_survivor_freeze, SurvFreezeChange);
 
@@ -544,7 +549,13 @@ public Action:Ready_Cmd(client, args)
 	{
 		isPlayerReady[client] = true;
 		if (CheckFullReady())
+		{
 			InitiateLiveCountdown();
+		}
+		else
+		{
+			InitiateAutoStartCountdown();
+		}
 	}
 
 	return Plugin_Handled;
@@ -767,12 +778,32 @@ UpdatePanel()
 			{
 				if (isPlayerReady[client])
 				{
-					if (!inLiveCountdown) PrintHintText(client, "You are ready.\nSay !unready to unready.");
+					if (!inLiveCountdown)
+					{
+						if (autoStartDelay)
+						{
+							PrintHintText(client, "Auto start in: %d\nYou are ready.\nSay !unready to unready.", autoStartDelay);
+						}
+						else
+						{
+							PrintHintText(client, "You are ready.\nSay !unready to unready.");
+						}
+					}
 					Format(nameBuf, 64, "->♦ %s\n", nameBuf);
 				}
 				else
 				{
-					if (!inLiveCountdown) PrintHintText(client, "You are not ready.\nSay !ready to ready up.");
+					if (!inLiveCountdown)
+					{
+						if (autoStartDelay)
+						{
+							PrintHintText(client, "Auto start in: %d\nYou are not ready.\nSay !ready to ready up.", autoStartDelay);
+						}
+						else
+						{
+							PrintHintText(client, "You are not ready.\nSay !ready to ready up.");
+						}
+					}
 					if (fTime - g_fButtonTime[client] > 15.0)
 					{
 						Format(nameBuf, 64, "->♢ %s [AFK]\n", nameBuf);
@@ -887,6 +918,8 @@ InitiateReadyUp()
 	inReadyUp = true;
 	inLiveCountdown = false;
 	readyCountdownTimer = INVALID_HANDLE;
+	bAutoStarted = false;
+	ClearTimer(autoStartCountdownTimer);
 
 	if (GetConVarBool(l4d_ready_disable_spawns))
 	{
@@ -1036,13 +1069,49 @@ bool:CheckFullReady()
 	return readyCount >= GetConVarInt(survivor_limit) + GetConVarInt(z_max_player_zombies);
 }
 
+InitiateAutoStartCountdown()
+{
+	if (autoStartCountdownTimer == INVALID_HANDLE)
+	{
+		autoStartDelay = GetConVarInt(l4d_ready_autostart);
+		autoStartCountdownTimer = CreateTimer(1.0, AutoStartCountdownDelay_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action:AutoStartCountdownDelay_Timer(Handle:timer)
+{
+	if (autoStartDelay)
+	{
+		/*if (autoStartDelay % 30 == 0)
+		{
+			if (GetConVarBool(l4d_ready_enable_sound))
+			{
+				EmitSoundToAll("weapons/hegrenade/beep.wav", _, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.5);
+			}
+		}*/
+		autoStartDelay--;
+		return Plugin_Continue;
+	}
+	bAutoStarted = true;
+	InitiateLiveCountdown();
+	return Plugin_Stop;
+}
+
 InitiateLiveCountdown()
 {
 	if (readyCountdownTimer == INVALID_HANDLE)
 	{
+		ClearTimer(autoStartCountdownTimer);
 		ReturnTeamToSaferoom(L4D2Team_Survivor);
 		SetTeamFrozen(L4D2Team_Survivor, true);
-		PrintHintTextToAll("Going live!\nSay !unready to cancel");
+		if (bAutoStarted)
+		{
+			PrintHintTextToAll("Auto start going live!");
+		}
+		else
+		{
+			PrintHintTextToAll("Going live!\nSay !unready to cancel");
+		}
 		inLiveCountdown = true;
 		readyDelay = GetConVarInt(l4d_ready_delay);
 		readyCountdownTimer = CreateTimer(1.0, ReadyCountdownDelay_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -1053,7 +1122,14 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 {
 	if (readyDelay)
 	{
-		PrintHintTextToAll("Live in: %d\nSay !unready to cancel", readyDelay);
+		if (bAutoStarted)
+		{
+			PrintHintTextToAll("Live in: %d", readyDelay);
+		}
+		else
+		{
+			PrintHintTextToAll("Live in: %d\nSay !unready to cancel", readyDelay);
+		}
 		if (GetConVarBool(l4d_ready_enable_sound))
 		{
 			EmitSoundToAll("weapons/hegrenade/beep.wav", _, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.5);
@@ -1080,7 +1156,7 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 
 CancelFullReady()
 {
-	if (readyCountdownTimer != INVALID_HANDLE)
+	if (readyCountdownTimer != INVALID_HANDLE && !bAutoStarted)
 	{
 		SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
 		inLiveCountdown = false;
@@ -1194,3 +1270,12 @@ stock Math_GetRandomInt(min, max)
 
 	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }
+
+stock ClearTimer(&Handle:Timer)
+{
+	if (Timer != INVALID_HANDLE)
+	{
+		CloseHandle(Timer);
+		Timer = INVALID_HANDLE;
+	}
+} 
