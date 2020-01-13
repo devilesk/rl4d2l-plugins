@@ -40,7 +40,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.3",
+	version = "9.3.2",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -76,18 +76,17 @@ new Handle:sv_infinite_primary_ammo;
 new Handle:casterTrie;
 new Handle:liveForward;
 new Handle:menuPanel;
-new Handle:readyCountdownTimer;
-new Handle:autoStartCountdownTimer;
+new Handle:readyCountdownTimer = INVALID_HANDLE;
+new Handle:autoStartCountdownTimer = INVALID_HANDLE;
 new String:readyFooter[MAX_FOOTERS][MAX_FOOTER_LEN];
 new bool:hiddenPanel[MAXPLAYERS + 1];
 new bool:hiddenManually[MAXPLAYERS + 1];
-new bool:inLiveCountdown = false;
 new bool:inReadyUp;
 new bool:isPlayerReady[MAXPLAYERS + 1];
 new footerCounter = 0;
 new readyDelay;
 new autoStartDelay;
-new bool:bAutoStarted = false;
+new bool:bIsGoingLiveFromAutoStart = false;
 new Handle:allowedCastersTrie;
 new String:liveSound[256];
 new bool:blockSecretSpam[MAXPLAYERS + 1];
@@ -204,7 +203,8 @@ public OnMapStart()
 	{
 		blockSecretSpam[client] = false;
 	}
-	readyCountdownTimer = INVALID_HANDLE;
+	CancelLiveCountdown();
+	CancelAutoStartCountdown();
 	
 	new String:sMap[64];
 	GetCurrentMap(sMap, 64);
@@ -399,7 +399,7 @@ stock bool:IsIDCaster(const String:AuthID[])
 }
 
 public Action:Cast_Cmd(client, args)
-{	
+{
 	decl String:buffer[64];
 	GetClientAuthId(client, AuthId_Steam2, buffer, sizeof(buffer));
 	if (GetClientTeam(client) != 1)
@@ -413,14 +413,14 @@ public Action:Cast_Cmd(client, args)
 }
 
 public Action:Caster_Cmd(client, args)
-{	
+{
 	if (args < 1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_caster <player>");
 		return Plugin_Handled;
 	}
 	
-    	decl String:buffer[64];
+	decl String:buffer[64];
 	GetCmdArg(1, buffer, sizeof(buffer));
 	
 	new target = FindTarget(client, buffer, true, false);
@@ -434,7 +434,7 @@ public Action:Caster_Cmd(client, args)
 		}
 		else
 		{
-		    	ReplyToCommand(client, "Couldn't find Steam ID.  Check for typos and let the player get fully connected.");
+				ReplyToCommand(client, "Couldn't find Steam ID.  Check for typos and let the player get fully connected.");
 		}
 	}
 	return Plugin_Handled;
@@ -543,7 +543,7 @@ public Action:ForceStart_Cmd(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Ready_Cmd(client, args)
+ReadyPlayer(client)
 {
 	if (inReadyUp)
 	{
@@ -557,11 +557,9 @@ public Action:Ready_Cmd(client, args)
 			InitiateAutoStartCountdown();
 		}
 	}
-
-	return Plugin_Handled;
 }
 
-public Action:Unready_Cmd(client, args)
+UnreadyPlayer(client)
 {
 	if (inReadyUp)
 	{
@@ -569,29 +567,30 @@ public Action:Unready_Cmd(client, args)
 		isPlayerReady[client] = false;
 		CancelFullReady();
 	}
+}
 
+public Action:Ready_Cmd(client, args)
+{
+	ReadyPlayer(client);
+	return Plugin_Handled;
+}
+
+public Action:Unready_Cmd(client, args)
+{
+	UnreadyPlayer(client);
 	return Plugin_Handled;
 }
 
 public Action:ToggleReady_Cmd(client, args)
 {
-	if (inReadyUp)
+	if (!isPlayerReady[client])
 	{
-		if (!isPlayerReady[client])
-		{
-			isPlayerReady[client] = true;
-			if (CheckFullReady())
-			{
-				InitiateLiveCountdown();
-			}
-		}
-		else{
-			SetEngineTime(client);
-			isPlayerReady[client] = false;
-			CancelFullReady();
-		}
+		ReadyPlayer(client);
 	}
-
+	else
+	{
+		UnreadyPlayer(client);
+	}
 	return Plugin_Handled;
 }
 
@@ -778,9 +777,9 @@ UpdatePanel()
 			{
 				if (isPlayerReady[client])
 				{
-					if (!inLiveCountdown)
+					if (!InLiveCountdown())
 					{
-						if (autoStartDelay)
+						if (autoStartDelay > 0)
 						{
 							PrintHintText(client, "Auto start in: %d\nYou are ready.\nSay !unready to unready.", autoStartDelay);
 						}
@@ -793,9 +792,9 @@ UpdatePanel()
 				}
 				else
 				{
-					if (!inLiveCountdown)
+					if (!InLiveCountdown())
 					{
-						if (autoStartDelay)
+						if (autoStartDelay > 0)
 						{
 							PrintHintText(client, "Auto start in: %d\nYou are not ready.\nSay !ready to ready up.", autoStartDelay);
 						}
@@ -916,10 +915,8 @@ InitiateReadyUp()
 	CreateTimer(4.0, MenuCmd_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	inReadyUp = true;
-	inLiveCountdown = false;
-	readyCountdownTimer = INVALID_HANDLE;
-	bAutoStarted = false;
-	ClearTimer(autoStartCountdownTimer);
+	CancelLiveCountdown();
+	CancelAutoStartCountdown();
 
 	if (GetConVarBool(l4d_ready_disable_spawns))
 	{
@@ -942,7 +939,8 @@ InitiateReadyUp()
 InitiateLive(bool:real = true)
 {
 	inReadyUp = false;
-	inLiveCountdown = false;
+	CancelLiveCountdown();
+	CancelAutoStartCountdown();
 
 	SetTeamFrozen(L4D2Team_Survivor, false);
 	EnableEntities();
@@ -977,7 +975,7 @@ InitiateLive(bool:real = true)
 	}
 }
 
-	public OnBossVote()
+public OnBossVote()
 {
 	footerCounter = 1;
 }
@@ -1071,7 +1069,7 @@ bool:CheckFullReady()
 
 InitiateAutoStartCountdown()
 {
-	if (autoStartCountdownTimer == INVALID_HANDLE)
+	if (!InAutoStartCountdown() && !InLiveCountdown())
 	{
 		autoStartDelay = GetConVarInt(l4d_ready_autostart);
 		autoStartCountdownTimer = CreateTimer(1.0, AutoStartCountdownDelay_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -1080,7 +1078,7 @@ InitiateAutoStartCountdown()
 
 public Action:AutoStartCountdownDelay_Timer(Handle:timer)
 {
-	if (autoStartDelay)
+	if (autoStartDelay > 0)
 	{
 		/*if (autoStartDelay % 30 == 0)
 		{
@@ -1092,19 +1090,20 @@ public Action:AutoStartCountdownDelay_Timer(Handle:timer)
 		autoStartDelay--;
 		return Plugin_Continue;
 	}
-	bAutoStarted = true;
-	InitiateLiveCountdown();
+	autoStartCountdownTimer = INVALID_HANDLE;
+	InitiateLiveCountdown(true);
 	return Plugin_Stop;
 }
 
-InitiateLiveCountdown()
+InitiateLiveCountdown(bool:autoStarted = false)
 {
-	if (readyCountdownTimer == INVALID_HANDLE)
+	CancelAutoStartCountdown();
+	if (!InLiveCountdown())
 	{
-		ClearTimer(autoStartCountdownTimer);
+		bIsGoingLiveFromAutoStart = autoStarted;
 		ReturnTeamToSaferoom(L4D2Team_Survivor);
 		SetTeamFrozen(L4D2Team_Survivor, true);
-		if (bAutoStarted)
+		if (bIsGoingLiveFromAutoStart)
 		{
 			PrintHintTextToAll("Auto start going live!");
 		}
@@ -1112,7 +1111,6 @@ InitiateLiveCountdown()
 		{
 			PrintHintTextToAll("Going live!\nSay !unready to cancel");
 		}
-		inLiveCountdown = true;
 		readyDelay = GetConVarInt(l4d_ready_delay);
 		readyCountdownTimer = CreateTimer(1.0, ReadyCountdownDelay_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -1122,7 +1120,7 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 {
 	if (readyDelay)
 	{
-		if (bAutoStarted)
+		if (bIsGoingLiveFromAutoStart)
 		{
 			PrintHintTextToAll("Live in: %d", readyDelay);
 		}
@@ -1138,8 +1136,8 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 		return Plugin_Continue;
 	}
 	PrintHintTextToAll("Round is live!");
-	InitiateLive(true);
 	readyCountdownTimer = INVALID_HANDLE;
+	InitiateLive(true);
 	if (GetConVarBool(l4d_ready_enable_sound))
 	{
 		if (GetConVarBool(l4d_ready_chuckle))
@@ -1156,14 +1154,35 @@ public Action:ReadyCountdownDelay_Timer(Handle:timer)
 
 CancelFullReady()
 {
-	if (readyCountdownTimer != INVALID_HANDLE && !bAutoStarted)
+	if (InLiveCountdown() && !bIsGoingLiveFromAutoStart)
 	{
 		SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
-		inLiveCountdown = false;
-		CloseHandle(readyCountdownTimer);
-		readyCountdownTimer = INVALID_HANDLE;
+		CancelLiveCountdown();
 		PrintHintTextToAll("Countdown Cancelled!");
 	}
+}
+
+bool:InLiveCountdown()
+{
+	return readyCountdownTimer != INVALID_HANDLE;
+}
+
+bool:InAutoStartCountdown()
+{
+	return autoStartCountdownTimer != INVALID_HANDLE;
+}
+
+CancelLiveCountdown()
+{
+	readyDelay = 0;
+	bIsGoingLiveFromAutoStart = false;
+	ClearTimer(readyCountdownTimer);
+}
+
+CancelAutoStartCountdown()
+{
+	autoStartDelay = 0;
+	ClearTimer(autoStartCountdownTimer);
 }
 
 GetRealClientCount()
