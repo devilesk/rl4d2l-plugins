@@ -33,7 +33,7 @@ public Plugin:myinfo = {
     name = "Static Tank Control",
     author = "devilesk",
     description = "Predetermined tank control distribution.",
-    version = "0.5.0",
+    version = "0.5.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -177,17 +177,18 @@ public Action:TankControlEQ_OnChooseTank() {
         return Plugin_Continue;
     }
 
-    new Handle:hTankPool = TankControlEQ_GetTankPool();
-    
     // if finale and someone has not played tank, then use default tank selection
-    new iTankPoolSize = GetArraySize(hTankPool);
-    if (IsMissionFinalMap() && iTankPoolSize > 0 && iTankPoolSize < 4) {
-        PrintDebug("[TankControlEQ_OnChooseTank] Finale with %i skipped tank player. Continuing with default tank selection.", iTankPoolSize);
-        CloseHandle(hTankPool);
+    new Handle:hWhosNotHadTank = TankControlEQ_GetWhosNotHadTank();
+    new iWhosNotHadTankSize = GetArraySize(hWhosNotHadTank);
+    if (IsMissionFinalMap() && iWhosNotHadTankSize > 0) {
+        PrintDebug("[TankControlEQ_OnChooseTank] Finale with %i skipped tank player. Continuing with default tank selection.", iWhosNotHadTankSize);
+        CloseHandle(hWhosNotHadTank);
         return Plugin_Continue;
     }
+    CloseHandle(hWhosNotHadTank);
 
     // find a static tank player in the pool of tank players
+    new Handle:hTankPool = TankControlEQ_GetTankPool();
     new String:sSteamId[MAXSTEAMID];
     if (FindSteamIdInArrays(sSteamId, sizeof(sSteamId), hTankPool, hStaticTankPlayers)) {
         strcopy(g_sQueuedTankSteamId, sizeof(g_sQueuedTankSteamId), sSteamId); // store static tank player in case they disconnect or change teams

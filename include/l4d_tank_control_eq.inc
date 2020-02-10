@@ -13,6 +13,8 @@ native void TankControlEQ_SetTank(const String:steamId[]);
 
 native Handle TankControlEQ_GetWhosHadTank();
 
+native Handle TankControlEQ_GetWhosNotHadTank();
+
 native void TankControlEQ_ClearWhosHadTank();
 
 native Handle TankControlEQ_GetTankPool();
@@ -33,6 +35,7 @@ public void __pl_l4d_tank_control_eq_SetNTVOptional()
 {
     MarkNativeAsOptional("TankControlEQ_SetTank");
     MarkNativeAsOptional("TankControlEQ_GetWhosHadTank");
+    MarkNativeAsOptional("TankControlEQ_GetWhosNotHadTank");
     MarkNativeAsOptional("TankControlEQ_ClearWhosHadTank");
     MarkNativeAsOptional("TankControlEQ_GetTankPool");
 }

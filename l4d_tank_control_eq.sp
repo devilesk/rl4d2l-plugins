@@ -32,6 +32,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     
     CreateNative("TankControlEQ_SetTank", Native_SetTank);
     CreateNative("TankControlEQ_GetWhosHadTank", Native_GetWhosHadTank);
+    CreateNative("TankControlEQ_GetWhosNotHadTank", Native_GetWhosNotHadTank);
     CreateNative("TankControlEQ_ClearWhosHadTank", Native_ClearWhosHadTank);
     CreateNative("TankControlEQ_GetTankPool", Native_GetTankPool);
     
@@ -42,7 +43,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.10.3",
+    version = "0.10.4",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -114,6 +115,24 @@ public Native_ClearWhosHadTank(Handle:plugin, numParams) {
     RemoveSteamIdsFromArray(g_hWhosHadTank, infectedPool);
     
     CloseHandle(infectedPool);
+}
+
+public Native_GetWhosNotHadTank(Handle:plugin, numParams) {
+    new Handle:infectedPool = CreateArray(MAXSTEAMID);
+    AddTeamSteamIdsToArray(infectedPool, TEAM_INFECTED);
+    
+    // Remove players who've already had tank from the pool.
+    RemoveSteamIdsFromArray(infectedPool, g_hWhosHadTank);
+
+    decl String:sSteamId[MAXSTEAMID];
+    for (new i = 0; i < GetArraySize(infectedPool); i++) {
+        GetArrayString(infectedPool, i, sSteamId, sizeof(sSteamId));
+        PrintDebug("[Native_GetWhosNotHadTank] i: %i, steamId: %s", i, sSteamId);
+    }
+    
+    new Handle:clonedHandle = CloneHandle(infectedPool, plugin);
+    CloseHandle(infectedPool);
+    return _:clonedHandle;
 }
 
 public Native_GetTankPool(Handle:plugin, numParams) {
