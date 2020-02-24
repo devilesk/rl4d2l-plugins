@@ -26,6 +26,9 @@
 #include <l4d2_direct>
 #include <builtinvotes>
 #include <colors>
+#define L4D2UTIL_STOCKS_ONLY
+#include <l4d2util>
+#include "includes/firstmaps"
 
 #define MAX_FOOTERS 10
 #define MAX_FOOTER_LEN 65
@@ -40,17 +43,9 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox, (Lazy unoptimized additions by Sir), devilesk",
 	description = "New and improved ready-up plugin.",
-	version = "9.3.2",
+	version = "9.4.0",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
-
-enum L4D2Team
-{
-	L4D2Team_None = 0,
-	L4D2Team_Spectator,
-	L4D2Team_Survivor,
-	L4D2Team_Infected
-}
 
 // Plugin Cvars
 new Handle:l4d_ready_disable_spawns;
@@ -212,7 +207,7 @@ public OnMapStart()
 
 public Action:KickSpecs_Cmd(client, args)
 {
-	if (IsClientInGame(client) && L4D2Team:GetClientTeam(client) != L4D2Team_Spectator)
+	if (IsClientInGame(client) && L4D2Team:GetClientTeam(client) != L4D2Team:L4D2Team_Spectator)
 	{
 		if (IsNewBuiltinVoteAllowed())
 		{
@@ -220,7 +215,7 @@ public Action:KickSpecs_Cmd(client, args)
 			decl iPlayers[MaxClients];
 			for (new i = 1; i <= MaxClients; i++)
 			{
-				if (!IsClientInGame(i) || IsFakeClient(i) || L4D2Team:GetClientTeam(i) == L4D2Team_Spectator)
+				if (!IsClientInGame(i) || IsFakeClient(i) || L4D2Team:GetClientTeam(i) == L4D2Team:L4D2Team_Spectator)
 					continue;
 				iNumPlayers++;
 				iPlayers[iNumPlayers] = i;
@@ -300,7 +295,7 @@ public Action:Secret_Cmd(client, args)
 stock DoSecrets(client)
 {
 	PrintCenterTextAll("\x42\x4f\x4e\x45\x53\x41\x57\x20\x49\x53\x20\x52\x45\x41\x44\x59\x21");
-	if (L4D2Team:GetClientTeam(client) == L4D2Team_Survivor && !blockSecretSpam[client])
+	if (L4D2Team:GetClientTeam(client) == L4D2Team:L4D2Team_Survivor && !blockSecretSpam[client])
 	{
 		new particle = CreateEntityByName("info_particle_system");
 		decl Float:pos[3];
@@ -552,7 +547,7 @@ ReadyPlayer(client)
 		{
 			InitiateLiveCountdown();
 		}
-		else
+		else if (!IsMissionFirstMap() || InSecondHalfOfRound())
 		{
 			InitiateAutoStartCountdown();
 		}
@@ -603,7 +598,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		{
 			SetEngineTime(client);
 		}
-		if (IsClientInGame(client) && L4D2Team:GetClientTeam(client) == L4D2Team_Survivor)
+		if (IsClientInGame(client) && L4D2Team:GetClientTeam(client) == L4D2Team:L4D2Team_Survivor)
 		{
 			if (GetConVarBool(l4d_ready_survivor_freeze))
 			{
@@ -622,8 +617,8 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 
 public SurvFreezeChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	ReturnTeamToSaferoom(L4D2Team_Survivor);
-	SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(convar));
+	ReturnTeamToSaferoom(L4D2Team:L4D2Team_Survivor);
+	SetTeamFrozen(L4D2Team:L4D2Team_Survivor, GetConVarBool(convar));
 }
 
 public Action:L4D_OnFirstSurvivorLeftSafeArea(client)
@@ -640,7 +635,7 @@ public Action:Return_Cmd(client, args)
 {
 	if (client > 0
 			&& inReadyUp
-			&& L4D2Team:GetClientTeam(client) == L4D2Team_Survivor)
+			&& L4D2Team:GetClientTeam(client) == L4D2Team:L4D2Team_Survivor)
 	{
 		ReturnPlayerToSaferoom(client, false);
 	}
@@ -658,8 +653,8 @@ public PlayerTeam_Event(Handle:event, const String:name[], bool:dontBroadcast)
 	SetEngineTime(client);
 	new L4D2Team:oldteam = L4D2Team:GetEventInt(event, "oldteam");
 	new L4D2Team:team = L4D2Team:GetEventInt(event, "team");
-	if ((oldteam == L4D2Team_Survivor || oldteam == L4D2Team_Infected ||
-			team == L4D2Team_Survivor || team == L4D2Team_Infected) && isPlayerReady[client])
+	if ((oldteam == L4D2Team:L4D2Team_Survivor || oldteam == L4D2Team:L4D2Team_Infected ||
+			team == L4D2Team:L4D2Team_Survivor || team == L4D2Team:L4D2Team_Infected) && isPlayerReady[client])
 	{
 		CancelFullReady();
 	}
@@ -812,11 +807,11 @@ UpdatePanel()
 						Format(nameBuf, 64, "->♢ %s\n", nameBuf);
 					}
 				}
-				if (team == L4D2Team_Survivor)
+				if (team == L4D2Team:L4D2Team_Survivor)
 				{
 					StrCat(survivorBuffer, 800, nameBuf);
 				}
-				else if (team == L4D2Team_Infected)
+				else if (team == L4D2Team:L4D2Team_Infected)
 				{
 					StrCat(infectedBuffer, 800, nameBuf);
 				}
@@ -942,7 +937,7 @@ InitiateLive(bool:real = true)
 	CancelLiveCountdown();
 	CancelAutoStartCountdown();
 
-	SetTeamFrozen(L4D2Team_Survivor, false);
+	SetTeamFrozen(L4D2Team:L4D2Team_Survivor, false);
 	EnableEntities();
 	SetConVarFlags(sv_infinite_primary_ammo, GetConVarFlags(god) & ~FCVAR_NOTIFY);
 	SetConVarBool(sv_infinite_primary_ammo, false, false, false);
@@ -1101,8 +1096,8 @@ InitiateLiveCountdown(bool:autoStarted = false)
 	if (!InLiveCountdown())
 	{
 		bIsGoingLiveFromAutoStart = autoStarted;
-		ReturnTeamToSaferoom(L4D2Team_Survivor);
-		SetTeamFrozen(L4D2Team_Survivor, true);
+		ReturnTeamToSaferoom(L4D2Team:L4D2Team_Survivor);
+		SetTeamFrozen(L4D2Team:L4D2Team_Survivor, true);
 		if (bIsGoingLiveFromAutoStart)
 		{
 			PrintHintTextToAll("Auto start going live!");
@@ -1156,7 +1151,7 @@ CancelFullReady()
 {
 	if (InLiveCountdown() && !bIsGoingLiveFromAutoStart)
 	{
-		SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
+		SetTeamFrozen(L4D2Team:L4D2Team_Survivor, GetConVarBool(l4d_ready_survivor_freeze));
 		CancelLiveCountdown();
 		PrintHintTextToAll("Countdown Cancelled!");
 	}
@@ -1196,7 +1191,7 @@ GetRealClientCount()
 			{
 				clients++;
 			}
-			if (!IsFakeClient(i) && L4D2Team:GetClientTeam(i) == L4D2Team_Survivor)
+			if (!IsFakeClient(i) && L4D2Team:GetClientTeam(i) == L4D2Team:L4D2Team_Survivor)
 			{
 				clients++;
 			}
@@ -1225,7 +1220,7 @@ stock SetClientFrozen(client, freeze)
 stock IsPlayer(client)
 {
 	new L4D2Team:team = L4D2Team:GetClientTeam(client);
-	return (team == L4D2Team_Survivor || team == L4D2Team_Infected);
+	return (team == L4D2Team:L4D2Team_Survivor || team == L4D2Team:L4D2Team_Infected);
 }
 
 DisableEntities()
