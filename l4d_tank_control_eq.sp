@@ -19,6 +19,7 @@
 #define MAXSTEAMID              64
 
 new Handle:g_hWhosHadTank = INVALID_HANDLE;
+new Handle:g_hWhosHadTankPersistent = INVALID_HANDLE; // Tracks who has had tank and does not reset when tank pool is empty like g_hWhosHadTank does
 new String:g_sQueuedTankSteamId[MAXSTEAMID] = "";
 new Handle:g_hTankPrint = INVALID_HANDLE;
 new Handle:g_hCvarDebug = INVALID_HANDLE;
@@ -72,6 +73,7 @@ public OnPluginStart() {
     
     // Initialise the tank arrays/data values
     g_hWhosHadTank = CreateArray(MAXSTEAMID);
+    g_hWhosHadTankPersistent = CreateArray(MAXSTEAMID);
     
     // Register the boss commands
     RegConsoleCmd("sm_tank", Tank_Cmd, "Shows who is becoming the tank.");
@@ -113,6 +115,7 @@ public Native_ClearWhosHadTank(Handle:plugin, numParams) {
     
     //remove infected players from had tank pool
     RemoveSteamIdsFromArray(g_hWhosHadTank, infectedPool);
+    RemoveSteamIdsFromArray(g_hWhosHadTankPersistent, infectedPool);
     
     CloseHandle(infectedPool);
 }
@@ -122,7 +125,7 @@ public Native_GetWhosNotHadTank(Handle:plugin, numParams) {
     AddTeamSteamIdsToArray(infectedPool, TEAM_INFECTED);
     
     // Remove players who've already had tank from the pool.
-    RemoveSteamIdsFromArray(infectedPool, g_hWhosHadTank);
+    RemoveSteamIdsFromArray(infectedPool, g_hWhosHadTankPersistent);
 
     decl String:sSteamId[MAXSTEAMID];
     for (new i = 0; i < GetArraySize(infectedPool); i++) {
@@ -191,6 +194,7 @@ public Action:newGame(Handle:timer) {
     if (teamAScore == 0 && teamBScore == 0) {
         PrintDebug("[newGame] Resetting tank control.");
         ClearArray(g_hWhosHadTank);
+        ClearArray(g_hWhosHadTankPersistent);
         Call_StartForward(g_hTankControlResetForward);
         Call_Finish();
     }
@@ -386,8 +390,13 @@ public Action:AddTankPool_Cmd(client, args) {
 
         // Remove player from list of who had tank
         new index = FindStringInArray(g_hWhosHadTank, steamId);
-        if (index != -1)
+        if (index != -1) {
             RemoveFromArray(g_hWhosHadTank, index);
+        }
+        index = FindStringInArray(g_hWhosHadTankPersistent, steamId);
+        if (index != -1) {
+            RemoveFromArray(g_hWhosHadTankPersistent, index);
+        }
 
         CPrintToChatAll("{red}<{default}Tank Selection{red}> {olive}%N {default}added to tank pool!", target);
         
@@ -423,8 +432,13 @@ public Action:RemoveTankPool_Cmd(client, args) {
 
         // Add player to list of who had tank
         new index = FindStringInArray(g_hWhosHadTank, steamId);
-        if (index == -1)
+        if (index == -1) {
             PushArrayString(g_hWhosHadTank, steamId);
+        }
+        index = FindStringInArray(g_hWhosHadTankPersistent, steamId);
+        if (index == -1) {
+            PushArrayString(g_hWhosHadTankPersistent, steamId);
+        }
 
         CPrintToChatAll("{red}<{default}Tank Selection{red}> {olive}%N {default}removed from tank pool!", target);
         
@@ -459,7 +473,7 @@ public ChooseTank() {
     if (!GetArraySize(infectedPool)) {
         PrintDebug("[ChooseTank] Resetting who has had tank on infected.");
         AddTeamSteamIdsToArray(infectedPool, TEAM_INFECTED);
-        RemoveSteamIdsFromArray(g_hWhosHadTank, infectedPool);
+        RemoveSteamIdsFromArray(g_hWhosHadTank, infectedPool); // g_hWhosHadTankPersistent is not reset
     }
     
     // If no infected players, clear queued tank and return
@@ -513,7 +527,14 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis) {
     // Mark the player as having had tank
     if (g_sQueuedTankSteamId[0]) {
         SetTankTickets(g_sQueuedTankSteamId, 20000);
-        PushArrayString(g_hWhosHadTank, g_sQueuedTankSteamId);
+        new index = FindStringInArray(g_hWhosHadTank, g_sQueuedTankSteamId);
+        if (index == -1) {
+            PushArrayString(g_hWhosHadTank, g_sQueuedTankSteamId);
+        }
+        index = FindStringInArray(g_hWhosHadTankPersistent, g_sQueuedTankSteamId);
+        if (index == -1) {
+            PushArrayString(g_hWhosHadTankPersistent, g_sQueuedTankSteamId);
+        }
         PrintDebug("[L4D_OnTryOfferingTankBot] Calling g_hTankGivenForward forward. g_sQueuedTankSteamId: %s", g_sQueuedTankSteamId);
         Call_StartForward(g_hTankGivenForward);
         Call_PushString(g_sQueuedTankSteamId);
