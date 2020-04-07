@@ -60,6 +60,9 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 ### l4d2_tank_spawn_fix.sp
 * Fixes inconsistency between rounds where teams have to reach slightly different locations to spawn the same tank.
 * The plugin accounts for the variation in total map distance that can exist between rounds and adjusts the second round tank flow % to make the spawn trigger location match the first round.
+  * `sm_tank_spawn_fix_debug` cvar for logging.
+  * `tank_spawn_fix` cvar for turning on/off. Enabled by default.
+  * `tank_spawn_fix_disable <map>` cvar for disabling specific maps.
 
 ### parish_finale_ladder_fix.sp
 * Fixes infected ladders on the Parish finale bridge disappearing in the second round.

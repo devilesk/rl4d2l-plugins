@@ -5,11 +5,14 @@
 #include <left4downtown>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
+#include "includes/rl4d2l_util"
 
 #define DEBUG 0
 
 new Handle:g_hCvarDebug = INVALID_HANDLE;
 new Handle:g_hVsBossBuffer = INVALID_HANDLE;
+new Handle:g_hCvarEnabled = INVALID_HANDLE;
+new Handle:g_hDisabledMaps = INVALID_HANDLE;
 new Address:g_pTankSpawnNav = Address_Null;
 new bool:g_bFirstFlowTankSpawned = false;
 new Float:g_fTankSpawnOrigin[3];
@@ -20,18 +23,47 @@ new Float:g_fTankFlow;
 public Plugin:myinfo = {
     name = "L4D2 Tank Spawn Fix",
     author = "devilesk",
-    version = "1.0.2",
+    version = "1.1.0",
     description = "Fixes inconsistent tank spawns between rounds.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_tank_spawn_fix_debug", "1", "Tank Spawn Fix debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarEnabled = CreateConVar("tank_spawn_fix", "1", "Tank Spawn Fix enabled", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
+    RegServerCmd("tank_spawn_fix_disable", TankSpawnFixMapDisable_Command);
+    g_hDisabledMaps = CreateTrie();
+}
+
+public Action:TankSpawnFixMapDisable_Command(args) {
+    decl String:mapname[64];
+    GetCmdArg(1, mapname, sizeof(mapname));
+    StrToLower(mapname);
+    SetTrieValue(g_hDisabledMaps, mapname, true);
+    PrintDebug("[TankSpawnFixMapDisable_Command] Added: %s", mapname);
+}
+
+public bool IsMapEnabled() {
+    if (!GetConVarBool(g_hCvarEnabled)) {
+        PrintDebug("[IsMapEnabled] false");
+        return false;
+    }
+    decl String:mapname[64];
+    GetCurrentMapLower(mapname, sizeof(mapname));
+    new bool:dummy;
+    if (GetTrieValue(g_hDisabledMaps, mapname, dummy)) {
+        PrintDebug("[IsMapEnabled] false %s", mapname);
+        return false;
+    }
+    PrintDebug("[IsMapEnabled] true %s", mapname);
+    return true;
 }
 
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
+    if (!IsMapEnabled()) return;
+
     if (!InSecondHalfOfRound()) g_bFirstFlowTankSpawned = false;
 
     // Delayed flow check due to L4D2Direct_GetMapMaxFlowDistance not returning a consistent value if called immediately on round start
@@ -44,6 +76,8 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
  * then update the second round flow tank percent.
  */
 public Action:CheckFlow(Handle:timer) {
+    if (!IsMapEnabled()) return;
+
     PrintDebug("[CheckFlow] Round: %i. Round 2 Tank Enabled: %i. FirstFlowTankSpawned: %i.", InSecondHalfOfRound(), L4D2Direct_GetVSTankToSpawnThisRound(1), g_bFirstFlowTankSpawned);
 
     // only check second round flow tanks if enabled and first round flow tank spawned
@@ -78,6 +112,8 @@ public Action:CheckFlow(Handle:timer) {
  * Store the nav area that triggered the first round flow tank spawn along with other flow info
  */
 public Action:L4D_OnSpawnTank(const Float:vector[3], const Float:qangle[3]) {
+    if (!IsMapEnabled()) return;
+
     if (!InSecondHalfOfRound() && L4D2Direct_GetVSTankToSpawnThisRound(0) && !g_bFirstFlowTankSpawned) {
         GetMaxSurvivorNavInfo(g_pTankSpawnNav, g_fTankSpawnOrigin, g_fNavAreaFlow, g_fMapMaxFlowDistance, g_fTankFlow);
         g_bFirstFlowTankSpawned = true;
