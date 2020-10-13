@@ -10,9 +10,9 @@ public Plugin:myinfo =
 {
     name = "Discord Webhook",
     author = "devilesk",
-    version = "1.0.0",
+    version = "1.1.0",
     description = "Discord webhook functions.",
-    url = "https://steamcommunity.com/groups/RL4D2L"
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)

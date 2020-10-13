@@ -29,7 +29,7 @@ public Plugin:myinfo =
 		name = "Finale Can't Spawn Glitch Fix",
 		author = "ProdigySim, modified by Wicket and devilesk",
 		description = "Fixing Waiting For Survivors To Start The Finale or w/e",
-		version = "1.2.2",
+		version = "1.3.0",
 		url = "https://github.com/devilesk/rl4d2l-plugins/blob/master/suicideblitzfinalefix.sp"
 }
  
@@ -37,7 +37,7 @@ public OnPluginStart()
 {
 	RegAdminCmd("sm_fix_wff", AdminFixWaitingForFinale, ADMFLAG_GENERIC, "Manually fix the 'Waiting for finale to start' issue for all infected.");
 	
-	g_SawSurvivorsOutsideBattlefieldOffset = FindSendPropOffs("CTerrorPlayer", "m_ghostSpawnState") + OFFS_FROM_SPAWNSTATE;
+	g_SawSurvivorsOutsideBattlefieldOffset = FindSendPropInfo("CTerrorPlayer", "m_ghostSpawnState") + OFFS_FROM_SPAWNSTATE;
 	
 	HookEvent("round_start", RoundStartEvent);
 }

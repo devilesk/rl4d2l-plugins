@@ -24,7 +24,7 @@ public Plugin:myinfo =
 	name = "L4D2 Practice",
 	author = "devilesk",
 	description = "Practice features",
-	version = "0.1.1",
+	version = "0.2.0",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -178,7 +178,7 @@ public Action:Command_Goto(Client,args)
 	}
 	
 	//Declare:
-	decl MaxPlayers, Player;
+	decl Player;
 	decl String:PlayerName[32];
 	new Float:TeleportOrigin[3];
 	new Float:PlayerOrigin[3];
@@ -189,8 +189,7 @@ public Action:Command_Goto(Client,args)
 	GetCmdArg(1, PlayerName, sizeof(PlayerName));
 	
 	//Find:
-	MaxPlayers = GetMaxClients();
-	for(new X = 1; X <= MaxPlayers; X++)
+	for(new X = 1; X <= MaxClients; X++)
 	{
 
 		//Connected:
@@ -244,7 +243,7 @@ public Action:Command_Bring(Client,args)
 	}
 	
 	//Declare:
-	decl MaxPlayers, Player;
+	decl Player;
 	decl String:PlayerName[32];
 	new Float:TeleportOrigin[3];
 	new Float:PlayerOrigin[3];
@@ -255,8 +254,7 @@ public Action:Command_Bring(Client,args)
 	GetCmdArg(1, PlayerName, sizeof(PlayerName));
 	
 	//Find:
-	MaxPlayers = GetMaxClients();
-	for(new X = 1; X <= MaxPlayers; X++)
+	for(new X = 1; X <= MaxClients; X++)
 	{
 
 		//Connected:

@@ -2,9 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2util>
-#include <l4d2_direct>
-#include <left4downtown>
+#include <left4dhooks>
 #include <colors>
 #include <readyup>
 
@@ -44,7 +42,7 @@ public Plugin:myinfo = {
     name = "L4D2 Tank Control",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "0.10.5",
+    version = "0.11.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -82,8 +80,8 @@ public OnPluginStart() {
     RegConsoleCmd("sm_witch", Tank_Cmd, "Shows who is becoming the tank.");
     
     // Cvars
-    g_hTankPrint = CreateConVar("tankcontrol_print_all", "0", "Who gets to see who will become the tank? (0 = Infected, 1 = Everyone)", FCVAR_PLUGIN);
-    g_hCvarDebug = CreateConVar("tankcontrol_debug", "0", "Whether or not to debug to console", FCVAR_PLUGIN);
+    g_hTankPrint = CreateConVar("tankcontrol_print_all", "0", "Who gets to see who will become the tank? (0 = Infected, 1 = Everyone)", 0);
+    g_hCvarDebug = CreateConVar("tankcontrol_debug", "0", "Whether or not to debug to console", 0);
 }
 
 public Native_SetTank(Handle:plugin, numParams) {
@@ -666,4 +664,12 @@ stock Math_GetRandomInt(min, max)
     }
 
     return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
+}
+
+SetTankFrustration(int iTankClient, int iFrustration) {
+    if (iFrustration < 0 || iFrustration > 100) {
+        return;
+    }
+
+    SetEntProp(iTankClient, Prop_Send, "m_frustration", 100-iFrustration);
 }

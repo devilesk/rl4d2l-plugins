@@ -14,14 +14,14 @@ public Plugin:myinfo = {
     name = "Chat Spam Throttle",
     author = "devilesk",
     description = "Chat filter to prevent spamming the same message too often.",
-    version = "0.2.0",
+    version = "0.3.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("chat_spam_throttle_debug", "0", "Chat Spam Throttle debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarExpireTime = CreateConVar("chat_spam_throttle_time", "20", "Time in seconds before a message can be repeated.", FCVAR_PLUGIN, true, 0.0);
-    g_hCvarCheckSender = CreateConVar("chat_spam_throttle_check_sender", "1", "Allow repeating messages sent by someone else.", FCVAR_PLUGIN);
+    g_hCvarDebug = CreateConVar("chat_spam_throttle_debug", "0", "Chat Spam Throttle debug mode", 0, true, 0.0, true, 1.0);
+    g_hCvarExpireTime = CreateConVar("chat_spam_throttle_time", "20", "Time in seconds before a message can be repeated.", 0, true, 0.0);
+    g_hCvarCheckSender = CreateConVar("chat_spam_throttle_check_sender", "1", "Allow repeating messages sent by someone else.", 0);
     g_hMsgTime = CreateArray(32);
     g_hMsgSender = CreateArray(32);
     g_hMsgText = CreateArray(MAXMSGLEN);

@@ -2,7 +2,8 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
+#include <left4dhooks>
+#define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 #include <readyup>
 #include <pause>
@@ -44,7 +45,7 @@ public Plugin:myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "3.1.3",
+	version = "3.2.0",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 

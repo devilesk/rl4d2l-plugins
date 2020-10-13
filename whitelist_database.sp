@@ -19,18 +19,18 @@ public Plugin:myinfo =
     name = "Whitelist Database",
     author = "devilesk",
     description = "Restricts server to Steam IDs in a whitelist database",
-    version = "0.1.0",
+    version = "0.2.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 public OnPluginStart() {
-    g_hCvarEnabled = CreateConVar("whitelist_database", "0", "Enable whitelist database", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarDebug = CreateConVar("whitelist_database_debug", "0", "Whitelist Database debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarEnabled = CreateConVar("whitelist_database", "0", "Enable whitelist database", 0, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("whitelist_database_debug", "0", "Whitelist Database debug mode", 0, true, 0.0, true, 1.0);
     g_hCvarDatabaseConfig = CreateConVar(
             "whitelist_database_cfg",
             "whitelist_database",
             "Name of database keyvalue entry to use in databases.cfg",
-            FCVAR_PLUGIN, true, 0.0, false
+            0, true, 0.0, false
         );
         
     RegConsoleCmd("sm_vouchnext", Command_VouchNext, "Autovouch the next unvouched player to join the server.");

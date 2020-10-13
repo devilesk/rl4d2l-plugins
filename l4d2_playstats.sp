@@ -3,8 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <left4downtown>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include <l4d2_playstats>
 #include <clientprefs>
 #undef REQUIRE_PLUGIN
@@ -29,7 +28,7 @@ public Plugin: myinfo = {
     name = "Player Statistics",
     author = "Tabun, devilesk",
     description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-    version = "0.16.2",
+    version = "0.17.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -140,14 +139,14 @@ public OnPluginStart() {
             "l4d2_playstats_database_cfg",
             "l4d2_playstats",
             "Name of database keyvalue entry to use in databases.cfg",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
 
     g_hCvarCustomConfig = CreateConVar(
             "l4d2_playstats_customcfg",
             "",
             "Name of custom cfg",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     
     // cvars
@@ -155,49 +154,49 @@ public OnPluginStart() {
             "sm_stats_debug",
             "0",
             "Debug mode",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarMVPBrevityFlags = CreateConVar(
-            "sm_survivor_mvp_brevity",
+            "sm_survivor_mvp_brevity_latest",
             "4",
             "Flags for setting brevity of MVP chat report (hide 1:SI, 2:CI, 4:FF, 8:rank, 32:perc, 64:abs).",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarAutoPrintVs = CreateConVar(
             "sm_stats_autoprint_vs_round",
             "8325",                                     // default = 1 (mvpchat) + 4 (mvpcon-round) + 128 (special round) = 133 + (funfact round) 8192 = 8325
             "Flags for automatic print [versus round] (show 1,4:MVP-chat, 4,8,16:MVP-console, 32,64:FF, 128,256:special, 512,1024,2048,4096:accuracy).",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarAutoPrintCoop = CreateConVar(
             "sm_stats_autoprint_coop_round",
             "1289",                                     // default = 1 (mvpchat) + 8 (mvpcon-all) + 256 (special all) + 1024 (acc all) = 1289
             "Flags for automatic print [campaign round] (show 1,4:MVP-chat, 4,8,16:MVP-console, 32,64:FF, 128,256:special, 512,1024,2048,4096:accuracy).",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarShowBots = CreateConVar(
             "sm_stats_showbots",
             "1",
             "Show bots in all tables (0 = show them in MVP and FF tables only)",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarDetailPercent = CreateConVar(
             "sm_stats_percentdecimal",
             "0",
             "Show the first decimal for (most) MVP percent in console tables.",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarWriteStats = CreateConVar(
             "sm_stats_writestats",
             "0",
             "Whether to store stats in logs/ dir (1 = write csv; 2 = write csv & pretty tables). Versus only.",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     g_hCvarSkipMap = CreateConVar(
             "sm_stats_resetnextmap",
             "0",
             "First round is ignored (for use with confogl/matchvotes - this will be automatically unset after a new map is loaded).",
-            FCVAR_PLUGIN, true, 0.0, false
+            FCVAR_NONE, true, 0.0, false
         );
     
     g_iTeamSize = 4;

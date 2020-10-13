@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
+#include <left4dhooks>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 #include <discord_webhook>
@@ -44,8 +44,8 @@ public Plugin: myinfo =
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.4.4",
-    url = "https://steamcommunity.com/groups/RL4D2L"
+    version = "1.4.5",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)

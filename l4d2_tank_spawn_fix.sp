@@ -1,8 +1,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <l4d2_direct>
-#include <left4downtown>
+#include <left4dhooks>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 #include "includes/rl4d2l_util"
@@ -23,14 +22,14 @@ new Float:g_fTankFlow;
 public Plugin:myinfo = {
     name = "L4D2 Tank Spawn Fix",
     author = "devilesk",
-    version = "1.1.0",
+    version = "1.2.0",
     description = "Fixes inconsistent tank spawns between rounds.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("sm_tank_spawn_fix_debug", "1", "Tank Spawn Fix debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarEnabled = CreateConVar("tank_spawn_fix", "1", "Tank Spawn Fix enabled", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_tank_spawn_fix_debug", "1", "Tank Spawn Fix debug mode", 0, true, 0.0, true, 1.0);
+    g_hCvarEnabled = CreateConVar("tank_spawn_fix", "1", "Tank Spawn Fix enabled", 0, true, 0.0, true, 1.0);
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
     RegServerCmd("tank_spawn_fix_disable", TankSpawnFixMapDisable_Command);

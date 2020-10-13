@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <builtinvotes>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include <colors>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
@@ -13,7 +13,7 @@ public Plugin:myinfo =
 {
 	name = "L4D2 Boss Flow Announce (Back to roots edition)",
 	author = "ProdigySim, Jahze, Stabby, CircleSquared, CanadaRox, Visor, Sir, devilesk",
-	version = "1.6.5",
+	version = "1.6.6",
 	description = "Announce boss flow percents!",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -44,10 +44,10 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-	hCvarPrintToEveryone = CreateConVar("l4d_global_percent", "1", "Display boss percentages to entire team when using commands", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	hCvarTankPercent = CreateConVar("l4d_tank_percent", "1", "Display Tank flow percentage in chat", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	hCvarWitchPercent = CreateConVar("l4d_witch_percent", "1", "Display Witch flow percentage in chat", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	hCvarVoteEnable = CreateConVar("l4d_boss_vote", "1", "Allow for Easy Setup of the Boss Spawns", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	hCvarPrintToEveryone = CreateConVar("l4d_global_percent", "1", "Display boss percentages to entire team when using commands", 0, true, 0.0, true, 1.0);
+	hCvarTankPercent = CreateConVar("l4d_tank_percent", "1", "Display Tank flow percentage in chat", 0, true, 0.0, true, 1.0);
+	hCvarWitchPercent = CreateConVar("l4d_witch_percent", "1", "Display Witch flow percentage in chat", 0, true, 0.0, true, 1.0);
+	hCvarVoteEnable = CreateConVar("l4d_boss_vote", "1", "Allow for Easy Setup of the Boss Spawns", 0, true, 0.0, true, 1.0);
 
 	RegConsoleCmd("sm_boss", BossCmd);
 	RegConsoleCmd("sm_tank", BossCmd);

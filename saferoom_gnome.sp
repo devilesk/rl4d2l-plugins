@@ -13,13 +13,13 @@ public Plugin:myinfo = {
     name = "Saferoom Gnome",
     author = "devilesk",
     description = "Spawns a gnome in the saferoom that is removed when the round goes live.",
-    version = "1.2.0",
+    version = "1.3.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 public OnPluginStart() {
-    g_hCvarEnabled = CreateConVar("sm_saferoom_gnome", "1", "Enable saferoom gnome spawn", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarDebug = CreateConVar("sm_saferoom_gnome_debug", "0", "Saferoom Gnome debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarEnabled = CreateConVar("sm_saferoom_gnome", "1", "Enable saferoom gnome spawn", 0, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_saferoom_gnome_debug", "0", "Saferoom Gnome debug mode", 0, true, 0.0, true, 1.0);
     HookEvent("round_start", Event_RoundStart);
 }
 

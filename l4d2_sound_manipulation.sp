@@ -39,8 +39,8 @@ public Plugin myinfo =
 	name = "Sound Manipulation",
 	author = "Sir, devilesk",
 	description = "Allows control over certain sounds",
-	version = "1.5c",
-	url = "https://github.com/SirPlease/SirCoding"
+	version = "1.6",
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
 char sCoachSound[MAX_COACHSOUND + 1][] = 

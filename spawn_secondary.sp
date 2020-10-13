@@ -12,7 +12,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <left4downtown>
+#include <left4dhooks>
 #include <builtinvotes>
 #undef REQUIRE_PLUGIN
 #include <readyup>
@@ -35,7 +35,7 @@ public Plugin:myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
     description = "Spawning pistols and/or axes for players.",
-    version = "0.8.0",
+    version = "0.9.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 

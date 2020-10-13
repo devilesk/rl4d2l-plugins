@@ -11,7 +11,7 @@ public Plugin:myinfo = {
     name = "8Ball",
     description = "Simple 8Ball Game Plugin. Works the same as Coinflip / Dice Roll.",
     author = "spoon, devilesk",
-    version = "1.3.0",
+    version = "1.4.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 

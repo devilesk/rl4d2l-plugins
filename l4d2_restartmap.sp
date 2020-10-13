@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include <builtinvotes>
 #undef REQUIRE_PLUGIN
 #include <l4d2_changelevel>
@@ -31,23 +31,23 @@ public Plugin:myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.6.0",
+    version = "0.7.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("sm_restartmap_debug", "0", "Restart Map debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarAutofix = CreateConVar("sm_restartmap_autofix", "1", "Check for broken flow on map load and automatically restart.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarAutofixMaxTries = CreateConVar("sm_restartmap_autofix_max_tries", "1", "Max number of automatic restart attempts to fix broken flow.", FCVAR_PLUGIN, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_restartmap_debug", "0", "Restart Map debug mode", 0, true, 0.0, true, 1.0);
+    g_hCvarAutofix = CreateConVar("sm_restartmap_autofix", "1", "Check for broken flow on map load and automatically restart.", 0, true, 0.0, true, 1.0);
+    g_hCvarAutofixMaxTries = CreateConVar("sm_restartmap_autofix_max_tries", "1", "Max number of automatic restart attempts to fix broken flow.", 0, true, 1.0);
     
     RegConsoleCmd("sm_restartmap", Command_RestartMap);
     
     g_iMapRestarts = 0;
     g_bIsMapRestarted = false;
     
-    gConf = LoadGameConfigFile("left4downtown.l4d2");
+    gConf = LoadGameConfigFile("left4dhooks.l4d2");
     if(gConf == INVALID_HANDLE) {
-        LogError("Could not load gamedata/left4downtown.l4d2.txt");
+        LogError("Could not load gamedata/left4dhooks.l4d2.txt");
     }
 
     StartPrepSDKCall(SDKCall_GameRules);
@@ -224,24 +224,3 @@ stock PrintDebug(const String:Message[], any:...) {
         LogMessage(DebugBuff);
     }
 }
-
-/**
- * Sends a message to all clients console.
- *
- * @param format        Formatting rules.
- * @param ...            Variable number of format parameters.
- * @noreturn
- */
-stock PrintToConsoleAll(const String:format[], any:...)
-{
-    decl String:text[192];
-    for (new x = 1; x <= MaxClients; x++)
-    {
-        if (IsClientInGame(x))
-        {
-            SetGlobalTransTarget(x);
-            VFormat(text, sizeof(text), format, 2);
-            PrintToConsole(x, text);
-        }
-    }
-} 

@@ -1,12 +1,13 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <left4downtown>
+#include <left4dhooks>
+#include <colors>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
-#define TANK_CHECK_DELAY        0.5
+#define TANK_CHECK_DELAY        0.5 // tank spawn not always detected if too small
 
 const TANK_ZOMBIE_CLASS = 8;
 
@@ -20,14 +21,14 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 
 public Plugin:myinfo = {
     name = "L4D2 No Tank Rush",
-    author = "Jahze, vintik, devilesk",
-    version = "1.5",
+    author = "Jahze, vintik, Sir, devilesk",
+    version = "1.7",
     description = "Stops distance points accumulating whilst the tank is alive"
 };
 
 public OnPluginStart() {
-    cvar_noTankRush = CreateConVar("l4d_no_tank_rush", "1", "Prevents survivor team from accumulating points whilst the tank is alive", FCVAR_PLUGIN);
-    g_hCvarDebug = CreateConVar("l4d_no_tank_rush_debug", "0", "L4D2 No Tank Rush debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    cvar_noTankRush = CreateConVar("l4d_no_tank_rush", "1", "Prevents survivor team from accumulating points whilst the tank is alive");
+    g_hCvarDebug = CreateConVar("l4d_no_tank_rush_debug", "0", "L4D2 No Tank Rush debug mode", 0, true, 0.0, true, 1.0);
 
     HookConVarChange(cvar_noTankRush, NoTankRushChange);
     if (GetConVarBool(cvar_noTankRush)) {
@@ -109,7 +110,7 @@ public Action:CheckForTanksDelay( Handle:timer ) {
 FreezePoints( bool:show_message = false ) {
     if ( !bTankAlive ) {
         iDistance = L4D_GetVersusMaxCompletionScore();
-        if ( show_message ) PrintToChatAll("[NoTankRush] Tank spawned. Freezing distance points!");
+        if ( show_message ) CPrintToChatAll("{red}[{default}NoTankRush{red}] {red}Tank {default}spawned. {olive}Freezing {default}distance points!");
         L4D_SetVersusMaxCompletionScore(0);
         bTankAlive = true;
         PrintDebug("[FreezePoints] Points frozen. Max completion score value was %i", iDistance);
@@ -118,7 +119,7 @@ FreezePoints( bool:show_message = false ) {
 
 UnFreezePoints( bool:show_message = false ) {
     if ( bTankAlive ) {
-        if ( show_message ) PrintToChatAll("[NoTankRush] Tank is dead. Unfreezing distance points!");
+        if ( show_message ) CPrintToChatAll("{red}[{default}NoTankRush{red}] {red}Tank {default}is dead. {olive}Unfreezing {default}distance points!");
         PrintDebug("[UnFreezePoints] Unfreezing points. L4D_GetVersusMaxCompletionScore: %i. Points set to %i", L4D_GetVersusMaxCompletionScore(), iDistance);
         L4D_SetVersusMaxCompletionScore(iDistance);
         bTankAlive = false;

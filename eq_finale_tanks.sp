@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include "includes/rl4d2l_util"
 
 #define FINALE_GAUNTLET_1               0
@@ -42,12 +42,12 @@ public Plugin:myinfo = {
     name = "Finale Tank Manager",
     author = "Visor, Sir, Electr0, devilesk",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
-    version = "1.1.2",
+    version = "1.1.3",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("sm_tank_map_debug", "0", "Finale Tank Manager debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_tank_map_debug", "0", "Finale Tank Manager debug mode", 0, true, 0.0, true, 1.0);
 
     HookEvent("round_start", EventHook:RoundStartEvent, EventHookMode_PostNoCopy);
 

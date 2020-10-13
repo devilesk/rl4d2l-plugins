@@ -3,8 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <l4d2util>
-#include <l4d2_direct>
-#include <left4downtown>
+#include <left4dhooks>
 #include <colors>
 #include <readyup>
 #include <l4d_tank_control_eq>
@@ -33,7 +32,7 @@ public Plugin:myinfo = {
     name = "Static Tank Control",
     author = "devilesk",
     description = "Predetermined tank control distribution.",
-    version = "0.5.1",
+    version = "0.6.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -48,7 +47,7 @@ public OnPluginStart() {
     RegServerCmd("static_tank_control", StaticTankControl_Command);
     RegServerCmd("static_tank_control_tank_num", StaticTankControlTankNum_Command); 
     
-    g_hCvarDebug = CreateConVar("static_tank_control_debug", "0", "Whether or not to debug to console", FCVAR_PLUGIN);
+    g_hCvarDebug = CreateConVar("static_tank_control_debug", "0", "Whether or not to debug to console", 0);
 }
 
 /**

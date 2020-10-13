@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <l4d2_direct>
+#include <left4dhooks>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 
@@ -18,7 +18,7 @@ public Plugin:myinfo =
     name = "L4D2 Survivor Progress",
     author = "CanadaRox, Visor, Sir, devilesk",
     description = "Print survivor progress in flow percents.",
-    version = "2.3.1",
+    version = "2.4.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -27,7 +27,7 @@ public OnPluginStart()
     RegConsoleCmd("sm_cur", CurrentCmd);
     RegConsoleCmd("sm_current", CurrentCmd);
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
-    hCvarPrecision = CreateConVar("current_precision", "1", "Number of decimal places to display.", FCVAR_PLUGIN, true, float(MIN_PRECISION), true, float(MAX_PRECISION));
+    hCvarPrecision = CreateConVar("current_precision", "1", "Number of decimal places to display.", 0, true, float(MIN_PRECISION), true, float(MAX_PRECISION));
 }
 
 public Action:CurrentCmd(client, args)

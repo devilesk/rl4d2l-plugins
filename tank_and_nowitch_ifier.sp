@@ -4,11 +4,10 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
 #include <l4d2lib>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
-#include <left4downtown>
+#include <left4dhooks>
 #include "includes/rl4d2l_util"
 
 #define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
@@ -17,7 +16,7 @@
 public Plugin:myinfo = {
     name = "Tank and no Witch ifier!",
     author = "CanadaRox, Sir, devilesk",
-    version = "2.2.1",
+    version = "2.2.2",
     description = "Sets a tank spawn and removes witch spawn point on every map",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -30,7 +29,7 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 new bool:bValidSpawn[101];
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("sm_tank_nowitch_debug", "0", "Tank and no Witch ifier debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_tank_nowitch_debug", "0", "Tank and no Witch ifier debug mode", 0, true, 0.0, true, 1.0);
     
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     g_hVsBossFlowMax = FindConVar("versus_boss_flow_max");

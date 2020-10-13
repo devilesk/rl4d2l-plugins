@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <builtinvotes>
-#include <l4d2_direct>
+#include <left4dhooks>
 #define L4D2UTIL_STOCKS_ONLY
 #include <l4d2util>
 
@@ -31,13 +31,13 @@ new VoteType:g_VoteType;
 public Plugin:myinfo = {
     name = "Teleport Tank",
     author = "devilesk",
-    version = "1.7.1",
+    version = "1.8.0",
     description = "Adds sm_teleporttank to teleport tank to its original spawn point or to a given point.",
-    url = "https://steamcommunity.com/groups/RL4D2L"
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public OnPluginStart() {
-    g_hCvarDebug = CreateConVar("sm_teleport_tank_debug", "0", "Teleport Tank debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarDebug = CreateConVar("sm_teleport_tank_debug", "0", "Teleport Tank debug mode", 0, true, 0.0, true, 1.0);
 
     Reset();
     HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
