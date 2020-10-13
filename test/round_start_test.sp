@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2_direct>
+//#include <l4d2_direct>
 
 public Plugin:myinfo = {
     name = "Round Start Test",
