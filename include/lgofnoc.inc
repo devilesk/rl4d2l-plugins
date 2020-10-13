@@ -1,3 +1,25 @@
+/*
+	This program is free software: you can redistribute it and/or modify it under
+	the terms of the GNU General Public License as published by the Free Software
+	Foundation, either version 3 of the License, or (at your option) any later
+	version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT ANY
+	WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+	PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License along with
+	this program.  If not, see <http://www.gnu.org/licenses/>.
+
+	SourcePawn is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved. 
+	SourceMod is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved. 
+	Pawn and SMALL are Copyright (C) 1997-2008 ITB CompuPhase. 
+	Source is Copyright (C) Valve Corporation. 
+
+	Valve, the Valve logo, Left 4 Dead, Left 4 Dead 2, Steam, and the Steam
+	logo are trademarks and/or registered trademarks of Valve Corporation.
+	All other trademarks are property of their respective owners.
+*/
 /* *
  * =============================================================================
  * lgofnoc.inc 
@@ -56,6 +78,24 @@ forward LGO_OnMatchModeStart(const String:config[]);
  * @return 	True if matchmode is loaded, false otherwise
  */
 native bool:LGO_IsMatchModeLoaded();
+
+/**
+ * @brief Start matchmode on a given config.
+ * @remarks Acts like "sm_forcematch" command, will unload existing match if one is running
+ *
+ * @param config The name of the config to load for the match
+ * @return true if the config was found and matchmode loading starts, false if config not found.
+ */
+native bool:LGO_StartMatch(const String:config[]);
+
+/**
+ * @brief End the current matchmode
+ * @remarks Acts like "sm_resetmatch" command.
+ *
+ * @param restartMap Whether or not to restart the map after unloading matchmode.
+ * @noreturn
+ */
+native LGO_EndMatch(bool:restartMap=true);
 
 /**
  * @brief Build a filepath relative to the current running config.
@@ -151,6 +191,9 @@ public SharedPlugin:__pl_lgofnoc =
  
 public __pl_lgofnoc_SetNTVOptional()
 {
+	MarkNativeAsOptional("LGO_IsMatchModeLoaded");
+	MarkNativeAsOptional("LGO_StartMatch");
+	MarkNativeAsOptional("LGO_EndMatch");
 	MarkNativeAsOptional("LGO_BuildConfigPath");
 	MarkNativeAsOptional("LGO_ExecuteConfigCfg");
 	MarkNativeAsOptional("LGO_IsMapDataAvailable");

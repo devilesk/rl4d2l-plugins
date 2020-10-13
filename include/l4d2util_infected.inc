@@ -169,4 +169,3 @@ stock GetInfectedVictim(client) {
 stock L4D2_Gender:GetGender(entity) {
     return L4D2_Gender:GetEntProp(entity, Prop_Send, "m_Gender");
 }
-

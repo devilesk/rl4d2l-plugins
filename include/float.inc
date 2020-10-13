@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _float_included
  #endinput
 #endif
@@ -39,338 +39,360 @@
 /**
  * Converts an integer into a floating point value.
  *
- * @param value			Integer to convert.
- * @return				Floating point value.
+ * @param value         Integer to convert.
+ * @return              Floating point value.
  */
-native Float:float(value);
+native float float(int value);
 #endif
 
 /**
  * Multiplies two floats together.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1*oper2.
+ * Note: This native is internal implementation. For multiplication use the '*' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1*oper2.
+ * @deprecated          This native is internal implementation. For multiplication use the '*' operator.
  */
-native Float:FloatMul(Float:oper1, Float:oper2);
+#pragma deprecated This native is internal implementation. For multiplication use the '*' operator.
+native float FloatMul(float oper1, float oper2);
 
 /**
  * Divides the dividend by the divisor.
  *
- * @param dividend		First value.
- * @param divisor		Second value.
- * @return				dividend/divisor.
+ * Note: This native is internal implementation. For division use the '/' operator.
+ *
+ * @param dividend      First value.
+ * @param divisor       Second value.
+ * @return              dividend/divisor.
+ * @deprecated          This native is internal implementation. For division use the '/' operator.
  */
-native Float:FloatDiv(Float:dividend, Float:divisor);
+#pragma deprecated This native is internal implementation. For division use the '/' operator.
+native float FloatDiv(float dividend, float divisor);
 
 /**
  * Adds two floats together.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1+oper2.
+ * Note: This native is internal implementation. For addition use the '+' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1+oper2.
+ * @deprecated          This native is internal implementation. For addition use the '+' operator.
  */
-native Float:FloatAdd(Float:oper1, Float:oper2);
+#pragma deprecated This native is internal implementation. For addition use the '+' operator.
+native float FloatAdd(float oper1, float oper2);
 
 /**
  * Subtracts oper2 from oper1.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1-oper2.
+ * Note: This native is internal implementation. For subtraction use the '-' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1-oper2.
+ * @deprecated          This native is internal implementation. For subtraction use the '-' operator.
  */
-native Float:FloatSub(Float:oper1, Float:oper2);
+#pragma deprecated This native is internal implementation. For subtraction use the '-' operator.
+native float FloatSub(float oper1, float oper2);
 
 /**
  * Returns the decimal part of a float.
  *
- * @param value			Input value.
- * @return				Decimal part.
+ * @param value         Input value.
+ * @return              Decimal part.
  */
-native Float:FloatFraction(Float:value);
+native float FloatFraction(float value);
 
 /**
  * Rounds a float to the closest integer to zero.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
-native RoundToZero(Float:value);
+native int RoundToZero(float value);
 
 /**
  * Rounds a float to the next highest integer value.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
-native RoundToCeil(Float:value);
+native int RoundToCeil(float value);
 
 /**
  * Rounds a float to the next lowest integer value.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
-native RoundToFloor(Float:value);
+native int RoundToFloor(float value);
 
 /**
  * Standard IEEE rounding.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
-native RoundToNearest(Float:value);
+native int RoundToNearest(float value);
 
 /**
  * Compares two floats.
  *
- * @param fOne			First value.
- * @param fTwo			Second value.
- * @return				Returns 1 if the first argument is greater than the second argument.
+ * @param fOne          First value.
+ * @param fTwo          Second value.
+ * @return              Returns 1 if the first argument is greater than the second argument.
  *                      Returns -1 if the first argument is smaller than the second argument.
  *                      Returns 0 if both arguments are equal.
  */
-native FloatCompare(Float:fOne, Float:fTwo);
+native int FloatCompare(float fOne, float fTwo);
 
 /**
  * Returns the square root of the input value, equivalent to floatpower(value, 0.5).
  *
- * @param value			Input value.
- * @return				Square root of the value.
+ * @param value         Input value.
+ * @return              Square root of the value.
  */
-native Float:SquareRoot(Float:value);
+native float SquareRoot(float value);
 
 /**
  * Returns the value raised to the power of the exponent.
  *
- * @param value			Value to be raised.
- * @param exponent		Value to raise the base.
- * @return				value^exponent.
+ * @param value         Value to be raised.
+ * @param exponent      Value to raise the base.
+ * @return              value^exponent.
  */
-native Float:Pow(Float:value, Float:exponent);
+native float Pow(float value, float exponent);
 
 /**
  * Returns the value of raising the input by e.
  *
- * @param value			Input value.
- * @return				exp(value).
+ * @param value         Input value.
+ * @return              exp(value).
  */
-native Float:Exponential(Float:value);
+native float Exponential(float value);
 
 /**
  * Returns the logarithm of any base specified.
  *
- * @param value			Input value.
- * @param base			Logarithm base to use, default is 10.
- * @return				log(value)/log(base).
+ * @param value         Input value.
+ * @param base          Logarithm base to use, default is 10.
+ * @return              log(value)/log(base).
  */
-native Float:Logarithm(Float:value, Float:base=10.0);
+native float Logarithm(float value, float base=10.0);
 
 /**
  * Returns the sine of the argument.
  *
- * @param value			Input value in radians.
- * @return				sin(value).
+ * @param value         Input value in radians.
+ * @return              sin(value).
  */
-native Float:Sine(Float:value);
+native float Sine(float value);
 
 /**
  * Returns the cosine of the argument.
  *
- * @param value			Input value in radians.
- * @return				cos(value).
+ * @param value         Input value in radians.
+ * @return              cos(value).
  */
-native Float:Cosine(Float:value);
+native float Cosine(float value);
 
 /**
  * Returns the tangent of the argument.
  *
- * @param value			Input value in radians.
- * @return				tan(value).
+ * @param value         Input value in radians.
+ * @return              tan(value).
  */
-native Float:Tangent(Float:value);
+native float Tangent(float value);
 
 /**
  * Returns an absolute value.
  *
- * @param value			Input value.
- * @return				Absolute value of the input.
+ * @param value         Input value.
+ * @return              Absolute value of the input.
  */
-native Float:FloatAbs(Float:value);
+native float FloatAbs(float value);
 
 /**
  * Returns the arctangent of the input value.
  *
- * @param angle			Input value.
- * @return				atan(value) in radians.
+ * @param angle         Input value.
+ * @return              atan(value) in radians.
  */
-native Float:ArcTangent(Float:angle);
+native float ArcTangent(float angle);
 
 /**
  * Returns the arccosine of the input value.
  *
- * @param angle			Input value.
- * @return				acos(value) in radians.
+ * @param angle         Input value.
+ * @return              acos(value) in radians.
  */
-native Float:ArcCosine(Float:angle);
+native float ArcCosine(float angle);
 
 /**
  * Returns the arcsine of the input value.
  *
- * @param angle			Input value.
- * @return				asin(value) in radians.
+ * @param angle         Input value.
+ * @return              asin(value) in radians.
  */
-native Float:ArcSine(Float:angle);
+native float ArcSine(float angle);
 
 /**
  * Returns the arctangent2 of the input values.
  *
- * @param x				Horizontal value.
- * @param y				Vertical value.
- * @return				atan2(value) in radians.
+ * @param x             Horizontal value.
+ * @param y             Vertical value.
+ * @return              atan2(value) in radians.
  */
-native Float:ArcTangent2(Float:x, Float:y);
+native float ArcTangent2(float x, float y);
 
 /**
  * Rounds a floating point number using the "round to nearest" algorithm.
  *
- * @param value			Floating point value to round.
- * @return				The value rounded to the nearest integer.
+ * @param value         Floating point value to round.
+ * @return              The value rounded to the nearest integer.
  */
-stock RoundFloat(Float:value)
+stock int RoundFloat(float value)
 {
 	return RoundToNearest(value);
 }
 
 /**
  * User defined operators.
- *
  */
 #if !defined __sourcepawn2__
 #pragma rational Float
 
-native bool:__FLOAT_GT__(Float:a, Float:b);
-native bool:__FLOAT_GE__(Float:a, Float:b);
-native bool:__FLOAT_LT__(Float:a, Float:b);
-native bool:__FLOAT_LE__(Float:a, Float:b);
-native bool:__FLOAT_EQ__(Float:a, Float:b);
-native bool:__FLOAT_NE__(Float:a, Float:b);
-native bool:__FLOAT_NOT__(Float:a);
+// Internal aliases for backwards compatability.
+native float __FLOAT_MUL__(float a, float b) = FloatMul;
+native float __FLOAT_DIV__(float a, float b) = FloatDiv;
+native float __FLOAT_ADD__(float a, float b) = FloatAdd;
+native float __FLOAT_SUB__(float a, float b) = FloatSub;
 
-native Float:operator*(Float:oper1, Float:oper2) = FloatMul;
-native Float:operator/(Float:oper1, Float:oper2) = FloatDiv;
-native Float:operator+(Float:oper1, Float:oper2) = FloatAdd;
-native Float:operator-(Float:oper1, Float:oper2) = FloatSub;
-native bool:operator!(Float:oper1) = __FLOAT_NOT__;
-native bool:operator>(Float:oper1, Float:oper2) = __FLOAT_GT__;
-native bool:operator>=(Float:oper1, Float:oper2) = __FLOAT_GE__;
-native bool:operator<(Float:oper1, Float:oper2) = __FLOAT_LT__;
-native bool:operator<=(Float:oper1, Float:oper2) = __FLOAT_LE__;
-native bool:operator!=(Float:oper1, Float:oper2) = __FLOAT_NE__;
-native bool:operator==(Float:oper1, Float:oper2) = __FLOAT_EQ__;
+native bool __FLOAT_GT__(float a, float b);
+native bool __FLOAT_GE__(float a, float b);
+native bool __FLOAT_LT__(float a, float b);
+native bool __FLOAT_LE__(float a, float b);
+native bool __FLOAT_EQ__(float a, float b);
+native bool __FLOAT_NE__(float a, float b);
+native bool __FLOAT_NOT__(float a);
 
-stock Float:operator++(Float:oper)
+native float operator*(float oper1, float oper2) = FloatMul;
+native float operator/(float oper1, float oper2) = FloatDiv;
+native float operator+(float oper1, float oper2) = FloatAdd;
+native float operator-(float oper1, float oper2) = FloatSub;
+native bool operator!(float oper1) = __FLOAT_NOT__;
+native bool operator>(float oper1, float oper2) = __FLOAT_GT__;
+native bool operator>=(float oper1, float oper2) = __FLOAT_GE__;
+native bool operator<(float oper1, float oper2) = __FLOAT_LT__;
+native bool operator<=(float oper1, float oper2) = __FLOAT_LE__;
+native bool operator!=(float oper1, float oper2) = __FLOAT_NE__;
+native bool operator==(float oper1, float oper2) = __FLOAT_EQ__;
+
+stock float operator++(float oper)
 {
 	return oper+1.0;
 }
 
-stock Float:operator--(Float:oper)
+stock float operator--(float oper)
 {
 	return oper-1.0;
 }
 
-stock Float:operator-(Float:oper)
+stock float operator-(float oper)
 {
-	return oper^Float:cellmin;				/* IEEE values are sign/magnitude */
+	return oper^view_as<float>(cellmin);                /* IEEE values are sign/magnitude */
 }
 
-stock Float:operator*(Float:oper1, oper2)
+// The stocks below are int->float converting versions of the above natives.
+
+stock float operator*(float oper1, int oper2)
 {
-	return FloatMul(oper1, float(oper2));			/* "*" is commutative */
+	return __FLOAT_MUL__(oper1, float(oper2));          /* "*" is commutative */
 }
 
-stock Float:operator/(Float:oper1, oper2)
+stock float operator/(float oper1, int oper2)
 {
-	return FloatDiv(oper1, float(oper2));
+	return __FLOAT_DIV__(oper1, float(oper2));
 }
 
-stock Float:operator/(oper1, Float:oper2)
+stock float operator/(int oper1, float oper2)
 {
-	return FloatDiv(float(oper1), oper2);
+	return __FLOAT_DIV__(float(oper1), oper2);
 }
 
-stock Float:operator+(Float:oper1, oper2)
+stock float operator+(float oper1, int oper2)
 {
-	return FloatAdd(oper1, float(oper2));			/* "+" is commutative */
+	return __FLOAT_ADD__(oper1, float(oper2));          /* "+" is commutative */
 }
 
-stock Float:operator-(Float:oper1, oper2)
+stock float operator-(float oper1, int oper2)
 {
-	return FloatSub(oper1, float(oper2));
+	return __FLOAT_SUB__(oper1, float(oper2));
 }
 
-stock Float:operator-(oper1, Float:oper2)
+stock float operator-(int oper1, float oper2)
 {
-	return FloatSub(float(oper1), oper2);
+	return __FLOAT_SUB__(float(oper1), oper2);
 }
 
-stock bool:operator==(Float:oper1, oper2)
+stock bool operator==(float oper1, int oper2)
 {
 	return __FLOAT_EQ__(oper1, float(oper2));
 }
 
-stock bool:operator!=(Float:oper1, oper2)
+stock bool operator!=(float oper1, int oper2)
 {
 	return __FLOAT_NE__(oper1, float(oper2));
 }
 
-stock bool:operator>(Float:oper1, oper2)
+stock bool operator>(float oper1, int oper2)
 {
 	return __FLOAT_GT__(oper1, float(oper2));
 }
 
-stock bool:operator>(oper1, Float:oper2)
+stock bool operator>(int oper1, float oper2)
 {
 	return __FLOAT_GT__(float(oper1), oper2);
 }
 
-stock bool:operator>=(Float:oper1, oper2)
+stock bool operator>=(float oper1, int oper2)
 {
 	return __FLOAT_GE__(oper1, float(oper2));
 }
 
-stock bool:operator>=(oper1, Float:oper2)
+stock bool operator>=(int oper1, float oper2)
 {
 	return __FLOAT_GE__(float(oper1), oper2);
 }
 
-stock bool:operator<(Float:oper1, oper2)
+stock bool operator<(float oper1, int oper2)
 {
 	return __FLOAT_LT__(oper1, float(oper2));
 }
 
-stock bool:operator<(oper1, Float:oper2)
+stock bool operator<(int oper1, float oper2)
 {
 	return __FLOAT_LT__(float(oper1), oper2);
 }
 
-stock bool:operator<=(Float:oper1, oper2)
+stock bool operator<=(float oper1, int oper2)
 {
 	return __FLOAT_LE__(oper1, float(oper2));
 }
 
-stock bool:operator<=(oper1, Float:oper2)
+stock bool operator<=(int oper1, float oper2)
 {
 	return __FLOAT_LE__(float(oper1), oper2);
 }
 
 /**
  * Forbidden operators.
- *
  */
-forward operator%(Float:oper1, Float:oper2);
-forward operator%(Float:oper1, oper2);
-forward operator%(oper1, Float:oper2);
+forward operator%(float oper1, float oper2);
+forward operator%(float oper1, int oper2);
+forward operator%(int oper1, float oper2);
 #endif // __sourcepawn2__
 
 #define FLOAT_PI 3.1415926535897932384626433832795
@@ -378,21 +400,21 @@ forward operator%(oper1, Float:oper2);
 /**
  * Converts degrees to radians.
  *
- * @param angle		Degrees.
- * @return			Radians.
+ * @param angle         Degrees.
+ * @return              Radians.
  */
-stock Float:DegToRad(Float:angle)
+stock float DegToRad(float angle)
 {
 	return (angle*FLOAT_PI)/180;
 }
 
 /**
- * Converts degrees to radians.
+ * Converts radians to degrees.
  *
- * @param angle		Radians.
- * @return			Degrees.
+ * @param angle         Radians.
+ * @return              Degrees.
  */
-stock Float:RadToDeg(Float:angle)
+stock float RadToDeg(float angle)
 {
 	return (angle*180)/FLOAT_PI;
 }
@@ -402,40 +424,37 @@ stock Float:RadToDeg(Float:angle)
  *
  * Note: Uniform random number streams are seeded automatically per-plugin.
  *
- * @return			Random integer.
+ * @return              Random integer.
  */
-native GetURandomInt();
+native int GetURandomInt();
 
 /**
  * Returns a uniform random float in the range [0, 1).
  *
  * Note: Uniform random number streams are seeded automatically per-plugin.
  *
- * @return			Uniform random floating-point number.
+ * @return              Uniform random floating-point number.
  */
-native Float:GetURandomFloat();
+native float GetURandomFloat();
 
 /**
  * Seeds a plugin's uniform random number stream. This is done automatically,
  * so normally it is totally unnecessary to call this.
  *
- * @param seeds		Array of numbers to use as seeding data.
- * @param numSeeds	Number of seeds in the seeds array.
- * @noreturn
+ * @param seeds         Array of numbers to use as seeding data.
+ * @param numSeeds      Number of seeds in the seeds array.
  */
-native SetURandomSeed(const seeds[], numSeeds);
+native void SetURandomSeed(const int[] seeds, int numSeeds);
 
 /**
  * Seeds a plugin's uniform random number stream. This is done automatically,
  * so normally it is totally unnecessary to call this.
  *
  * @param seed      Single seed value.
- * @noreturn
  */
-stock SetURandomSeedSimple(seed)
+stock void SetURandomSeedSimple(int seed)
 {
-	new seeds[1];
+	int seeds[1];
 	seeds[0] = seed;
 	SetURandomSeed(seeds, 1);
 }
-

@@ -256,6 +256,13 @@ stock Address:L4D2Direct_GetMapMaxFlowDistanceAddr()
 }
 
 /**
+ * Gets the address of an entity to allow getting/setting data directly with offsets
+ *
+ * @param entity
+ * @return Address of entity or Address_Null on failure
+ */
+
+/**
  * Gets entity data at a given offset
  *
  * @param entity
@@ -300,4 +307,3 @@ stock SetEntityValueFromOffset(entity, const String:offset[], NumberType:size, v
 	StoreToAddress(pEntity + Address:offs, value, size);
 	return true;
 }
-

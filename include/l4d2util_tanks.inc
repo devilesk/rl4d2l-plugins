@@ -159,4 +159,3 @@ stock NumTanksInPlay() {
     
     return count;
 }
-

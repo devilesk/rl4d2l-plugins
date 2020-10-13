@@ -31,4 +31,3 @@ public __pl_l4d2util_SetNTVOptional() {
 
 #endif // __IN_L4D2UTIL__
 #endif // L4D2UTIL_STOCKS_ONLY
-

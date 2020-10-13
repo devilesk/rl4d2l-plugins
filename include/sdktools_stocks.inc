@@ -31,7 +31,7 @@
  */
 
 #if defined _sdktools_stocks_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_stocks_included
 
@@ -42,19 +42,19 @@
  * first N characters of the team names, where N is the number of 
  * characters in the search pattern.
  *
- * @param name		Partial or full team name.  
- * @return			A valid team index on success.
- * 					-1 if no team matched.
- *					-2 if more than one team matched.
+ * @param name          Partial or full team name.  
+ * @return              A valid team index on success.
+ *                      -1 if no team matched.
+ *                      -2 if more than one team matched.
  */
-stock FindTeamByName(const String:name[])
+stock int FindTeamByName(const char[] name)
 {
-	new name_len = strlen(name);
-	new num_teams = GetTeamCount();
-	decl String:team_name[32];
-	new found_team = -1;
+	int name_len = strlen(name);
+	int num_teams = GetTeamCount();
+	char team_name[32];
+	int found_team = -1;
 
-	for (new i = 0; i < num_teams; i++)
+	for (int i = 0; i < num_teams; i++)
 	{
 		GetTeamName(i, team_name, sizeof(team_name));
 
@@ -73,4 +73,3 @@ stock FindTeamByName(const String:name[])
 
 	return found_team;
 }
-

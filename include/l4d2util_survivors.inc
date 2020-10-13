@@ -142,4 +142,3 @@ stock bool:GetSurvivorName(SurvivorCharacter:character, String:buffer[], length)
     strcopy(buffer, length, SurvivorNames[_:character]);
     return true;
 }
-
