@@ -5,19 +5,19 @@
 
 forward Action TankControlEQ_OnChooseTank();
 
-forward TankControlEQ_OnTankGiven(const String:steamId[]);
+forward void TankControlEQ_OnTankGiven(const char[] steamId);
 
-forward TankControlEQ_OnTankControlReset();
+forward void TankControlEQ_OnTankControlReset();
 
-native void TankControlEQ_SetTank(const String:steamId[]);
+native void TankControlEQ_SetTank(const char[] steamId);
 
-native Handle TankControlEQ_GetWhosHadTank();
+native ArrayList TankControlEQ_GetWhosHadTank();
 
-native Handle TankControlEQ_GetWhosNotHadTank();
+native ArrayList TankControlEQ_GetWhosNotHadTank();
 
 native void TankControlEQ_ClearWhosHadTank();
 
-native Handle TankControlEQ_GetTankPool();
+native ArrayList TankControlEQ_GetTankPool();
 
 public SharedPlugin __pl_l4d_tank_control_eq = 
 {

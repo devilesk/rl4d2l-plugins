@@ -38,7 +38,7 @@ native bool:IsIDCaster(const String:AuthID[]);
 /**
  * Called when the live countdown ends and the round goes live
  */
-forward OnRoundIsLive();
+forward void OnRoundIsLive();
 
 public SharedPlugin:__pl_readyup =
 {

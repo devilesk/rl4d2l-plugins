@@ -229,7 +229,7 @@ stock DisplayBuiltinVoteToAll(Handle:vote, time)
 	new total;
 	decl players[MaxClients];
 	
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{

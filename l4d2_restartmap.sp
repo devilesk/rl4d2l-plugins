@@ -9,25 +9,27 @@
 #define REQUIRE_PLUGIN
 #include "includes/rl4d2l_util"
 
+#pragma newdecls required
+
 #define TEAM_SPECTATOR          1
 #define MAXMAP                  32
 
 // Used to set the scores
-new Handle:gConf = INVALID_HANDLE;
-new Handle:fSetCampaignScores = INVALID_HANDLE;
+Handle gConf = INVALID_HANDLE;
+Handle fSetCampaignScores = INVALID_HANDLE;
 
-new g_iMapRestarts;                                     // current number of restart attempts
-new bool:g_bIsMapRestarted;                             // whether map has been restarted by this plugin
-new Handle:g_hCvarDebug = INVALID_HANDLE;
-new Handle:g_hCvarAutofix = INVALID_HANDLE;
-new Handle:g_hCvarAutofixMaxTries = INVALID_HANDLE;     // max number of restart attempts convar
-new Handle:hVote;                                       // restart vote handle
-new g_iSurvivorScore;
-new g_iInfectedScore;
-new String:g_sMapName[MAXMAP] = "";
-new bool:g_L4D2ChangeLevelAvailable = false;
+int g_iMapRestarts;                                     // current number of restart attempts
+bool g_bIsMapRestarted;                             // whether map has been restarted by this plugin
+Handle g_hCvarDebug = INVALID_HANDLE;
+Handle g_hCvarAutofix = INVALID_HANDLE;
+Handle g_hCvarAutofixMaxTries = INVALID_HANDLE;     // max number of restart attempts convar
+Handle hVote;                                       // restart vote handle
+int g_iSurvivorScore;
+int g_iInfectedScore;
+char g_sMapName[MAXMAP] = "";
+bool g_L4D2ChangeLevelAvailable = false;
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
@@ -35,7 +37,7 @@ public Plugin:myinfo = {
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_restartmap_debug", "0", "Restart Map debug mode", 0, true, 0.0, true, 1.0);
     g_hCvarAutofix = CreateConVar("sm_restartmap_autofix", "1", "Check for broken flow on map load and automatically restart.", 0, true, 0.0, true, 1.0);
     g_hCvarAutofixMaxTries = CreateConVar("sm_restartmap_autofix_max_tries", "1", "Max number of automatic restart attempts to fix broken flow.", 0, true, 1.0);
@@ -64,20 +66,20 @@ public OnPluginStart() {
     }
 }
 
-public OnAllPluginsLoaded() {
+public void OnAllPluginsLoaded() {
     g_L4D2ChangeLevelAvailable = LibraryExists("l4d2_changelevel");
 }
-public OnLibraryRemoved(const String:name[]) {
+public void OnLibraryRemoved(const char[] name) {
     if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = false; }
 }
-public OnLibraryAdded(const String:name[]) {
+public void OnLibraryAdded(const char[] name) {
     if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = true; }
 }
 
-public OnMapStart() {
+public void OnMapStart() {
     // Compare current map to previous map and reset if different.
-    decl String:sBuffer[MAXMAP];
-    GetCurrentMapLower(sBuffer,sizeof(sBuffer));
+    char sBuffer[MAXMAP];
+    GetCurrentMapLower(sBuffer, sizeof(sBuffer));
     if (!StrEqual(g_sMapName, sBuffer, false)) {
         g_bIsMapRestarted = false;
         g_iMapRestarts = 0;
@@ -101,8 +103,8 @@ public OnMapStart() {
     }
 }
 
-public Action:CheckFlowBroken(Handle:timer) {
-    new bool:bIsFlowBroken = IsFlowBroken();
+public Action CheckFlowBroken(Handle timer) {
+    bool bIsFlowBroken = IsFlowBroken();
     PrintDebug("[CheckFlowBroken] Flow broken: %i", bIsFlowBroken);
     if (bIsFlowBroken) {
         PrintToChatAll("Broken flow detected.");
@@ -115,9 +117,9 @@ public Action:CheckFlowBroken(Handle:timer) {
     }
 }
 
-public RestartMap() {
-    new iSurvivorTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 1 : 0;
-    new iInfectedTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 0 : 1;
+public void RestartMap() {
+    int iSurvivorTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 1 : 0;
+    int iInfectedTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped") ? 0 : 1;
 
     g_iSurvivorScore = L4D2Direct_GetVSCampaignScore(iSurvivorTeamIndex);
     g_iInfectedScore = L4D2Direct_GetVSCampaignScore(iInfectedTeamIndex);
@@ -136,11 +138,11 @@ public RestartMap() {
         ServerCommand("changelevel %s", g_sMapName);
 }
 
-IsSpectator(client) {
+bool IsSpectator(int client) {
     return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SPECTATOR;
 }
 
-bool:CanStartVote(client) {
+bool CanStartVote(int client) {
     if (IsSpectator(client)) {
         PrintToChat(client, "\x01[\x04Restart Map\x01] Vote can only be started by a player!");
         return false;
@@ -148,7 +150,7 @@ bool:CanStartVote(client) {
     return true;
 }
 
-bool:IsFlowBroken() {
+bool IsFlowBroken() {
     return L4D2Direct_GetMapMaxFlowDistance() == 0;
 }
 
@@ -158,7 +160,7 @@ public Action Command_RestartMap(int client, int args)
         RestartMap();
     }
     else if (CanStartVote(client)) {
-        new String:prompt[100];
+        char prompt[100];
         Format(prompt, sizeof(prompt), "Restart map? Scores will be preserved.");
         if (StartVote(client, prompt)) {
             FakeClientCommand(client, "Vote Yes");
@@ -167,11 +169,11 @@ public Action Command_RestartMap(int client, int args)
     return Plugin_Handled;
 }
 
-bool:StartVote(client, const String:sVoteHeader[]) {
+bool StartVote(int client, const char[] sVoteHeader) {
     if (IsNewBuiltinVoteAllowed()) {
-        new iNumPlayers;
-        decl players[MaxClients];
-        for (new i = 1; i <= MaxClients; i++)
+        int iNumPlayers;
+        int[] players = new int[MaxClients];
+        for (int i = 1; i <= MaxClients; i++)
         {
             if (!IsClientConnected(i) || !IsClientInGame(i)) continue;
             if (IsSpectator(i) || IsFakeClient(i)) continue;
@@ -191,20 +193,20 @@ bool:StartVote(client, const String:sVoteHeader[]) {
     return false;
 }
 
-public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2) {
+public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
     switch (action) {
         case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
             CloseHandle(vote);
         }
         case BuiltinVoteAction_Cancel: {
-            DisplayBuiltinVoteFail(vote, BuiltinVoteFailReason:param1);
+            DisplayBuiltinVoteFail(vote, view_as<BuiltinVoteFailReason>(param1));
         }
     }
 }
 
-public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2]) {
-    for (new i = 0; i < num_items; i++) {
+public int VoteResultHandler(Handle vote, int num_votes, int num_clients, const client_info[][2], int num_items, const item_info[][2]) {
+    for (int i = 0; i < num_items; i++) {
         if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
                 DisplayBuiltinVotePass(vote, "Restarting map...");
@@ -217,9 +219,9 @@ public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[
     DisplayBuiltinVoteFail(vote, BuiltinVoteFail_Loses);
 }
 
-stock PrintDebug(const String:Message[], any:...) {
+stock void PrintDebug(const char[] Message, any ...) {
     if (GetConVarBool(g_hCvarDebug)) {
-        decl String:DebugBuff[256];
+        char DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
     }

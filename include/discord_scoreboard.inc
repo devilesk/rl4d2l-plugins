@@ -3,7 +3,7 @@
 #endif
 #define _discord_scoreboard_included_
 
-native void AddEmbed(const String:title[], const String:description[], const String:url[], color, any ... );
+native void AddEmbed(const char[] title, const char[] description, const char[] url, int color, any ... );
 
 public SharedPlugin __pl_discord_scoreboard = 
 {

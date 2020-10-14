@@ -2,12 +2,14 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <l4d2util>
+//#include <l4d2util>
 #include <left4dhooks>
 #include <colors>
 #include <readyup>
 #include <l4d_tank_control_eq>
 #include "includes/finalemaps"
+
+#pragma newdecls required
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
 #define IS_INFECTED(%1)         (GetClientTeam(%1) == 3)
@@ -18,17 +20,17 @@
 #define MAXMAP                  64
 #define MAXTANKS                4
 
-new Handle:g_hCvarDebug = INVALID_HANDLE;
-new Handle:g_hStaticTankPlayers[MAXTANKS];
-new String:g_sQueuedTankSteamId[MAXSTEAMID] = "";
-new g_iTankCount = 0;
-new bool:g_bRoundStarted = false;
+Handle g_hCvarDebug = INVALID_HANDLE;
+StringMap g_hStaticTankPlayers[MAXTANKS];
+char g_sQueuedTankSteamId[MAXSTEAMID] = "";
+int g_iTankCount = 0;
+bool g_bRoundStarted = false;
 
 enum strMapType {
     MP_FINALE
 };
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "Static Tank Control",
     author = "devilesk",
     description = "Predetermined tank control distribution.",
@@ -36,13 +38,13 @@ public Plugin:myinfo = {
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
-public OnPluginStart() {
-    for ( new i = 0; i < MAXTANKS; i++ ) {
-        g_hStaticTankPlayers[i] = CreateTrie();
+public void OnPluginStart() {
+    for ( int i = 0; i < MAXTANKS; i++ ) {
+        g_hStaticTankPlayers[i] = new StringMap();
     }
     
-    HookEvent("round_end", EventHook:RoundEnd_Event, EventHookMode_PostNoCopy);
-    HookEvent("player_team", EventHook:PlayerTeam_Event, EventHookMode_PostNoCopy);
+    HookEvent("round_end", RoundEnd_Event, EventHookMode_PostNoCopy);
+    HookEvent("player_team", PlayerTeam_Event, EventHookMode_PostNoCopy);
     
     RegServerCmd("static_tank_control", StaticTankControl_Command);
     RegServerCmd("static_tank_control_tank_num", StaticTankControlTankNum_Command); 
@@ -53,15 +55,15 @@ public OnPluginStart() {
 /**
  * Provides a way to set the tank count in case plugin is reloaded after a tank has spawned.
  */
-public Action:StaticTankControlTankNum_Command(args) {
+public Action StaticTankControlTankNum_Command(int args) {
     if (args < 1) {
         LogError("[StaticTankControlTankNum_Command] Missing args");
         return;
     }
     
-    decl String:sTankNum[16];
+    char sTankNum[16];
     GetCmdArg(1, sTankNum, sizeof(sTankNum));
-    new iTankNum = StringToInt(sTankNum);
+    int iTankNum = StringToInt(sTankNum);
     if (iTankNum < 1 || iTankNum > MAXTANKS) {
         LogError("[StaticTankControlTankNum_Command] Invalid tank num arg");
         return;
@@ -71,31 +73,31 @@ public Action:StaticTankControlTankNum_Command(args) {
     PrintDebug("[StaticTankControlTankNum_Command] iTankNum: %i, g_iTankCount: %i", iTankNum, g_iTankCount);
 }
 
-public Action:StaticTankControl_Command(args) {
+public Action StaticTankControl_Command(int args) {
     if (args < 2) {
         LogError("[StaticTankControl_Command] Missing args");
         return;
     }
     
-    decl String:sTankNum[16];
+    char sTankNum[16];
     GetCmdArg(1, sTankNum, sizeof(sTankNum));
-    new iTankNum = StringToInt(sTankNum);
+    int iTankNum = StringToInt(sTankNum);
     if (iTankNum < 1 || iTankNum > MAXTANKS) {
         LogError("[StaticTankControl_Command] Invalid tank num arg");
         return;
     }
     
-    decl String:sMapName[MAXMAP];
+    char sMapName[MAXMAP];
     GetCmdArg(2, sMapName, sizeof(sMapName));
     StrToLower(sMapName);
-    new Handle:hSteamIds = CreateArray(MAXSTEAMID);
-    SetTrieValue(g_hStaticTankPlayers[iTankNum-1], sMapName, hSteamIds);
+    ArrayList hSteamIds = new ArrayList(MAXSTEAMID);
+    g_hStaticTankPlayers[iTankNum-1].SetValue(sMapName, hSteamIds);
     
-    decl String:steamId[MAXSTEAMID];
-    for ( new i = 3; i <= args; i++ ) {
+    char steamId[MAXSTEAMID];
+    for ( int i = 3; i <= args; i++ ) {
         GetCmdArg(i, steamId, sizeof(steamId));
         if (strlen(steamId)) {
-            PushArrayString(hSteamIds, steamId);
+            hSteamIds.PushString(steamId);
             PrintDebug("[StaticTankControl_Command] Added iTankNum: %i, sMapName: %s steamId: %s", iTankNum, sMapName, steamId);
         }
     }
@@ -104,28 +106,28 @@ public Action:StaticTankControl_Command(args) {
 /**
  * When a new game starts, reset the tank pool.
  */
-public TankControlEQ_OnTankControlReset() {
+public void TankControlEQ_OnTankControlReset() {
     PrintDebug("[TankControlEQ_OnTankControlReset] Resetting tank control.");
     g_sQueuedTankSteamId[0] = '\0';
     g_iTankCount = 0;
 }
 
-public OnRoundStart() {
+public void OnRoundStart() {
     g_bRoundStarted = true;
     g_iTankCount = 0;
     g_sQueuedTankSteamId[0] = '\0';
 }
 
-public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action RoundEnd_Event(Handle event, const char[] name, bool dontBroadcast) {
     g_bRoundStarted = false;
 }
 
 /**
  * When a player reconnects, check if they are the static tank player
  */
-public OnClientConnected(client)  {
+public void OnClientConnected(int client)  {
     if (!g_bRoundStarted) return;
-    decl String:steamId[MAXSTEAMID];
+    char steamId[MAXSTEAMID];
     if (IS_VALID_INFECTED(client)) {
         GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
         if (StrEqual(g_sQueuedTankSteamId, steamId)) {
@@ -138,10 +140,10 @@ public OnClientConnected(client)  {
 /**
  * When the queued tank switches to infected, check if they are the static tank player
  */
-public PlayerTeam_Event(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action PlayerTeam_Event(Handle event, const char[] name, bool dontBroadcast) {
     if (!g_bRoundStarted) return;
-    decl String:steamId[MAXSTEAMID];
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    char steamId[MAXSTEAMID];
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (IS_VALID_INFECTED(client)) {
         GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
         if (StrEqual(g_sQueuedTankSteamId, steamId)) {
@@ -151,64 +153,64 @@ public PlayerTeam_Event(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 }
 
-public Action:TankControlEQ_OnChooseTank() {
+public Action TankControlEQ_OnChooseTank() {
     if (g_iTankCount >= MAXTANKS) {
         PrintDebug("[TankControlEQ_OnChooseTank] g_iTankCount: %i tanks spawned >= MAXTANKS %i. Continuing with default tank selection.", g_iTankCount, MAXTANKS);
         return Plugin_Continue;
     }
     
-    new Handle:hStaticTankPlayers;
+    ArrayList hStaticTankPlayers;
     
-    decl String:sMapName[MAXMAP];
+    char sMapName[MAXMAP];
     GetCurrentMapLower(sMapName, sizeof(sMapName));
     PrintDebug("[TankControlEQ_OnChooseTank] Attempting to find static tank player for map %s tank %i.", sMapName, g_iTankCount + 1);
     
     // check that there is a static tank list for the current tank spawn on this map
-    if (!GetTrieValue(g_hStaticTankPlayers[g_iTankCount], sMapName, hStaticTankPlayers)) {
+    if (!g_hStaticTankPlayers[g_iTankCount].GetValue(sMapName, hStaticTankPlayers)) {
         PrintDebug("[TankControlEQ_OnChooseTank] Map %s for tank %i not found. Continuing with default tank selection.", sMapName, g_iTankCount + 1);
         return Plugin_Continue;
     }
     
     // check static tank list not empty
-    new iStaticTankPlayersSize = GetArraySize(hStaticTankPlayers);
+    int iStaticTankPlayersSize = hStaticTankPlayers.Length;
     if (!iStaticTankPlayersSize) {
         PrintDebug("[TankControlEQ_OnChooseTank] Static tank players size: %i. Continuing with default tank selection.", iStaticTankPlayersSize);
         return Plugin_Continue;
     }
 
     // if finale and someone has not played tank, then use default tank selection
-    new Handle:hWhosNotHadTank = TankControlEQ_GetWhosNotHadTank();
-    new iWhosNotHadTankSize = GetArraySize(hWhosNotHadTank);
+    ArrayList hWhosNotHadTank = TankControlEQ_GetWhosNotHadTank();
+    int iWhosNotHadTankSize = hWhosNotHadTank.Length;
     if (IsMissionFinalMap() && iWhosNotHadTankSize > 0) {
         PrintDebug("[TankControlEQ_OnChooseTank] Finale with %i skipped tank player. Continuing with default tank selection.", iWhosNotHadTankSize);
-        CloseHandle(hWhosNotHadTank);
+        delete hWhosNotHadTank;
         return Plugin_Continue;
     }
-    CloseHandle(hWhosNotHadTank);
+    delete hWhosNotHadTank;
 
     // find a static tank player in the pool of tank players
-    new Handle:hTankPool = TankControlEQ_GetTankPool();
-    new String:sSteamId[MAXSTEAMID];
+    ArrayList hTankPool = TankControlEQ_GetTankPool();
+    char sSteamId[MAXSTEAMID];
     if (FindSteamIdInArrays(sSteamId, sizeof(sSteamId), hTankPool, hStaticTankPlayers)) {
         strcopy(g_sQueuedTankSteamId, sizeof(g_sQueuedTankSteamId), sSteamId); // store static tank player in case they disconnect or change teams
         PrintDebug("[TankControlEQ_OnChooseTank] Setting tank to %s.", sSteamId);
         TankControlEQ_SetTank(sSteamId);
-        CloseHandle(hTankPool);
+        delete hTankPool;
         return Plugin_Handled;
     }
     
     PrintDebug("[TankControlEQ_OnChooseTank] No static tank player in tank pool. Continuing with default tank selection.");
-    CloseHandle(hTankPool);
+    delete hTankPool;
     return Plugin_Continue;
 }
 
-public bool FindSteamIdInArrays(String:buffer[], bufferLen, Handle:hArrayA, Handle:hArrayB) {
-    decl String:sSteamIdA[MAXSTEAMID];
-    decl String:sSteamIdB[MAXSTEAMID];
-    for (new i = 0; i < GetArraySize(hArrayA); i++) {
-        GetArrayString(hArrayA, i, sSteamIdA, sizeof(sSteamIdA));
-        for (new j = 0; j < GetArraySize(hArrayB); j++) {
-            GetArrayString(hArrayB, j, sSteamIdB, sizeof(sSteamIdB));
+public bool FindSteamIdInArrays(char[] buffer, int bufferLen, ArrayList hArrayA, ArrayList hArrayB) {
+    char sSteamIdA[MAXSTEAMID];
+    char sSteamIdB[MAXSTEAMID];
+    for (int i = 0; i < hArrayA.Length; i++) {
+        hArrayA.GetString(i, sSteamIdA, sizeof(sSteamIdA));
+        for (int j = 0; j < hArrayB.Length; j++) {
+            hArrayB.GetString(j, sSteamIdB, sizeof(sSteamIdB));
             if (StrEqual(sSteamIdA, sSteamIdB)) {
                 strcopy(buffer, bufferLen, sSteamIdA);
                 PrintDebug("[FindSteamIdInArrays] Match found. steamId: %s. buffer: %s", sSteamIdA, buffer);
@@ -220,7 +222,7 @@ public bool FindSteamIdInArrays(String:buffer[], bufferLen, Handle:hArrayA, Hand
     return false;
 }
 
-public TankControlEQ_OnTankGiven(const String:steamId[]) {
+public void TankControlEQ_OnTankGiven(const char[] steamId) {
     // stop storing static tank player once they've been given tank
     if (StrEqual(g_sQueuedTankSteamId, steamId))
         g_sQueuedTankSteamId[0] = '\0';
@@ -239,10 +241,10 @@ public TankControlEQ_OnTankGiven(const String:steamId[]) {
  * @return
  *     The player's client index.
  */
-public GetValidInfectedClientBySteamId(const String:steamId[]) {
-    decl String:tmpSteamId[MAXSTEAMID];
+public int GetValidInfectedClientBySteamId(const char[] steamId) {
+    char tmpSteamId[MAXSTEAMID];
    
-    for (new i = 1; i <= MaxClients; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         if (!IS_VALID_INFECTED(i))
             continue;
         
@@ -255,12 +257,12 @@ public GetValidInfectedClientBySteamId(const String:steamId[]) {
     return -1;
 }
 
-stock PrintDebug(const String:Message[], any:...) {
+stock void PrintDebug(const char[] Message, any ...) {
     if (GetConVarBool(g_hCvarDebug)) {
-        decl String:DebugBuff[256];
+        char DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
-        for (new x = 1; x <= MaxClients; x++) { 
+        for (int x = 1; x <= MaxClients; x++) { 
             if (IsClientInGame(x)) {
                 SetGlobalTransTarget(x); 
                 PrintToConsole(x, DebugBuff); 

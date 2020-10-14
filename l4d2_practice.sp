@@ -7,6 +7,7 @@
 #include <sourcemod>
 #include <sdktools>
 #pragma semicolon 1
+#pragma newdecls required
 
 #define ZC_SMOKER               1
 #define ZC_BOOMER               2
@@ -19,7 +20,7 @@
 #define ZC_NOTINFECTED          9
 #define ZC_TOTAL                7
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "L4D2 Practice",
 	author = "devilesk",
@@ -28,9 +29,9 @@ public Plugin:myinfo =
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	decl String:sGame[12];
+	char sGame[12];
 	GetGameFolderName(sGame, sizeof(sGame));
 	if (StrEqual(sGame, "left4dead2"))	// Only load the plugin if the server is running Left 4 Dead 2.
 	{
@@ -43,12 +44,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	}
 }
 
-new Handle:g_hSetClass;
-new Handle:g_hCreateAbility;
-new g_oAbility;
-new bool:in_attack2[MAXPLAYERS + 1];
+Handle g_hSetClass;
+Handle g_hCreateAbility;
+int g_oAbility;
+bool in_attack2[MAXPLAYERS + 1];
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegConsoleCmd("sm_goto", Command_Goto,"Go to a player");
 	RegConsoleCmd("sm_bring", Command_Bring,"Teleport a player to you");
@@ -60,7 +61,7 @@ public OnPluginStart()
 // They're infected, as ghost
 // They press mouse2
 // Then change them to the other class.
-public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
 	if (client <= 0 || client > MaxClients) return;
 	if (!IsClientInGame(client)) return;
@@ -74,7 +75,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 	// Player was not holding m2, and now is. (Pressed)
 	if (buttons & IN_ATTACK2 == IN_ATTACK2 && !in_attack2[client]) {
 		in_attack2[client] = true;
-		new class = GetEntProp(client, Prop_Send, "m_zombieClass");
+		int class = GetEntProp(client, Prop_Send, "m_zombieClass");
 		if (class == ZC_SMOKER) {
 			Sub_DetermineClass(client, ZC_BOOMER);
 			PrintHintText(client, "Press <Mouse2> to change to hunter.");
@@ -101,24 +102,24 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 }
 
 // Called when an SI respawns, so they know how long until they become a ghost.
-public PlayerGhostTimer(Handle:event, const String:name[], bool:dontBroadcast)  {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+public void PlayerGhostTimer(Handle event, const char[] name, bool dontBroadcast)  {
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (client <= 0 || client > MaxClients) return;
 	if (!IsClientInGame(client)) return;
 	if (IsFakeClient(client)) return;
 	if (GetClientTeam(client) != 3) return;
 	// We don't know what their class is until they spawn. We wait an extra .1 sec for safety. Players can still change classes at that time, only the hint text is delayed.
-	new Float:spawntime = 0.1+1.0*GetEventInt(event, "spawntime");
+	float spawntime = 0.1+1.0*GetEventInt(event, "spawntime");
 	CreateTimer(spawntime, PlayerBecameGhost, client);
 }
-public Action:PlayerBecameGhost(Handle:timer, any:client) {
+public Action PlayerBecameGhost(Handle timer, any client) {
 	PrintHintText(client, "Press <Mouse2> to change SI class.");
 }
 
 // Loads gamedata, preps SDK calls.
-public Sub_HookGameData()
+public void Sub_HookGameData()
 {
-	new Handle:g_hGameConf = LoadGameConfigFile("l4d2_zcs");
+	Handle g_hGameConf = LoadGameConfigFile("l4d2_zcs");
 
 	if (g_hGameConf != INVALID_HANDLE)
 	{
@@ -149,9 +150,9 @@ public Sub_HookGameData()
 }
 
 // Sets the class of a client.
-public Sub_DetermineClass(any:Client, any:ZClass)
+public void Sub_DetermineClass(any Client, any ZClass)
 {
-	new WeaponIndex;
+	int WeaponIndex;
 	while ((WeaponIndex = GetPlayerWeaponSlot(Client, 0)) != -1)
 	{
 		RemovePlayerItem(Client, WeaponIndex);
@@ -163,7 +164,7 @@ public Sub_DetermineClass(any:Client, any:ZClass)
 	SetEntProp(Client, Prop_Send, "m_customAbility", GetEntData(SDKCall(g_hCreateAbility, Client), g_oAbility));
 }
 
-public Action:Command_Goto(Client,args)
+public Action Command_Goto(int Client, int args)
 {
     //Error:
 	if(args < 1)
@@ -178,18 +179,18 @@ public Action:Command_Goto(Client,args)
 	}
 	
 	//Declare:
-	decl Player;
-	decl String:PlayerName[32];
-	new Float:TeleportOrigin[3];
-	new Float:PlayerOrigin[3];
-	decl String:Name[32];
+	int Player;
+	char PlayerName[32];
+	float TeleportOrigin[3];
+	float PlayerOrigin[3];
+	char Name[32];
 	
 	//Initialize:
 	Player = -1;
 	GetCmdArg(1, PlayerName, sizeof(PlayerName));
 	
 	//Find:
-	for(new X = 1; X <= MaxClients; X++)
+	for(int X = 1; X <= MaxClients; X++)
 	{
 
 		//Connected:
@@ -228,7 +229,7 @@ public Action:Command_Goto(Client,args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Bring(Client,args)
+public Action Command_Bring(int Client, int args)
 {
     //Error:
 	if(args < 1)
@@ -243,18 +244,18 @@ public Action:Command_Bring(Client,args)
 	}
 	
 	//Declare:
-	decl Player;
-	decl String:PlayerName[32];
-	new Float:TeleportOrigin[3];
-	new Float:PlayerOrigin[3];
-	decl String:Name[32];
+	int Player;
+	char PlayerName[32];
+	float TeleportOrigin[3];
+	float PlayerOrigin[3];
+	char Name[32];
 	
 	//Initialize:
 	Player = -1;
 	GetCmdArg(1, PlayerName, sizeof(PlayerName));
 	
 	//Find:
-	for(new X = 1; X <= MaxClients; X++)
+	for(int X = 1; X <= MaxClients; X++)
 	{
 
 		//Connected:
@@ -295,27 +296,28 @@ public Action:Command_Bring(Client,args)
 
 // Trace
 
-stock GetCollisionPoint(client, Float:pos[3])
+stock void GetCollisionPoint(int client, float pos[3])
 {
-	decl Float:vOrigin[3], Float:vAngles[3];
+	float vOrigin[3];
+	float vAngles[3];
 	
 	GetClientEyePosition(client, vOrigin);
 	GetClientEyeAngles(client, vAngles);
 	
-	new Handle:trace = TR_TraceRayFilterEx(vOrigin, vAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilterPlayer);
+	Handle trace = TR_TraceRayFilterEx(vOrigin, vAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilterPlayer);
 	
 	if(TR_DidHit(trace))
 	{
 		TR_GetEndPosition(pos, trace);
-		CloseHandle(trace);
+		delete trace;
 		
 		return;
 	}
 	
-	CloseHandle(trace);
+	delete trace;
 }
 
-public bool:TraceEntityFilterPlayer(entity, contentsMask)
+public bool TraceEntityFilterPlayer(int entity, int contentsMask)
 {
 	return entity > MaxClients;
 }

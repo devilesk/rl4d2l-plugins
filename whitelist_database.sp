@@ -1,20 +1,21 @@
 #pragma semicolon 1
+#pragma newdecls required
 
 #define MAXSTEAMID              64
 
-new Handle:g_hCvarEnabled = INVALID_HANDLE;
-new Handle:g_hCvarDebug = INVALID_HANDLE;
-new Handle:g_hCvarDatabaseConfig = INVALID_HANDLE;
-new String:errorBuffer[255];
-new Handle:db = INVALID_HANDLE;
-new Handle:hIsVouchedStmt = INVALID_HANDLE;
-new Handle:hInsertPlayerStmt = INVALID_HANDLE;
-new String:g_sDatabaseConfig[64];
-new String:g_sPrevSteamId[MAXSTEAMID] = "";
-new bool:g_bVouchNext;
-new Handle:hNextVouchTimer = INVALID_HANDLE;
+Handle g_hCvarEnabled = INVALID_HANDLE;
+Handle g_hCvarDebug = INVALID_HANDLE;
+Handle g_hCvarDatabaseConfig = INVALID_HANDLE;
+char errorBuffer[255];
+Handle db = INVALID_HANDLE;
+Handle hIsVouchedStmt = INVALID_HANDLE;
+Handle hInsertPlayerStmt = INVALID_HANDLE;
+char g_sDatabaseConfig[64];
+char g_sPrevSteamId[MAXSTEAMID] = "";
+bool g_bVouchNext;
+Handle hNextVouchTimer = INVALID_HANDLE;
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
     name = "Whitelist Database",
     author = "devilesk",
@@ -23,7 +24,7 @@ public Plugin:myinfo =
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
-public OnPluginStart() {
+public void OnPluginStart() {
     g_hCvarEnabled = CreateConVar("whitelist_database", "0", "Enable whitelist database", 0, true, 0.0, true, 1.0);
     g_hCvarDebug = CreateConVar("whitelist_database_debug", "0", "Whitelist Database debug mode", 0, true, 0.0, true, 1.0);
     g_hCvarDatabaseConfig = CreateConVar(
@@ -39,7 +40,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_vouch", Command_Vouch, "Vouch the given steam id.");
 }
 
-public Action:Command_VouchNext(client, args)  {
+public Action Command_VouchNext(int client, int args)  {
     if (!GetConVarBool(g_hCvarEnabled)) return Plugin_Handled;
     if (!IsClientVouched(client)) return Plugin_Handled;
     
@@ -52,19 +53,19 @@ public Action:Command_VouchNext(client, args)  {
     }
     else {
         g_bVouchNext = false;
-        ClearTimer(hNextVouchTimer);
+        delete hNextVouchTimer;
         ReplyToCommand(client, "Not autovouching the next unvouched player.");
     }
     return Plugin_Handled;
 }
 
-public Action:DisableNextVouch(Handle timer) {
+public Action DisableNextVouch(Handle timer) {
     PrintDebug("[DisableNextVouch] Clearing timer. g_bVouchNext: %i", g_bVouchNext);
     g_bVouchNext = false;
-    ClearTimer(hNextVouchTimer);
+    delete hNextVouchTimer;
 }
 
-public Action:Command_VouchPrev(client, args)  {
+public Action Command_VouchPrev(int client, int args)  {
     if (!GetConVarBool(g_hCvarEnabled)) return Plugin_Handled;
     if (!IsClientVouched(client)) return Plugin_Handled;
     
@@ -91,7 +92,7 @@ public Action:Command_VouchPrev(client, args)  {
     return Plugin_Handled;
 }
 
-public Action:Command_Vouch(client, args)  {
+public Action Command_Vouch(int client, int args)  {
     if (!GetConVarBool(g_hCvarEnabled)) return Plugin_Handled;
     if (!IsClientVouched(client)) return Plugin_Handled;
     
@@ -101,7 +102,7 @@ public Action:Command_Vouch(client, args)  {
         return Plugin_Handled;
     }
     
-    decl String:sSteamId[MAXSTEAMID];
+    char sSteamId[MAXSTEAMID];
     GetCmdArg(1, sSteamId, sizeof(sSteamId));
     
     PrintDebug("[Command_Vouch] client: %i, sSteamId: %s", client, sSteamId);
@@ -125,23 +126,23 @@ public Action:Command_Vouch(client, args)  {
     return Plugin_Handled;
 }
 
-public OnMapStart() {
+public void OnMapStart() {
     g_sPrevSteamId[0] = '\0';
     g_bVouchNext = false;
-    ClearTimer(hNextVouchTimer);
+    delete hNextVouchTimer;
 }
 
-public OnConfigsExecuted() {
+public void OnConfigsExecuted() {
     InitDatabase();
     InitQueries();
 }
 
-public OnClientAuthorized(client, const String:sSteamId[]) {
+public void OnClientAuthorized(int client, const char[] sSteamId) {
     if (!GetConVarBool(g_hCvarEnabled)) return;
     if (IsFakeClient(client)) return;
     if (db == INVALID_HANDLE) return;
     
-    new bool:bVouched = IsVouched(sSteamId);
+    bool bVouched = IsVouched(sSteamId);
     
     PrintDebug("[OnClientAuthorized] client: %i, sSteamId: %s, bVouched: %i, g_bVouchNext: %i", client, sSteamId, bVouched, g_bVouchNext);
 
@@ -155,7 +156,7 @@ public OnClientAuthorized(client, const String:sSteamId[]) {
             PrintDebug("[OnClientAuthorized] Error vouching player. %s", sSteamId);
         }
         g_bVouchNext = false;
-        ClearTimer(hNextVouchTimer);
+        delete hNextVouchTimer;
         KickClient(client, "You are not whitelisted");
         return;
     }
@@ -165,7 +166,7 @@ public OnClientAuthorized(client, const String:sSteamId[]) {
     PrintToChatAll("!vouchprev or !vouch \"%s\" to whitelist %N.", sSteamId, client);
 }
 
-InitDatabase() {
+void InitDatabase() {
     GetConVarString(g_hCvarDatabaseConfig, g_sDatabaseConfig, sizeof(g_sDatabaseConfig));
     if (db != INVALID_HANDLE) {
         CloseHandle(db);
@@ -188,7 +189,7 @@ InitDatabase() {
     }
 }
 
-InitQueries() {
+void InitQueries() {
     if (hInsertPlayerStmt != INVALID_HANDLE) {
         CloseHandle(hInsertPlayerStmt);
         hInsertPlayerStmt = INVALID_HANDLE;
@@ -227,13 +228,13 @@ InitQueries() {
     }
 }
 
-public bool:IsClientVouched(client) {
-    decl String:sSteamId[MAXSTEAMID];
+public bool IsClientVouched(int client) {
+    char sSteamId[MAXSTEAMID];
     GetClientAuthId(client, AuthId_Steam2, sSteamId, sizeof(sSteamId));
     return IsVouched(sSteamId);
 }
 
-public bool:IsVouched(const String:sSteamId[]) {
+public bool IsVouched(const char[] sSteamId) {
     SQL_BindParamString(hIsVouchedStmt, 0, sSteamId, false);
     
     if (!SQL_Execute(hIsVouchedStmt)) {
@@ -242,17 +243,17 @@ public bool:IsVouched(const String:sSteamId[]) {
         return false;
     }
     
-    new count = SQL_GetRowCount(hIsVouchedStmt);
+    int count = SQL_GetRowCount(hIsVouchedStmt);
     PrintDebug("[IsVouched] sSteamId: %s, count: %i.", sSteamId, count);
     return count == 1;
 }
 
-public bool:InsertPlayer(const String:sSteamId[]) {
+public bool InsertPlayer(const char[] sSteamId) {
     if ( hInsertPlayerStmt == INVALID_HANDLE ) {
         PrintDebug("[InsertPlayer] Player query invalid.");
     }
     
-    decl String: sTmpTime[20];
+    char sTmpTime[20];
     FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
 
     SQL_BindParamString(hInsertPlayerStmt, 0, sTmpTime, false);
@@ -268,18 +269,9 @@ public bool:InsertPlayer(const String:sSteamId[]) {
     return true;
 }
 
-stock ClearTimer(&Handle:timer)
-{
-    if (timer != INVALID_HANDLE)
-    {
-        KillTimer(timer);
-        timer = INVALID_HANDLE;
-    }
-}
-
-stock PrintDebug(const String:Message[], any:...) {
+stock void PrintDebug(const char[] Message, any ...) {
     if (GetConVarBool(g_hCvarDebug)) {
-        decl String:DebugBuff[256];
+        char DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
     }

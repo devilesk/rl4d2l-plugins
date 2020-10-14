@@ -6,20 +6,22 @@
 #include <l4d2util>
 #include "includes/rl4d2l_util"
 
+#pragma newdecls required
+
 #define DEBUG 0
 
-new Handle:g_hCvarDebug = INVALID_HANDLE;
-new Handle:g_hVsBossBuffer = INVALID_HANDLE;
-new Handle:g_hCvarEnabled = INVALID_HANDLE;
-new Handle:g_hDisabledMaps = INVALID_HANDLE;
-new Address:g_pTankSpawnNav = Address_Null;
-new bool:g_bFirstFlowTankSpawned = false;
-new Float:g_fTankSpawnOrigin[3];
-new Float:g_fNavAreaFlow;
-new Float:g_fMapMaxFlowDistance;
-new Float:g_fTankFlow;
+Handle g_hCvarDebug = INVALID_HANDLE;
+Handle g_hVsBossBuffer = INVALID_HANDLE;
+Handle g_hCvarEnabled = INVALID_HANDLE;
+StringMap g_hDisabledMaps;
+Address g_pTankSpawnNav = Address_Null;
+bool g_bFirstFlowTankSpawned = false;
+float g_fTankSpawnOrigin[3];
+float g_fNavAreaFlow;
+float g_fMapMaxFlowDistance;
+float g_fTankFlow;
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "L4D2 Tank Spawn Fix",
     author = "devilesk",
     version = "1.2.0",
@@ -27,20 +29,20 @@ public Plugin:myinfo = {
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_tank_spawn_fix_debug", "1", "Tank Spawn Fix debug mode", 0, true, 0.0, true, 1.0);
     g_hCvarEnabled = CreateConVar("tank_spawn_fix", "1", "Tank Spawn Fix enabled", 0, true, 0.0, true, 1.0);
     g_hVsBossBuffer = FindConVar("versus_boss_buffer");
     HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
     RegServerCmd("tank_spawn_fix_disable", TankSpawnFixMapDisable_Command);
-    g_hDisabledMaps = CreateTrie();
+    g_hDisabledMaps = new StringMap();
 }
 
-public Action:TankSpawnFixMapDisable_Command(args) {
-    decl String:mapname[64];
+public Action TankSpawnFixMapDisable_Command(int args) {
+    char mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
     StrToLower(mapname);
-    SetTrieValue(g_hDisabledMaps, mapname, true);
+    g_hDisabledMaps.SetValue(mapname, true);
     PrintDebug("[TankSpawnFixMapDisable_Command] Added: %s", mapname);
 }
 
@@ -49,10 +51,10 @@ public bool IsMapEnabled() {
         PrintDebug("[IsMapEnabled] false");
         return false;
     }
-    decl String:mapname[64];
+    char mapname[64];
     GetCurrentMapLower(mapname, sizeof(mapname));
-    new bool:dummy;
-    if (GetTrieValue(g_hDisabledMaps, mapname, dummy)) {
+    bool dummy;
+    if (g_hDisabledMaps.GetValue(mapname, dummy)) {
         PrintDebug("[IsMapEnabled] false %s", mapname);
         return false;
     }
@@ -60,7 +62,7 @@ public bool IsMapEnabled() {
     return true;
 }
 
-public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast) {
     if (!IsMapEnabled()) return;
 
     if (!InSecondHalfOfRound()) g_bFirstFlowTankSpawned = false;
@@ -74,7 +76,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
  * If the flow returned from the nav area has changed between rounds or the max map flow distance has changed between rounds,
  * then update the second round flow tank percent.
  */
-public Action:CheckFlow(Handle:timer) {
+public Action CheckFlow(Handle timer) {
     if (!IsMapEnabled()) return;
 
     PrintDebug("[CheckFlow] Round: %i. Round 2 Tank Enabled: %i. FirstFlowTankSpawned: %i.", InSecondHalfOfRound(), L4D2Direct_GetVSTankToSpawnThisRound(1), g_bFirstFlowTankSpawned);
@@ -83,13 +85,13 @@ public Action:CheckFlow(Handle:timer) {
     if (!InSecondHalfOfRound() || !L4D2Direct_GetVSTankToSpawnThisRound(1) || !g_bFirstFlowTankSpawned) return;
 
     // get nav area that spawned first round flow tank
-    new Address:pTankSpawnNav = L4D2Direct_GetTerrorNavArea(g_fTankSpawnOrigin);
+    Address pTankSpawnNav = L4D2Direct_GetTerrorNavArea(g_fTankSpawnOrigin);
     if (pTankSpawnNav == Address_Null) return;
 
     // calculate tank flow from the nav area
-    new Float:fMapMaxFlowDistance = L4D2Direct_GetMapMaxFlowDistance();
-    new Float:fNavAreaFlow = L4D2Direct_GetTerrorNavAreaFlow(pTankSpawnNav);
-    new Float:fTankFlow = (fNavAreaFlow + GetConVarFloat(g_hVsBossBuffer)) / fMapMaxFlowDistance;
+    float fMapMaxFlowDistance = L4D2Direct_GetMapMaxFlowDistance();
+    float fNavAreaFlow = L4D2Direct_GetTerrorNavAreaFlow(pTankSpawnNav);
+    float fTankFlow = (fNavAreaFlow + GetConVarFloat(g_hVsBossBuffer)) / fMapMaxFlowDistance;
 
     PrintDebug("[CheckFlow] NavArea: %i %i %i", g_pTankSpawnNav, pTankSpawnNav, g_pTankSpawnNav == pTankSpawnNav);
     PrintDebug("[CheckFlow] NavAreaFlow: %f %f %i", g_fNavAreaFlow, fNavAreaFlow, g_fNavAreaFlow == fNavAreaFlow);
@@ -110,7 +112,7 @@ public Action:CheckFlow(Handle:timer) {
 /*
  * Store the nav area that triggered the first round flow tank spawn along with other flow info
  */
-public Action:L4D_OnSpawnTank(const Float:vector[3], const Float:qangle[3]) {
+public Action L4D_OnSpawnTank(const float vector[3], const float qangle[3]) {
     if (!IsMapEnabled()) return;
 
     if (!InSecondHalfOfRound() && L4D2Direct_GetVSTankToSpawnThisRound(0) && !g_bFirstFlowTankSpawned) {
@@ -119,7 +121,11 @@ public Action:L4D_OnSpawnTank(const Float:vector[3], const Float:qangle[3]) {
     }
 #if DEBUG
     if (InSecondHalfOfRound() && L4D2Direct_GetVSTankToSpawnThisRound(1)) {
-        new Address:pNavArea, Float:origin[3], Float:fNavAreaFlow, Float:fMapMaxFlowDistance, Float:fTankFlow;
+        Address pNavArea;
+        float origin[3];
+        float fNavAreaFlow;
+        float fMapMaxFlowDistance
+        float fTankFlow;
         GetMaxSurvivorNavInfo(pNavArea, origin, fNavAreaFlow, fMapMaxFlowDistance, fTankFlow);
     }
 #endif
@@ -128,13 +134,13 @@ public Action:L4D_OnSpawnTank(const Float:vector[3], const Float:qangle[3]) {
 /*
  * Stores the nav area and flow info of the survivor with highest flow
  */
-public GetMaxSurvivorNavInfo(&Address:pNavArea, Float:origin[], &Float:fNavAreaFlow, &Float:fMapMaxFlowDistance, &Float:fTankFlow)
+public void GetMaxSurvivorNavInfo(Address &pNavArea, float origin[3], float &fNavAreaFlow, float &fMapMaxFlowDistance, float &fTankFlow)
 {
     fNavAreaFlow = 0.0;
-    new Float:tmp_flow;
-    decl Float:tmp_origin[3];
-    new Address:tmp_pNavArea;
-    for (new client = 1; client <= MaxClients; client++) {
+    float tmp_flow;
+    float tmp_origin[3];
+    Address tmp_pNavArea;
+    for (int client = 1; client <= MaxClients; client++) {
         if(IsSurvivor(client)) {
             GetClientAbsOrigin(client, tmp_origin);
             tmp_pNavArea = L4D2Direct_GetTerrorNavArea(tmp_origin);
@@ -162,9 +168,9 @@ public GetMaxSurvivorNavInfo(&Address:pNavArea, Float:origin[], &Float:fNavAreaF
     PrintDebug("[MaxSurvNav] VSTankFlow: %f. Round: %i", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()), InSecondHalfOfRound());
 }
 
-stock PrintDebug(const String:Message[], any:...) {
+stock void PrintDebug(const char[] Message, any ...) {
     if (GetConVarBool(g_hCvarDebug)) {
-        decl String:DebugBuff[256];
+        char DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
 #if DEBUG

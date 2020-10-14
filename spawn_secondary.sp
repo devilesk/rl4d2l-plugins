@@ -18,20 +18,22 @@
 #include <readyup>
 #define REQUIRE_PLUGIN
 
+#pragma newdecls required
+
 #define PISTOL  0
 #define AXE     1
 #define BOTH    2
 #define TEAM_SPECTATOR          1
 #define TEAM_SURVIVOR           2
  
-new bool:g_bReadyUpAvailable = false;
-new bool:g_bSpawnNotAllowed = false;
-new g_wepType;
-new Handle:hVote;
+bool g_bReadyUpAvailable = false;
+bool g_bSpawnNotAllowed = false;
+int g_wepType;
+Handle hVote;
 int g_target_list[MAXPLAYERS];
 int g_target_count;
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "Spawn Secondary",
     author = "devilesk",
     description = "Spawning pistols and/or axes for players.",
@@ -39,7 +41,7 @@ public Plugin:myinfo = {
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
-public OnPluginStart() {
+public void OnPluginStart() {
     g_bReadyUpAvailable = LibraryExists("readyup");
     RegConsoleCmd("sm_spawnsecondary", Command_SpawnSecondary, "Spawn pistol and axe for a player.");
     RegConsoleCmd("sm_spawnpistol", Command_SpawnPistol, "Spawn a pistol for a player.");
@@ -48,36 +50,36 @@ public OnPluginStart() {
     LoadTranslations("common.phrases");
 }
 
-public OnLibraryRemoved(const String:name[]) {
+public void OnLibraryRemoved(const char[] name) {
     if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = false; }
 }
 
-public OnLibraryAdded(const String:name[]) {
+public void OnLibraryAdded(const char[] name) {
     if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = true; }
 }
 
-public OnMapStart() {
+public void OnMapStart() {
     g_bSpawnNotAllowed = false;
 }
 
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast) {
     g_bSpawnNotAllowed = false;
 }
 
-public OnRoundIsLive() {
+public void OnRoundIsLive() {
     // only called if readyup is available
     g_bSpawnNotAllowed = true;
 }
 
-public Action: L4D_OnFirstSurvivorLeftSafeArea( client ) {
+public Action L4D_OnFirstSurvivorLeftSafeArea( int client ) {
     // if no readyup, use this to set spawn not allowed
     if ( !g_bReadyUpAvailable ) {
         g_bSpawnNotAllowed = true;
     }
 }
 
-bool:SpawnPistol(const Float:vecPosition[3]) {
-    new iWeapon = CreateEntityByName("weapon_pistol");
+bool SpawnPistol(const float vecPosition[3]) {
+    int iWeapon = CreateEntityByName("weapon_pistol");
     
     if(IsValidEntity(iWeapon)) {
         DispatchKeyValue(iWeapon, "solid", "6");
@@ -91,8 +93,8 @@ bool:SpawnPistol(const Float:vecPosition[3]) {
     return false;
 }
 
-bool:SpawnAxe(const Float:vecPosition[3]) {
-    new iWeapon = CreateEntityByName("weapon_melee");
+bool SpawnAxe(const float vecPosition[3]) {
+    int iWeapon = CreateEntityByName("weapon_melee");
     
     if(IsValidEntity(iWeapon)) {
         DispatchKeyValue(iWeapon, "solid", "6");
@@ -104,9 +106,9 @@ bool:SpawnAxe(const Float:vecPosition[3]) {
     return false;
 }
 
-bool:SpawnPistolForClient(iClient) {
+bool SpawnPistolForClient(int iClient) {
     if (IsClientInGame(iClient) && GetClientTeam(iClient) == TEAM_SURVIVOR) {
-        decl Float:vecPosition[3];
+        float vecPosition[3];
         GetClientAbsOrigin(iClient, vecPosition);
         vecPosition[2] += 10;
         if (SpawnPistol(vecPosition)) {
@@ -117,9 +119,9 @@ bool:SpawnPistolForClient(iClient) {
     return false;
 }
 
-bool:SpawnAxeForClient(iClient) {
+bool SpawnAxeForClient(int iClient) {
     if (IsClientInGame(iClient) && GetClientTeam(iClient) == TEAM_SURVIVOR) {
-        decl Float:vecPosition[3];
+        float vecPosition[3];
         GetClientAbsOrigin(iClient, vecPosition);
         vecPosition[2] += 20;
         if (SpawnAxe(vecPosition)) {
@@ -130,7 +132,7 @@ bool:SpawnAxeForClient(iClient) {
     return false;
 }
 
-bool:SpawnWeaponForClient(wepType, iClient) {
+bool SpawnWeaponForClient(int wepType, int iClient) {
     if (wepType == PISTOL) {
         return SpawnPistolForClient(iClient);
     }
@@ -139,7 +141,7 @@ bool:SpawnWeaponForClient(wepType, iClient) {
     }
 }
 
-bool:IsSpawnAllowed() {
+bool IsSpawnAllowed() {
     if (g_bSpawnNotAllowed) {
         PrintToChatAll("\x01[\x04Spawn Secondary\x01] Cannot spawn after round started.");
         return false;
@@ -147,11 +149,11 @@ bool:IsSpawnAllowed() {
     return true;
 }
 
-IsSpectator(client) {
+bool IsSpectator(int client) {
     return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SPECTATOR;
 }
 
-bool:CanStartVote(client) {
+bool CanStartVote(int client) {
     if (!IsSpawnAllowed()) {
         return false;
     }
@@ -162,7 +164,7 @@ bool:CanStartVote(client) {
     return true;
 }
 
-public Action:Command_SpawnPistol(client, args)  {
+public Action Command_SpawnPistol(int client, int args)  {
     if (args < 1)
     {
         ReplyToCommand(client, "[SM] Usage: sm_spawnpistol <#userid|name>");
@@ -173,7 +175,8 @@ public Action:Command_SpawnPistol(client, args)  {
     GetCmdArg(1, arg, sizeof(arg));
 
     char target_name[MAX_TARGET_LENGTH];
-    int target_list[MAXPLAYERS], target_count;
+    int target_list[MAXPLAYERS];
+    int target_count;
     bool tn_is_ml;
     
     if ((target_count = ProcessTargetString(
@@ -197,7 +200,7 @@ public Action:Command_SpawnPistol(client, args)  {
         }
     }
     else if (CanStartVote(client)) {
-        new String:prompt[100];
+        char prompt[100];
         Format(prompt, sizeof(prompt), "Spawn pistol for %s?", target_name);
         if (StartVote(client, prompt, PISTOL, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
@@ -207,7 +210,7 @@ public Action:Command_SpawnPistol(client, args)  {
     return Plugin_Handled; 
 }
 
-public Action:Command_SpawnAxe(client, args)  {
+public Action Command_SpawnAxe(int client, int args)  {
     if (args < 1)
     {
         ReplyToCommand(client, "[SM] Usage: sm_spawnaxe <#userid|name>");
@@ -218,7 +221,8 @@ public Action:Command_SpawnAxe(client, args)  {
     GetCmdArg(1, arg, sizeof(arg));
 
     char target_name[MAX_TARGET_LENGTH];
-    int target_list[MAXPLAYERS], target_count;
+    int target_list[MAXPLAYERS]
+    int target_count;
     bool tn_is_ml;
     
     if ((target_count = ProcessTargetString(
@@ -242,7 +246,7 @@ public Action:Command_SpawnAxe(client, args)  {
         }
     }
     else if (CanStartVote(client)) {
-        new String:prompt[100];
+        char prompt[100];
         Format(prompt, sizeof(prompt), "Spawn axe for %s?", target_name);
         if (StartVote(client, prompt, AXE, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
@@ -252,7 +256,7 @@ public Action:Command_SpawnAxe(client, args)  {
     return Plugin_Handled; 
 }
 
-public Action:Command_SpawnSecondary(client, args)  {
+public Action Command_SpawnSecondary(int client, int args)  {
     if (args < 1)
     {
         ReplyToCommand(client, "[SM] Usage: sm_spawnsecondary <#userid|name>");
@@ -263,7 +267,8 @@ public Action:Command_SpawnSecondary(client, args)  {
     GetCmdArg(1, arg, sizeof(arg));
 
     char target_name[MAX_TARGET_LENGTH];
-    int target_list[MAXPLAYERS], target_count;
+    int target_list[MAXPLAYERS]
+    int target_count;
     bool tn_is_ml;
     
     if ((target_count = ProcessTargetString(
@@ -288,7 +293,7 @@ public Action:Command_SpawnSecondary(client, args)  {
         }
     }
     else if (CanStartVote(client)) {
-        new String:prompt[100];
+        char prompt[100];
         Format(prompt, sizeof(prompt), "Spawn pistol and axe for %s?", target_name);
         if (StartVote(client, prompt, BOTH, target_count, target_list)) {
             FakeClientCommand(client, "Vote Yes");
@@ -298,11 +303,11 @@ public Action:Command_SpawnSecondary(client, args)  {
     return Plugin_Handled; 
 }
 
-bool:StartVote(client, const String:sVoteHeader[], wepType, target_count, const target_list[MAXPLAYERS]) {
+bool StartVote(int client, const char[] sVoteHeader, int wepType, int target_count, const int target_list[MAXPLAYERS]) {
     if (IsNewBuiltinVoteAllowed()) {
-        new iNumPlayers;
-        decl players[MaxClients];
-        for (new i = 1; i <= MaxClients; i++)
+        int iNumPlayers;
+        int[] players = new int[MaxClients];
+        for (int i = 1; i <= MaxClients; i++)
         {
             if (!IsClientConnected(i) || !IsClientInGame(i)) continue;
             if (IsSpectator(i) || IsFakeClient(i)) continue;
@@ -326,20 +331,20 @@ bool:StartVote(client, const String:sVoteHeader[], wepType, target_count, const 
     return false;
 }
 
-public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2) {
+public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
     switch (action) {
         case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
-            CloseHandle(vote);
+            delete vote;
         }
         case BuiltinVoteAction_Cancel: {
-            DisplayBuiltinVoteFail(vote, BuiltinVoteFailReason:param1);
+            DisplayBuiltinVoteFail(vote, view_as<BuiltinVoteFailReason>(param1));
         }
     }
 }
 
-public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2]) {
-    for (new i = 0; i < num_items; i++) {
+public int VoteResultHandler(Handle vote, int num_votes, int num_clients, const client_info[][2], int num_items, const item_info[][2]) {
+    for (int i = 0; i < num_items; i++) {
         if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
                 DisplayBuiltinVotePass(vote, "Spawning weapons...");

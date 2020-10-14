@@ -5,6 +5,8 @@
 #include <left4dhooks>
 #include "includes/rl4d2l_util"
 
+#pragma newdecls required
+
 #define FINALE_GAUNTLET_1               0
 #define FINALE_HORDE_ATTACK_1           1
 #define FINALE_HALFTIME_BOSS            2
@@ -30,15 +32,15 @@ enum TankSpawningScheme {
     SecondOnEvent
 };
 
-new Handle:hOnlyFirstEventTankSpawningScheme;
-new Handle:hOnlySecondEventTankSpawningScheme;
+StringMap hOnlyFirstEventTankSpawningScheme;
+StringMap hOnlySecondEventTankSpawningScheme;
 
-new TankSpawningScheme:spawnScheme;
-new tankCount;
+TankSpawningScheme spawnScheme;
+int tankCount;
 
-new Handle:g_hCvarDebug = INVALID_HANDLE;
+Handle g_hCvarDebug = INVALID_HANDLE;
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "Finale Tank Manager",
     author = "Visor, Sir, Electr0, devilesk",
     description = "Two event tanks, only first event tank, or only second event tank. Does not manage flow tanks.",
@@ -46,57 +48,57 @@ public Plugin:myinfo = {
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
     g_hCvarDebug = CreateConVar("sm_tank_map_debug", "0", "Finale Tank Manager debug mode", 0, true, 0.0, true, 1.0);
 
-    HookEvent("round_start", EventHook:RoundStartEvent, EventHookMode_PostNoCopy);
+    HookEvent("round_start", RoundStartEvent, EventHookMode_PostNoCopy);
 
-    hOnlyFirstEventTankSpawningScheme = CreateTrie();
-    hOnlySecondEventTankSpawningScheme = CreateTrie();
+    hOnlyFirstEventTankSpawningScheme = new StringMap();
+    hOnlySecondEventTankSpawningScheme = new StringMap();
 
     RegServerCmd("tank_map_only_first_event", SetMapOnlyFirstEventSpawningScheme);
     RegServerCmd("tank_map_only_second_event", SetMapOnlySecondEventSpawningScheme);
 }
 
-public Action:SetMapOnlyFirstEventSpawningScheme(args) {
-    decl String:mapname[64];
+public Action SetMapOnlyFirstEventSpawningScheme(int args) {
+    char mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
     StrToLower(mapname);
     SetTrieValue(hOnlyFirstEventTankSpawningScheme, mapname, true);
     PrintDebug("[SetMapOnlyFirstEventSpawningScheme] Added: %s", mapname);
 }
 
-public Action:SetMapOnlySecondEventSpawningScheme(args) {
-    decl String:mapname[64];
+public Action SetMapOnlySecondEventSpawningScheme(int args) {
+    char mapname[64];
     GetCmdArg(1, mapname, sizeof(mapname));
     StrToLower(mapname);
-    SetTrieValue(hOnlySecondEventTankSpawningScheme, mapname, true);
+    hOnlySecondEventTankSpawningScheme.SetValue(mapname, true);
     PrintDebug("[SetMapOnlySecondEventSpawningScheme] Added: %s", mapname);
 }
 
-public RoundStartEvent() {
+public Action RoundStartEvent(Handle hEvent, const char[] name, bool dontBroadcast) {
     CreateTimer(8.0, ProcessTankSpawn, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action:ProcessTankSpawn(Handle:timer) {
+public Action ProcessTankSpawn(Handle timer) {
     spawnScheme = Skip;
     tankCount = 0;
     
-    decl String:mapname[64];
+    char mapname[64];
     GetCurrentMapLower(mapname, sizeof(mapname));
     
-    new bool:dummy;
-    if (GetTrieValue(hOnlyFirstEventTankSpawningScheme, mapname, dummy)) {
+    bool dummy;
+    if (hOnlyFirstEventTankSpawningScheme.GetValue(mapname, dummy)) {
         spawnScheme = FirstOnEvent;
     }
-    if (GetTrieValue(hOnlySecondEventTankSpawningScheme, mapname, dummy)) {
+    if (hOnlySecondEventTankSpawningScheme.GetValue(mapname, dummy)) {
         spawnScheme = SecondOnEvent;
     }
 
     PrintDebug("[ProcessTankSpawn] mapname: %s, spawnScheme: %i", mapname, spawnScheme);
 }
 
-public Action:L4D2_OnChangeFinaleStage(&finaleType, const String:arg[]) {
+public Action L4D2_OnChangeFinaleStage(int &finaleType, const char[] arg) {
     PrintDebug("[OnChangeFinaleStage] finaleType: %i, tankCount: %i, spawnScheme: %i", finaleType, tankCount, spawnScheme);
     
     if (spawnScheme != Skip && (finaleType == FINALE_CUSTOM_TANK || finaleType == FINALE_GAUNTLET_BOSS || finaleType == FINALE_GAUNTLET_ESCAPE)) {
@@ -114,9 +116,9 @@ public Action:L4D2_OnChangeFinaleStage(&finaleType, const String:arg[]) {
     return Plugin_Continue;
 }
 
-stock PrintDebug(const String:Message[], any:...) {
+stock void PrintDebug(const char[] Message, any ...) {
     if (GetConVarBool(g_hCvarDebug)) {
-        decl String:DebugBuff[256];
+        char DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
     }

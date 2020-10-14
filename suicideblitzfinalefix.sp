@@ -16,15 +16,17 @@
 		with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma semicolon 1
- 
+
 #include <sourcemod>
- 
+
+#pragma newdecls required
+
 // Offset of the prop we're looking for from m_ghostSpawnState,
 // since its relative offset should be more stable than other stuff...
-const OFFS_FROM_SPAWNSTATE = 0x26;
-new g_SawSurvivorsOutsideBattlefieldOffset;
+const int OFFS_FROM_SPAWNSTATE = 0x26;
+int g_SawSurvivorsOutsideBattlefieldOffset;
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 		name = "Finale Can't Spawn Glitch Fix",
 		author = "ProdigySim, modified by Wicket and devilesk",
@@ -33,7 +35,7 @@ public Plugin:myinfo =
 		url = "https://github.com/devilesk/rl4d2l-plugins/blob/master/suicideblitzfinalefix.sp"
 }
  
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegAdminCmd("sm_fix_wff", AdminFixWaitingForFinale, ADMFLAG_GENERIC, "Manually fix the 'Waiting for finale to start' issue for all infected.");
 	
@@ -42,9 +44,9 @@ public OnPluginStart()
 	HookEvent("round_start", RoundStartEvent);
 }
 
-public RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast)
+public Action RoundStartEvent(Handle event, const char[] name, bool dontBroadcast)
 {
-	decl String:mapname[200];
+	char mapname[200];
 	if (GetCurrentMap(mapname, sizeof(mapname)) > 0)
 	{
 		if (StrEqual("l4d2_stadium5_stadium", mapname, false)) {
@@ -53,10 +55,10 @@ public RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 }
 
-FixAllInfected()
+void FixAllInfected()
 {
 	PrintToChatAll("Fixing Waiting For Finale to Start issue for all infected");
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == 3) 
 		{
@@ -69,7 +71,7 @@ FixAllInfected()
 }
 
 
-public Action:AdminFixWaitingForFinale(client, args)
+public Action AdminFixWaitingForFinale(int client, int args)
 {
 	FixAllInfected();
 }
@@ -89,22 +91,22 @@ public Action:AdminFixWaitingForFinale(client, args)
 // TOO_CLOSE          256  "Can't spawn here" "You are too close to the Survivors"
 // RESTRICTED_AREA    512  "Can't spawn here" "This is a restricted area"
 // INSIDE_ENTITY     1024  "Can't spawn here" "Something is blocking this spot"
-stock SetSpawnFlags(entity, flags)
+stock void SetSpawnFlags(int entity, int flags)
 {
 	SetEntProp(entity, Prop_Send, "m_ghostSpawnState", flags);
 }
 
-stock GetSpawnFlags(entity)
+stock int GetSpawnFlags(int entity)
 {
 	return GetEntProp(entity, Prop_Send, "m_ghostSpawnState");
 }
 
-stock bool:GetSeenSurvivorsState(entity)
+stock bool GetSeenSurvivorsState(int entity)
 {
 	// m_ghostSawSurvivorsOutsideFinaleArea
-	return bool:GetEntData(entity, g_SawSurvivorsOutsideBattlefieldOffset, 1);
+	return view_as<bool>(GetEntData(entity, g_SawSurvivorsOutsideBattlefieldOffset, 1));
 }
-stock SetSeenSurvivorsState(entity, bool:seen)
+stock void SetSeenSurvivorsState(int entity, bool seen)
 {
 	// m_ghostSawSurvivorsOutsideFinaleArea
 	SetEntData(entity, g_SawSurvivorsOutsideBattlefieldOffset, seen ? 1: 0, 1);

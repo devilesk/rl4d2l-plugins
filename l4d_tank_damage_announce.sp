@@ -11,31 +11,33 @@
 #include <discord_scoreboard>
 #define REQUIRE_PLUGIN
 
+#pragma newdecls required
+
 #define TANK_CHECK_DELAY        0.5
 
-new     const           TEAM_SURVIVOR               = 2;
-new     const           TEAM_INFECTED               = 3;
-new     const           ZOMBIECLASS_TANK            = 8;                // Zombie class of the tank, used to find tank after he have been passed to another player
-new             bool:   g_bEnabled                  = true;
-new             bool:   g_bAnnounceTankDamage       = false;            // Whether or not tank damage should be announced
-new             bool:   g_bIsTankInPlay             = false;            // Whether or not the tank is active
-new             bool:   bPrintedHealth              = false;        	// Is Remaining Health showed?
-new             		g_iWasTank[MAXPLAYERS + 1]  = 0;            	// Was Player Tank before he died.
-new                     g_iWasTankAI                = 0;
-new                     g_iOffset_Incapacitated     = 0;                // Used to check if tank is dying
-new                     g_iTankClient               = 0;                // Which client is currently playing as tank
-new                     g_iLastTankHealth           = 0;                // Used to award the killing blow the exact right amount of damage
-new                     g_iSurvivorLimit            = 4;                // For survivor array in damage print
-new                     g_iDamage[MAXPLAYERS + 1];
-new             Float:  g_fMaxTankHealth            = 6000.0;
-new             Handle: g_hCvarEnabled              = INVALID_HANDLE;
-new             Handle: g_hCvarTankHealth           = INVALID_HANDLE;
-new             Handle: g_hCvarSurvivorLimit        = INVALID_HANDLE;
-new Handle:fwdOnTankDeath                = INVALID_HANDLE;
-new             bool:   g_bDiscordScoreboardAvailable = false;
-new             String:sTitle[256];
-new             String:description[2048];
-new Handle:g_hCvarDebug = INVALID_HANDLE;
+const int TEAM_SURVIVOR               = 2;
+const int TEAM_INFECTED               = 3;
+const int ZOMBIECLASS_TANK            = 8;                // Zombie class of the tank, used to find tank after he have been passed to another player
+bool g_bEnabled                  = true;
+bool g_bAnnounceTankDamage       = false;            // Whether or not tank damage should be announced
+bool g_bIsTankInPlay             = false;            // Whether or not the tank is active
+bool bPrintedHealth              = false;        	// Is Remaining Health showed?
+int g_iWasTank[MAXPLAYERS + 1]  = 0;            	// Was Player Tank before he died.
+int g_iWasTankAI                = 0;
+int g_iOffset_Incapacitated     = 0;                // Used to check if tank is dying
+int g_iTankClient               = 0;                // Which client is currently playing as tank
+int g_iLastTankHealth           = 0;                // Used to award the killing blow the exact right amount of damage
+int g_iSurvivorLimit            = 4;                // For survivor array in damage print
+int g_iDamage[MAXPLAYERS + 1];
+float g_fMaxTankHealth            = 6000.0;
+Handle g_hCvarEnabled              = INVALID_HANDLE;
+Handle g_hCvarTankHealth           = INVALID_HANDLE;
+Handle g_hCvarSurvivorLimit        = INVALID_HANDLE;
+Handle fwdOnTankDeath                = INVALID_HANDLE;
+bool g_bDiscordScoreboardAvailable = false;
+char sTitle[256];
+char description[2048];
+Handle g_hCvarDebug = INVALID_HANDLE;
 
 /*
 * Version 0.6.6
@@ -47,7 +49,7 @@ new Handle:g_hCvarDebug = INVALID_HANDLE;
 * Added by; Sir
 */    
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "Tank Damage Announce L4D2",
 	author = "Griffin and Blade, Sir, devilesk",
@@ -55,7 +57,7 @@ public Plugin:myinfo =
 	version = "0.6.10"
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	g_hCvarDebug = CreateConVar("l4d_tank_damage_announce_debug", "0", "Tank Damage Announce L4D2 debug mode", 0, true, 0.0, true, 1.0);
 	g_bIsTankInPlay = false;
@@ -83,20 +85,20 @@ public OnPluginStart()
 	fwdOnTankDeath = CreateGlobalForward("OnTankDeath", ET_Event);
 }
 
-public OnAllPluginsLoaded()
+public void OnAllPluginsLoaded()
 {
 	g_bDiscordScoreboardAvailable = LibraryExists("discord_scoreboard");
 }
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
 	if ( StrEqual(name, "discord_scoreboard") ) { g_bDiscordScoreboardAvailable = false; }
 }
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
 	if ( StrEqual(name, "discord_scoreboard") ) { g_bDiscordScoreboardAvailable = true; }
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	// In cases where a tank spawns and map is changed manually, bypassing round end
 	ClearTankDamage();
@@ -104,31 +106,31 @@ public OnMapStart()
 	PrecacheSound("ui/pickup_secret01.wav");
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
 	if (!g_bIsTankInPlay || client != g_iTankClient) return;
 	PrintDebug("[OnClientDisconnect] client: %L", client);
 	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, client); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
-public Cvar_Enabled(Handle:convar, const String:oldValue[], const String:newValue[])
+public void Cvar_Enabled(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	g_bEnabled = StringToInt(newValue) > 0 ? true:false;
 }
 
-public Cvar_SurvivorLimit(Handle:convar, const String:oldValue[], const String:newValue[])
+public void Cvar_SurvivorLimit(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	g_iSurvivorLimit = StringToInt(newValue);
 }
 
-public Cvar_TankHealth(Handle:convar, const String:oldValue[], const String:newValue[])
+public void Cvar_TankHealth(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	CalculateTankHealth();
 }
 
-CalculateTankHealth()
+void CalculateTankHealth()
 {
-	new String:sGameMode[32];
+	char sGameMode[32];
 	GetConVarString(FindConVar("mp_gamemode"), sGameMode, sizeof(sGameMode));
 
 	if (StrEqual(sGameMode, "versus") || StrEqual(sGameMode, "mutation12")) g_fMaxTankHealth = GetConVarFloat(g_hCvarTankHealth) * 1.5;
@@ -136,16 +138,16 @@ CalculateTankHealth()
 	if (g_fMaxTankHealth <= 0.0) g_fMaxTankHealth = 1.0; // No dividing by 0!
 }
 
-public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bIsTankInPlay) return; // No tank in play; no damage to record
 	
-	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (victim != GetTankClient() ||        // Victim isn't tank; no damage to record
 	IsTankDying()                                   // Something buggy happens when tank is dying with regards to damage
 	) return;
 	
-	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	// We only care about damage dealt by survivors, though it can be funny to see
 	// claw/self inflicted hittable damage, so maybe in the future we'll do that
 	if (attacker == 0 ||                                                    // Damage from world?
@@ -157,17 +159,17 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 	g_iLastTankHealth = GetEventInt(event, "health");
 }
 
-public Event_PlayerKilled(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerKilled(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bIsTankInPlay) return; // No tank in play; no damage to record
 	
-	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (victim != g_iTankClient) return;
 	
 	// Award the killing blow's damage to the attacker; we don't award
 	// damage from player_hurt after the tank has died/is dying
 	// If we don't do it this way, we get wonky/inaccurate damage values
-	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	if (attacker && IsClientInGame(attacker)) g_iDamage[attacker] += g_iLastTankHealth;
 	
 	//Player was Tank
@@ -178,9 +180,9 @@ public Event_PlayerKilled(Handle:event, const String:name[], bool:dontBroadcast)
 	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, victim); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
-public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_TankSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	g_iTankClient = client;
 	PrintDebug("[Event_TankSpawn] g_iTankClient: %L", g_iTankClient);
 	
@@ -194,7 +196,7 @@ public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	g_iLastTankHealth = GetClientHealth(client);
 }
 
-public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	bPrintedHealth = false;
 	g_bIsTankInPlay = false;
@@ -203,7 +205,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 }
 
 // When survivors wipe or juke tank, announce damage
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	PrintDebug("[Event_RoundEnd] g_bAnnounceTankDamage: %i", g_bAnnounceTankDamage);
 	// But only if a tank that hasn't been killed exists
@@ -215,12 +217,12 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	ClearTankDamage();
 }
 
-public Action:Timer_CheckTank(Handle:timer, any:oldtankclient)
+public Action Timer_CheckTank(Handle timer, int oldtankclient)
 {
 	PrintDebug("[Timer_CheckTank] oldtankclient: %i", oldtankclient);
 	if (g_iTankClient != oldtankclient) return; // Tank passed
 	
-	new tankclient = FindTankClient();
+	int tankclient = FindTankClient();
 	PrintDebug("[Timer_CheckTank] tankclient: %i", tankclient);
 	if (tankclient && tankclient != oldtankclient)
 	{
@@ -236,29 +238,29 @@ public Action:Timer_CheckTank(Handle:timer, any:oldtankclient)
 	Call_Finish();
 }
 
-bool:IsTankDying()
+bool IsTankDying()
 {
-	new tankclient = GetTankClient();
+	int tankclient = GetTankClient();
 	if (!tankclient) return false;
 	
-	return bool:GetEntData(tankclient, g_iOffset_Incapacitated);
+	return view_as<bool>(GetEntData(tankclient, g_iOffset_Incapacitated));
 }
 
-PrintRemainingHealth()
+void PrintRemainingHealth()
 {
 	bPrintedHealth = true;
 	if (!g_bEnabled) return;
-	new tankclient = GetTankClient();
+	int tankclient = GetTankClient();
 	if (!tankclient) return;
 	
-	decl String:name[MAX_NAME_LENGTH];
+	char name[MAX_NAME_LENGTH];
 	if (IsFakeClient(tankclient)) name = "AI";
 	else GetClientName(tankclient, name, sizeof(name));
 	CPrintToChatAll("{default}[{green}!{default}] {blue}Tank {default}({olive}%s{default}) had {green}%d {default}health remaining", name, g_iLastTankHealth);
 	Format(sTitle, sizeof(sTitle), "Tank (%s) had %d health remaining", name, g_iLastTankHealth);
 }
 
-PrintTankDamage()
+void PrintTankDamage()
 {
 	PrintDebug("[PrintTankDamage] bPrintedHealth: %i", bPrintedHealth);
 	description[0] = '\0';
@@ -268,11 +270,11 @@ PrintTankDamage()
 	{
 		strcopy(sTitle, sizeof(sTitle), "Damage dealt to Tank");
 
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			if(g_iWasTank[i] > 0)
 			{
-				decl String:name[MAX_NAME_LENGTH];
+				char name[MAX_NAME_LENGTH];
 				GetClientName(i, name, sizeof(name));
 				CPrintToChatAll("{default}[{green}!{default}] {blue}Damage {default}dealt to {blue}Tank {default}({olive}%s{default})", name);
 				Format(sTitle, sizeof(sTitle), "Damage dealt to Tank (%s)", name);
@@ -287,10 +289,10 @@ PrintTankDamage()
 		}
 	}
 	
-	new client;
-	new survivor_index = -1;
-	new survivor_clients[g_iSurvivorLimit]; // Array to store survivor client indexes in, for the display iteration
-	decl percent_damage, damage;
+	int client;
+	int survivor_index = -1;
+	int[] survivor_clients = new int[g_iSurvivorLimit]; // Array to store survivor client indexes in, for the display iteration
+	int percent_damage, damage;
 	for (client = 1; client <= MaxClients; client++)
 	{
 		if (!IsClientInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR || g_iDamage[client] == 0) continue;
@@ -299,12 +301,12 @@ PrintTankDamage()
 	}
 	SortCustom1D(survivor_clients, g_iSurvivorLimit, SortByDamageDesc);
 	
-	for (new k; k <= survivor_index; k++)
+	for (int k; k <= survivor_index; k++)
 	{
 		client = survivor_clients[k];
 		damage = g_iDamage[client];
 		percent_damage = GetDamageAsPercent(damage);
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
     		if (IsClientInGame(i))
     		{
@@ -318,11 +320,11 @@ PrintTankDamage()
 	}
 }
 
-ClearTankDamage()
+void ClearTankDamage()
 {
 	g_iLastTankHealth = 0;
 	g_iWasTankAI = 0;
-	for (new i = 1; i <= MaxClients; i++) 
+	for (int i = 1; i <= MaxClients; i++) 
 	{ 
 		g_iDamage[i] = 0; 
 		g_iWasTank[i] = 0;
@@ -331,11 +333,11 @@ ClearTankDamage()
 }
 
 
-GetTankClient()
+int GetTankClient()
 {
 	if (!g_bIsTankInPlay) return 0;
 	
-	new tankclient = g_iTankClient;
+	int tankclient = g_iTankClient;
 	
 	if (!IsClientInGame(tankclient)) // If tank somehow is no longer in the game (kicked, hence events didn't fire)
 	{
@@ -347,9 +349,9 @@ GetTankClient()
 	return tankclient;
 }
 
-FindTankClient()
+int FindTankClient()
 {
-	for (new client = 1; client <= MaxClients; client++)
+	for (int client = 1; client <= MaxClients; client++)
 	{
 		if (!IsClientInGame(client) ||
 			GetClientTeam(client) != TEAM_INFECTED ||
@@ -362,12 +364,12 @@ FindTankClient()
 	return 0;
 }
 
-GetDamageAsPercent(damage)
+int GetDamageAsPercent(int damage)
 {
 	return RoundToNearest(float(damage) / g_fMaxTankHealth * 100.0);
 }
 
-public SortByDamageDesc(elem1, elem2, const array[], Handle:hndl)
+public int SortByDamageDesc(int elem1, int elem2, const int[] array, Handle hndl)
 {
 	// By damage, then by client index, descending
 	if (g_iDamage[elem1] > g_iDamage[elem2]) return -1;
@@ -377,11 +379,11 @@ public SortByDamageDesc(elem1, elem2, const array[], Handle:hndl)
 	return 0;
 }
 
-stock PrintDebug(const String:Message[], any:...)
+stock void PrintDebug(const char[] Message, any ...)
 {
 	if (GetConVarBool(g_hCvarDebug))
 	{
-		decl String:DebugBuff[256];
+		char DebugBuff[256];
 		VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
 		LogMessage(DebugBuff);
 	}
