@@ -67,6 +67,10 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 ### saferoom_gnome.sp
 * Spawns a gnome in the saferoom that is removed when the round goes live.
 
+### si_cooldown_alert.sp
+* Alerts SI about their ability cooldown after despawning.
+  * Use `!settings` to manage personal settings for text and sound alerts.
+
 ### spawn_secondary.sp
 * Spawn pistol and axe for survivors plugin.
 * Adds `sm_spawnsecondary <target>`, `sm_spawnaxe <target>`, and `sm_spawnpistol <target>` commands.
