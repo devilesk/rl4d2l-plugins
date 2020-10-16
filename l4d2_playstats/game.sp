@@ -24,9 +24,8 @@ public OnConfigsExecuted() {
     if ( tmpHandle != INVALID_HANDLE ) {
         GetConVarString( tmpHandle, g_sConfigName, MAXMAP );
     }
-    PrintDebug( 1, "OnConfigsExecuted %i", db == INVALID_HANDLE);
+    PrintDebug( 1, "OnConfigsExecuted %i", g_Database == null);
     InitDatabase();
-    InitQueries();
 }
 
 // find a player

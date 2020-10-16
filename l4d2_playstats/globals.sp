@@ -94,11 +94,6 @@ new     String: g_sStatsFile            [MAXNAME];                              
 new     Handle: g_hStatsFile;                                                           // handle for a statsfile that we write tables to
 
 new String:errorBuffer[255];
-new Handle:db = INVALID_HANDLE;
-new Handle:hRoundStmt = INVALID_HANDLE;
-new Handle:hSurvivorStmt = INVALID_HANDLE;
-new Handle:hInfectedStmt = INVALID_HANDLE;
-new Handle:hMatchStmt = INVALID_HANDLE;
-new Handle:hPvPFFStmt = INVALID_HANDLE;
-new Handle:hPvPInfDmgStmt = INVALID_HANDLE;
+Database g_Database = null;
+int g_iQueries = 0;
 new String:g_sDatabaseConfig[64];
