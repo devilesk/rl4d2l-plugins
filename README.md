@@ -70,6 +70,7 @@ Original and modified plugins used by the RL4D2L servers currently running SM 1.
 ### si_cooldown_alert.sp
 * Alerts SI about their ability cooldown after despawning.
   * Use `!settings` to manage personal settings for text and sound alerts.
+* Fixes bug where spitter gets 3600s spit cooldown if spit and despawn while on a ladder.
 
 ### spawn_secondary.sp
 * Spawn pistol and axe for survivors plugin.
