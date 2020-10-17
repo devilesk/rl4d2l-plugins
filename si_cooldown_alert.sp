@@ -9,11 +9,21 @@
 
 #pragma newdecls required
 
+#define ZC_SMOKER               1
+#define ZC_BOOMER               2
+#define ZC_HUNTER               3
+#define ZC_SPITTER              4
+#define ZC_JOCKEY               5
+#define ZC_CHARGER              6
+#define ZC_WITCH                7
+#define ZC_TANK                 8
+
 char abilities[][] = {"", "Tongue", "Vomit", "Pounce", "Spit", "Jockey", "Charge"};
 Handle g_hTextEnabledCookie;
 Handle g_hSoundEnabledCookie;
 bool g_bTextEnabled[MAXPLAYERS+1];
 bool g_bSoundEnabled[MAXPLAYERS+1];
+ConVar g_hSpitInterval;
 
 public Plugin myinfo =
 {
@@ -26,6 +36,7 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+	g_hSpitInterval = FindConVar("z_spit_interval");
 	g_hTextEnabledCookie = RegClientCookie("si_cooldown_alert_text", "0 = disabled, 1 = enable text notification", CookieAccess_Protected);
 	g_hSoundEnabledCookie = RegClientCookie("si_cooldown_alert_sound", "0 = disabled, 1 = enable sound notification", CookieAccess_Protected);
 	SetCookiePrefabMenu(g_hTextEnabledCookie, CookieMenu_OnOff_Int, "SI Cooldown Alert Text", CookieHandler);
@@ -98,6 +109,20 @@ public void L4D_OnEnterGhostState(int client)
 
 	float timestamp = GetEntPropFloat(ability, Prop_Send, "m_timestamp");
 	float remainingtime = timestamp - GetGameTime();
+	int class = GetEntProp(client, Prop_Send, "m_zombieClass");
+
+	// fix bug where spitter gets 3600s cooldown if they're on a ladder and spit then despawn
+	if (class == ZC_SPITTER)
+	{
+		float spit_interval = GetConVarFloat(g_hSpitInterval);
+		if (remainingtime > spit_interval)
+		{
+			SetEntPropFloat(ability, Prop_Send, "m_duration", spit_interval);
+			SetEntPropFloat(ability, Prop_Send, "m_timestamp", GetGameTime() + spit_interval);
+			remainingtime = spit_interval;
+		}
+	}
+
 
 	if (remainingtime >= 3)
 		CreateTimer(remainingtime - 3.0, Timer_NotifyAbilitySound, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE );
@@ -107,7 +132,6 @@ public void L4D_OnEnterGhostState(int client)
 
 	if (remainingtime >= 1)
 	{
-		int class = GetEntProp(client, Prop_Send, "m_zombieClass");
 
 		if (g_bTextEnabled[client])
 			CPrintToChat(client, "{default}%s ready in {green}%0.1fs{default}.", abilities[class], remainingtime);
