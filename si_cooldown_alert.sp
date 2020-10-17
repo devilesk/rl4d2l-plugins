@@ -24,12 +24,13 @@ Handle g_hSoundEnabledCookie;
 bool g_bTextEnabled[MAXPLAYERS+1];
 bool g_bSoundEnabled[MAXPLAYERS+1];
 ConVar g_hSpitInterval;
+ConVar g_hChargeInterval;
 
 public Plugin myinfo =
 {
 	name = "SI Cooldown Alert",
 	author = "devilesk",
-	version = "1.0.0",
+	version = "1.1.0",
 	description = "Tell SI how long their ability is on cooldown for after despawning.",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 }
@@ -37,6 +38,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	g_hSpitInterval = FindConVar("z_spit_interval");
+	g_hChargeInterval = FindConVar("z_charge_interval");
 	g_hTextEnabledCookie = RegClientCookie("si_cooldown_alert_text", "0 = disabled, 1 = enable text notification", CookieAccess_Protected);
 	g_hSoundEnabledCookie = RegClientCookie("si_cooldown_alert_sound", "0 = disabled, 1 = enable sound notification", CookieAccess_Protected);
 	SetCookiePrefabMenu(g_hTextEnabledCookie, CookieMenu_OnOff_Int, "SI Cooldown Alert Text", CookieHandler);
@@ -120,6 +122,17 @@ public void L4D_OnEnterGhostState(int client)
 			SetEntPropFloat(ability, Prop_Send, "m_duration", spit_interval);
 			SetEntPropFloat(ability, Prop_Send, "m_timestamp", GetGameTime() + spit_interval);
 			remainingtime = spit_interval;
+		}
+	}
+	// fix bug where charger gets 3600s cooldown if they death charge then despawn
+	else if (class == ZC_CHARGER)
+	{
+		float charge_interval = GetConVarFloat(g_hChargeInterval);
+		if (remainingtime > charge_interval)
+		{
+			SetEntPropFloat(ability, Prop_Send, "m_duration", charge_interval);
+			SetEntPropFloat(ability, Prop_Send, "m_timestamp", GetGameTime() + charge_interval);
+			remainingtime = charge_interval;
 		}
 	}
 
