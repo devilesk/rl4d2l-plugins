@@ -47,7 +47,7 @@ public Plugin myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, Sir, devilesk",
 	description = "Provides different HUDs for spectators",
-	version = "3.2.0",
+	version = "3.2.1",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -64,7 +64,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-	hybridScoringAvailable = LibraryExists("l4d2_hybrid_scoremod_zone");
+	hybridScoringAvailable = LibraryExists("l4d2_hybrid_scoremod_zone") || LibraryExists("l4d2_hybrid_scoremod");
 }
 public void OnLibraryRemoved(const char[] name)
 {
@@ -72,10 +72,18 @@ public void OnLibraryRemoved(const char[] name)
 	{
 		hybridScoringAvailable = false;
 	}
+	if (StrEqual(name, "l4d2_hybrid_scoremod", true))
+	{
+		hybridScoringAvailable = false;
+	}
 }
 public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, "l4d2_hybrid_scoremod_zone", true))
+	{
+		hybridScoringAvailable = true;
+	}
+	if (StrEqual(name, "l4d2_hybrid_scoremod", true))
 	{
 		hybridScoringAvailable = true;
 	}
