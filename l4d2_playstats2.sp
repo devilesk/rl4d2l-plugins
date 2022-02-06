@@ -40,8 +40,6 @@
 #undef REQUIRE_PLUGIN
 #include <readyup>
 #include <confogl>
-#include <system2>
-#include <discord_scoreboard>
 
 #define IS_VALID_CLIENT(%1) (%1 > 0 && %1 <= MaxClients)
 #define IS_SURVIVOR(%1) (GetClientTeam(%1) == 2)
@@ -232,9 +230,6 @@
 #define MAX_QUERY_SIZE			8192
 #define FILETABLEFLAGS			164532						// AUTO_ flags for what to print to a file automatically
 
-#define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
-#define MIN(%0,%1) (((%0) < (%1)) ? (%0) : (%1))
-
 // types of statistic table(sets)
 enum /*strStatType*/
 {
@@ -282,32 +277,32 @@ enum /*strRoundData*/
 	rndMaxSize
 };
 
-#define MAXRNDSTATS                 18
+#define MAXRNDSTATS				 18
 
 // information per player
 enum /*strPlayerData*/
 {
-	plyShotsShotgun,			// 0 pellets
-	plyShotsSmg,				// all bullets from smg/rifle
-	plyShotsSniper,			// all bullets from snipers
-	plyShotsPistol,			// all bullets from pistol/magnum
+	plyShotsShotgun,										// 0 pellets
+	plyShotsSmg,											// all bullets from smg/rifle
+	plyShotsSniper,											// all bullets from snipers
+	plyShotsPistol,											// all bullets from pistol/magnum
 	plyHitsShotgun,
 	plyHitsSmg,
 	plyHitsSniper,
 	plyHitsPistol,
-	plyHeadshotsSmg,			// headshots for everything but on tank
+	plyHeadshotsSmg,										// headshots for everything but on tank
 	plyHeadshotsSniper,
-	plyHeadshotsPistol,		// 10
-	plyHeadshotsSISmg,		// headshots for SI only
+	plyHeadshotsPistol,										// 10
+	plyHeadshotsSISmg,										// headshots for SI only
 	plyHeadshotsSISniper,
 	plyHeadshotsSIPistol,
-	plyHitsSIShotgun,			// all hits on special infected (not tank)
+	plyHitsSIShotgun,										// all hits on special infected (not tank)
 	plyHitsSISmg,
 	plyHitsSISniper,
 	plyHitsSIPistol,
-	plyHitsTankShotgun,		// all hits on tank
-	plyHitsTankSmg,			// useful for getting real headshot count (leave tank out of it)
-	plyHitsTankSniper,		// 20
+	plyHitsTankShotgun,										// all hits on tank
+	plyHitsTankSmg,											// useful for getting real headshot count (leave tank out of it)
+	plyHitsTankSniper,										// 20
 	plyHitsTankPistol,
 	plyCommon,
 	plyCommonTankUp,
@@ -317,119 +312,90 @@ enum /*strPlayerData*/
 	plySIDamageTankUp,
 	plyIncaps,
 	plyDied,
-	plySkeets,				// 30 skeets, full
+	plySkeets,												// 30 skeets, full
 	plySkeetsHurt,
 	plySkeetsMelee,
-	plyLevels,				// charger levels, full
+	plyLevels,												// charger levels, full
 	plyLevelsHurt,
-	plyPops,					// boomer pops (pre puke)
+	plyPops,												// boomer pops (pre puke)
 	plyCrowns,
-	plyCrownsHurt,			// non-full crowns 
-	plyShoves,				// count every shove
+	plyCrownsHurt,											// non-full crowns
+	plyShoves,												// count every shove
 	plyDeadStops,
-	plyTongueCuts,			// 40 only real cuts
+	plyTongueCuts,											// 40 only real cuts
 	plySelfClears,
 	plyFallDamage,
 	plyDmgTaken,
-	plyDmgTakenBoom,			// damage taken from common while boomed
-	plyDmgTakenCommon,		// damage taken from common
-	plyDmgTakenTank,		// damage taken from tank
-	plyBowls,				// bowls from charger
-	plyCharges,				// charges from charger
-	plyDeathCharges,			// death charge count
 	plyFFGiven,
-	plyFFTaken,				// 50
-	plyFFHits,				// total amount of shotgun blasts / bullets / etc
-	plyTankDamage,			// survivor damage to tank
+	plyFFTaken,
+	plyFFHits,												// total amount of shotgun blasts / bullets / etc
+	plyTankDamage,											// survivor damage to tank
 	plyWitchDamage,
 	plyMeleesOnTank,
-	plyRockSkeets,
+	plyRockSkeets,											// 50
 	plyRockEats,
 	plyFFGivenPellet,
 	plyFFGivenBullet,
-	plyFFGivenSniper,			// 60
+	plyFFGivenSniper,
 	plyFFGivenMelee,
 	plyFFGivenFire,
 	plyFFGivenIncap,
 	plyFFGivenOther,
 	plyFFGivenSelf,
-	plyFFTakenPellet,
+	plyFFTakenPellet,										// 60
 	plyFFTakenBullet,
 	plyFFTakenSniper,
 	plyFFTakenMelee,
-	plyFFTakenFire,			// 70
+	plyFFTakenFire,
 	plyFFTakenIncap,
 	plyFFTakenOther,
 	plyFFGivenTotal,
 	plyFFTakenTotal,
-	plyCarsTriggered,
-	plyJockeyRideDuration,
-	plyJockeyRideTotal,
-	plyClears,				// amount of clears (under a min)
-	plyAvgClearTime,			// average time it takes to clear someone (* 1000 so it doesn't have to be a float)
-	plyTimeStartPresent,		// 80 time present (on the team)
-	plyTimeStopPresent,		// if stoptime is 0, then it's NOW, ongoing
+	plyClears,												// amount of clears (under a min)
+	plyAvgClearTime,										// 70 average time it takes to clear someone (* 1000 so it doesn't have to be a float)
+	plyTimeStartPresent,									// time present (on the team)
+	plyTimeStopPresent,										// if stoptime is 0, then it's NOW, ongoing
 	plyTimeStartAlive,
-	plyTimeStopAlive,		// time not capped
-	plyTimeStartUpright,
+	plyTimeStopAlive,
+	plyTimeStartUpright,									// time not capped
 	plyTimeStopUpright,
-	plyCurFlowDist,
-	plyFarFlowDist,
-	plyProtectAwards,
 
 	plyMaxSize
 };
 
-#define MAXPLYSTATS				 88
+#define MAXPLYSTATS				76
 
 // information per infected player (during other team's survivor round)
 enum /*strInfData*/
 {
-	infDmgTotal,				// including on incapped, excluding all tank damage!
-	infDmgUpright,			// 1
-	infDmgTank,				// only upright
-	infDmgTankIncap,			// only incapped
-	infDmgScratch,			// only upright
-	infDmgScratchSmoker,		// only upright
-	infDmgScratchBoomer,		// only upright
-	infDmgScratchHunter,		// only upright
-	infDmgScratchCharger,		// only upright
-	infDmgScratchSpitter,		// only upright
-	infDmgScratchJockey,	// 10 only upright
-	infDmgSpit,				// only upright
-	infDmgBoom,				// only upright
-	infDmgTankUp,				// only upright, excluding the tank itself
-	infHunterDPs,				// damage pounce count
-	infHunterDPDmg,			// damage pounce damage
-	infJockeyDPs,
+	infDmgTotal,											// including on incapped, excluding all tank damage!
+	infDmgUpright,											// 1
+	infDmgTank,												// only upright
+	infDmgTankIncap,										// only incapped
+	infDmgScratch,											// only upright
+	infDmgSpit,												// only upright
+	infDmgBoom,												// only upright
+	infDmgTankUp,											// only upright, excluding the tank itself
+	infHunterDPs,
+	infHunterDPDmg,
+	infJockeyDPs,											// 10
 	infDeathCharges,
-	infCharges,
-	infMultiCharges,
-	infBoomsSingle,		 // 20
-	infBoomsDouble,
-	infBoomsTriple,
-	infBoomsQuad,
-	infBooms,				// boomed survivors
-	infBoomerPops,				// times popped as boomer
-	infLedged,				// survivors ledged
-	infCommon,				// common killed by SI
+	infBooms,												// boomed survivors
+	infLedged,												// survivors ledged
+	infCommon,												// common killed by SI
 	infSpawns,
 	infSpawnSmoker,
-	infSpawnBoomer,		 // 30
+	infSpawnBoomer,
 	infSpawnHunter,
 	infSpawnCharger,
-	infSpawnSpitter,
+	infSpawnSpitter,										// 20
 	infSpawnJockey,
 	infTankPasses,
-	infTankRockHits,
-	infCarsTriggered,
-	infJockeyRideDuration,		// in milliseconds
-	infJockeyRideTotal,
-	infTimeStartPresent,		// 40 time present (on the team)
-	infTimeStopPresent		// if stoptime is 0, then it's NOW, ongoing
+	infTimeStartPresent,									// time present (on the team)
+	infTimeStopPresent										// if stoptime is 0, then it's NOW, ongoing
 };
 
-#define MAXINFSTATS				 41
+#define MAXINFSTATS				24
 
 // trie values: weapon type (per accuracy-class)
 enum /*strWeaponType*/
@@ -462,8 +428,6 @@ bool
 	g_bReadyUpAvailable = false,
 	g_bPauseAvailable = false,
 	g_bSkillDetectLoaded = false,
-	g_bSystem2Loaded = false,
-	g_bDiscordScoreboardAvailable = false,    
 	g_bCMTActive = false,										// whether custom map transitions is running a mapset
 	g_bCMTSwapped = false,										// whether A/B teams have been swapped
 	g_bModeCampaign = false,
@@ -479,7 +443,6 @@ bool
 
 Handle
 	g_hCookiePrint = null,
-	g_hCvarDatabaseConfig = null,
 	g_hCvarDebug = null,
 	g_hCvarMVPBrevityFlags = null,
 	g_hCvarAutoPrintVs = null,
@@ -488,19 +451,10 @@ Handle
 	g_hCvarDetailPercent = null,
 	g_hCvarWriteStats = null,
 	g_hCvarSkipMap = null,
-	g_hCvarCustomConfig = null,
 	g_hTriePlayers = null,										// trie for getting player index
 	g_hTrieWeapons = null,										// trie for getting weapon type (from classname)
 	g_hTrieMaps = null,											// trie for getting finale maps
 	g_hTrieEntityCreated = null,								// trie for getting classname of entity created
-	hFileFinaleMaps = null,
-	db = null,
-	hRoundStmt = null,
-	hSurvivorStmt = null,
-	hInfectedStmt = null,
-	hMatchStmt = null,
-	hPvPFFStmt = null,
-	hPvPInfDmgStmt = null,
 	g_hStatsFile;												// handle for a statsfile that we write tables to
 
 int
@@ -526,10 +480,8 @@ int
 	g_strPlayerInfData[MAXTRACKED][plyMaxSize],
 	g_strRoundPlayerInfData[MAXTRACKED][2][plyMaxSize], 		// player data for infected action per team (team is survivor team! -- when infected player was on opposite team)
 	g_iPlayers = 0,
-	g_iConsoleBufChunks = 0,
-	g_strRoundPvPFFData[MAXTRACKED][2][MAXTRACKED],                    // pvp ff data per team
-	g_strRoundPvPInfDmgData[MAXTRACKED][2][MAXTRACKED];  
-
+	g_iConsoleBufChunks = 0;
+	
 float
 	g_fHighestFlow[4];											// highest flow a survivor was seen to have in the round (per character 0-3)
 
@@ -540,17 +492,15 @@ char
 	g_sMapName[MAXROUNDS][MAXMAP],
 	g_sConfigName[MAXMAP],
 	g_sConsoleBuf[MAXCHUNKS][CONBUFSIZELARGE],
-	errorBuffer[255],
-	g_sDatabaseConfig[64],
 	g_sStatsFile[MAXNAME];										// name for the statsfile we should write to
 
 public Plugin myinfo =
 {
 	name = "Player Statistics",
-	author = "Tabun, A1m`, devilesk",
-	description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-	version = "1.1.1-rl4d2l",
-	url = "https://github.com/devilesk/rl4d2l-plugins"
+	author = "Tabun, A1m`",
+	description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc.",
+	version = "1.1.1",
+	url = "https://github.com/SirPlease/L4D2-Competitive-Rework"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -571,8 +521,6 @@ public void OnAllPluginsLoaded()
 	g_bReadyUpAvailable = LibraryExists("readyup");
 	g_bPauseAvailable = LibraryExists("pause");
 	g_bSkillDetectLoaded = LibraryExists("skill_detect");
-	g_bSystem2Loaded = LibraryExists("system2");
-	g_bDiscordScoreboardAvailable = LibraryExists("discord_scoreboard");
 }
 
 public void OnLibraryRemoved(const char[] LibName)
@@ -595,10 +543,6 @@ void CheckLib(const char[] LibName, bool state)
 		g_bPauseAvailable = state;
 	} else if (strcmp(LibName, "skill_detect") == 0) {
 		g_bSkillDetectLoaded = state;
-	} else if (strcmp(LibName, "system2") == 0) {
-		g_bSystem2Loaded = state;
-	} else if (strcmp(LibName, "discord_scoreboard") == 0) {
-		g_bDiscordScoreboardAvailable = state;
 	}
 }
 
@@ -637,27 +581,6 @@ public void OnPluginStart()
 	HookEvent("player_now_it", Event_PlayerBoomed, EventHookMode_Post);
 	HookEvent("player_no_longer_it", Event_PlayerUnboomed, EventHookMode_Post);
 
-	HookEvent("charger_carry_start", Event_ChargerCarryStart, EventHookMode_Post);
-	HookEvent("charger_impact", Event_ChargerImpact, EventHookMode_Post);
-	HookEvent("jockey_ride", Event_JockeyRide, EventHookMode_Post);
-	HookEvent("jockey_ride_end", Event_JockeyRideEnd, EventHookMode_Post);
-	HookEvent("award_earned", Event_AwardEarned, EventHookMode_Post);
-
-	// Database config cvar
-	g_hCvarDatabaseConfig = CreateConVar(
-		"l4d2_playstats_database_cfg",
-		"l4d2_playstats",
-		"Name of database keyvalue entry to use in databases.cfg",
-		_, true, 0.0, false
-	);
-
-	g_hCvarCustomConfig = CreateConVar(
-		"l4d2_playstats_customcfg",
-		"",
-		"Name of custom cfg",
-		_, true, 0.0, false
-	);
-
 	// cvars
 	g_hCvarDebug = CreateConVar(
 		"sm_stats_debug",
@@ -665,49 +588,49 @@ public void OnPluginStart()
 		"Debug mode",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarMVPBrevityFlags = CreateConVar(
 		"sm_survivor_mvp_brevity_latest",
 		"4",
 		"Flags for setting brevity of MVP chat report (hide 1:SI, 2:CI, 4:FF, 8:rank, 32:perc, 64:abs).",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarAutoPrintVs = CreateConVar(
 		"sm_stats_autoprint_vs_round",
 		"8325",									 // default = 1 (mvpchat) + 4 (mvpcon-round) + 128 (special round) = 133 + (funfact round) 8192 = 8325
 		"Flags for automatic print [versus round] (show 1,4:MVP-chat, 4,8,16:MVP-console, 32,64:FF, 128,256:special, 512,1024,2048,4096:accuracy).",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarAutoPrintCoop = CreateConVar(
 		"sm_stats_autoprint_coop_round",
 		"1289",									 // default = 1 (mvpchat) + 8 (mvpcon-all) + 256 (special all) + 1024 (acc all) = 1289
 		"Flags for automatic print [campaign round] (show 1,4:MVP-chat, 4,8,16:MVP-console, 32,64:FF, 128,256:special, 512,1024,2048,4096:accuracy).",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarShowBots = CreateConVar(
 		"sm_stats_showbots",
 		"1",
 		"Show bots in all tables (0 = show them in MVP and FF tables only)",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarDetailPercent = CreateConVar(
 		"sm_stats_percentdecimal",
 		"0",
 		"Show the first decimal for (most) MVP percent in console tables.",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarWriteStats = CreateConVar(
 		"sm_stats_writestats",
 		"0",
 		"Whether to store stats in logs/ dir (1 = write csv; 2 = write csv & pretty tables). Versus only.",
 		_, true, 0.0, false
 	);
-
+	
 	g_hCvarSkipMap = CreateConVar(
 		"sm_stats_resetnextmap",
 		"0",
@@ -786,7 +709,6 @@ public void OnPluginStart()
 		g_iCurTeam = (g_bModeCampaign) ? 0 : GetCurrentTeamSurvivor();
 		UpdatePlayerCurrentTeam();
 	}
-	PrintDebug(1, "OnPluginStart g_bLateLoad %i %i %i", g_bLateLoad, g_strGameData[gmStartTime], g_strRoundData[0][0][rndStartTime]);
 }
 
 /*
@@ -809,10 +731,6 @@ public void OnConfigsExecuted()
 	if (tmpHandle != null) {
 		tmpHandle.GetString(g_sConfigName, MAXMAP);
 	}
-
-	PrintDebug(1, "OnConfigsExecuted %i", db == INVALID_HANDLE);
-	InitDatabase();
-	InitQueries();
 }
 
 // find a player
@@ -890,7 +808,7 @@ public void OnMapStart()
 	CreateTimer(FREQ_FLOWCHECK, Timer_SaveFlows, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	// save map name (after onmapload resets, so it doesn't get deleted)
-	GetCurrentMapLower(g_sMapName[g_iRound], MAXMAP);
+	GetCurrentMap(g_sMapName[g_iRound], MAXMAP);
 	//PrintDebug(2, "MapStart (round %i): %s ", g_iRound, g_sMapName[g_iRound]);
 }
 
@@ -993,15 +911,11 @@ void HandleRoundEnd(bool bFailed = false)
 		// write stats for this roundhalf to file
 		// do before addition, because these are round stats
 		if (GetConVarBool(g_hCvarWriteStats)) {
-			PrintDebug( 1, "[Stats] Writing stats to database started." );
 			if (g_bSecondHalf)  {
 				CreateTimer(ROUNDEND_SCORE_DELAY, Timer_WriteStats, g_iCurTeam);
 			} else {
 				WriteStatsToFile(g_iCurTeam, false);
-				WriteStatsToDB(g_iCurTeam, false);
 			}
-		} else {
-			PrintDebug(1, "[Stats] Writing stats to database disabled.");
 		}
 
 		// only add stuff to total time if the round isn't ongoing
@@ -1948,18 +1862,17 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 
 		if (attIndex == vicIndex) {
 			// damage to self
-			g_strRoundPvPFFData[attIndex][g_iCurTeam][vicIndex] += damage;
 			g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGivenSelf] += damage;
 		} else if (IsPlayerIncapacitated(victim)) {
 			// don't count incapped damage for 'ffgiven' / 'fftaken'
 			g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGivenIncap] += damage;
 			g_strRoundPlayerData[vicIndex][g_iCurTeam][plyFFTakenIncap] += damage;
 		} else {
-			g_strRoundPvPFFData[attIndex][g_iCurTeam][vicIndex] += damage;
 			g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGiven] += damage;
 			if (attIndex != vicIndex) {
 				g_strRoundPlayerData[vicIndex][g_iCurTeam][plyFFTaken] += damage;
 			}
+
 			// which type to save it to?
 			if (type & DMG_BURN) {
 				g_strRoundPlayerData[attIndex][g_iCurTeam][plyFFGivenFire] += damage;
@@ -1983,7 +1896,7 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 		if (vicIndex == -1) { 
 			return Plugin_Continue; 
 		}
-
+		
 		int attackerent = hEvent.GetInt("attackerentid");
 
 		if (IS_VALID_INFECTED(attacker))
@@ -2000,19 +1913,16 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 
 			if (zClass == ZC_TANK) {
 				if (!IsPlayerIncapacitatedAtAll(victim)) {
-					g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTank] += damage;
-					g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTakenTank] += damage;
 				} else {
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTankIncap] += damage;
 				}
 			} else {
 				g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTotal] += damage;
-				
+
 				if (!IsPlayerIncapacitatedAtAll(victim)) {
-					g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgUpright] += damage;
-					
+
 					if (type & DMG_CLUB) {
 						// scratches? (always DMG_CLUB), but check for rides etc
 						switch (zClass) {
@@ -2022,34 +1932,22 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 									damage >= STUMBLE_DMG_THRESH
 								) {
 									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchCharger] += damage;
 								}
 							}
 							case ZC_SMOKER: {
 								if (GetEntPropEnt(attacker, Prop_Send, "m_tongueVictim") == -1) {
 									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchSmoker] += damage;
 								}
 							}
 							case ZC_JOCKEY: {
 								if (GetEntPropEnt(attacker, Prop_Send, "m_jockeyVictim") == -1) {
 									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchJockey] += damage;
 								}
 							}
 							case ZC_HUNTER: {
 								if (GetEntPropEnt(attacker, Prop_Send, "m_pounceVictim") == -1) {
 									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-									g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchHunter] += damage;
 								}
-							}
-							case ZC_BOOMER: {
-								g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-								g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchBoomer] += damage;
-							}
-							case ZC_SPITTER: {
-								g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
-								g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratchSpitter] += damage;
 							}
 							default: {
 								g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgScratch] += damage;
@@ -2059,7 +1957,7 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 						// spit (DMG_RADIATION / DMG_ENERGYBEAM) and sometimes (DMG_VEHICLE / DMG_FALL) on top of it
 						g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgSpit] += damage;
 					}
-					
+
 					if (g_bTankInGame) {
 						g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTankUp] += damage;
 					}
@@ -2067,8 +1965,6 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 			}
 		} else if (IsValidEntity(attackerent) && IsCommon(attackerent)) {
 			if (!IsPlayerIncapacitatedAtAll(victim)) {
-				g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTakenCommon] += damage;
-
 				// how much damage did a boomer 'do'
 				if (g_iBoomedBy[victim]) {
 					attIndex = GetPlayerIndexForClient(g_iBoomedBy[victim]);
@@ -2077,8 +1973,7 @@ public Action Event_PlayerHurt(Event hEvent, const char[] eName, bool dontBroadc
 					}
 
 					g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTaken] += damage;
-					g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDmgTakenBoom] += damage;
-					g_strRoundPvPInfDmgData[attIndex][g_iCurTeam][vicIndex] += damage;
+
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgTotal] += damage;
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgUpright] += damage;
 					g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDmgBoom] += damage;
@@ -2591,115 +2486,6 @@ public void Event_PlayerUnboomed(Event hEvent, const char[] eName, bool dontBroa
 	g_iBoomedBy[victim] = 0;
 }
 
-public void Event_ChargerCarryStart(Event hEvent, const char[] eName, bool dontBroadcast)
-{
-	int victim = GetClientOfUserId(hEvent.GetInt("victim"));
-	int attacker = GetClientOfUserId(hEvent.GetInt("userid"));
-
-	int attIndex, vicIndex;
-	if (IS_VALID_SURVIVOR(victim) && IS_VALID_INFECTED(attacker)) {
-		attIndex = GetPlayerIndexForClient(attacker);
-		if (attIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infCharges]++;
-		
-		vicIndex = GetPlayerIndexForClient(victim);
-		if (vicIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerData[vicIndex][g_iCurTeam][plyCharges]++;
-	}
-}
-
-public void Event_ChargerImpact(Event hEvent, const char[] eName, bool dontBroadcast)
-{
-	int victim = GetClientOfUserId(hEvent.GetInt("victim"));
-	int attacker = GetClientOfUserId(hEvent.GetInt("userid"));
-
-	int attIndex, vicIndex;
-	if (IS_VALID_SURVIVOR(victim) && IS_VALID_INFECTED(attacker)) {
-		attIndex = GetPlayerIndexForClient(attacker);
-		if (attIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infMultiCharges]++;
-		
-		vicIndex = GetPlayerIndexForClient(victim);
-		if (vicIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerData[vicIndex][g_iCurTeam][plyBowls]++;
-	}
-}
-
-public void Event_JockeyRide(Event hEvent, const char[] eName, bool dontBroadcast)
-{
-	int victim = GetClientOfUserId(hEvent.GetInt("victim"));
-	int attacker = GetClientOfUserId(hEvent.GetInt("userid"));
-
-	int attIndex, vicIndex;
-	if (IS_VALID_SURVIVOR(victim) && IS_VALID_INFECTED(attacker)) {
-		attIndex = GetPlayerIndexForClient(attacker);
-		if (attIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infJockeyRideTotal]++;
-		
-		vicIndex = GetPlayerIndexForClient(victim);
-		if (vicIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerData[vicIndex][g_iCurTeam][plyJockeyRideTotal]++;
-	}
-}
-
-public void Event_JockeyRideEnd(Event hEvent, const char[] eName, bool dontBroadcast)
-{
-	int victim = GetClientOfUserId(hEvent.GetInt("victim"));
-	int attacker = GetClientOfUserId(hEvent.GetInt("userid"));
-
-	int attIndex, vicIndex;
-	if ( IS_VALID_SURVIVOR(victim) && IS_VALID_INFECTED(attacker) ) {
-		int duration = RoundFloat(hEvent.GetFloat("ride_length") * 1000.0);
-		
-		attIndex = GetPlayerIndexForClient(attacker);
-		if (attIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infJockeyRideDuration] += duration;
-		
-		vicIndex = GetPlayerIndexForClient(victim);
-		if (vicIndex == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerData[vicIndex][g_iCurTeam][plyJockeyRideDuration] += duration;
-	}
-}
-
-public void Event_AwardEarned(Event hEvent, const char[] eName, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(hEvent.GetInt("userid"));
-	int award = hEvent.GetInt("award");
-	int index;
-	if (IS_VALID_SURVIVOR(client) && award == 67) {
-		index = GetPlayerIndexForClient(client);
-		if (index == -1) { 
-			return; 
-		}
-		
-		g_strRoundPlayerData[index][g_iCurTeam][plyProtectAwards]++;
-	}
-}
-
 /*
 	Skill Detect forwards
 	---------------------
@@ -2835,19 +2621,12 @@ public void OnBoomerPop(int attacker, int victim, int shoveCount, float timeAliv
 		return; 
 	}
 
-	int attIndex = GetPlayerIndexForClient(attacker);
-	if (attIndex == -1) { 
+	int index = GetPlayerIndexForClient(attacker);
+	if (index == -1) { 
 		return; 
 	}
 
-	g_strRoundPlayerData[attIndex][g_iCurTeam][plyPops]++;
-
-	int vicIndex = GetPlayerIndexForClient(victim);
-	if (vicIndex == -1) { 
-		return; 
-	}
-
-	g_strRoundPlayerInfData[vicIndex][g_iCurTeam][infBoomerPops]++;
+	g_strRoundPlayerData[index][g_iCurTeam][plyPops]++;
 }
 
 // levels
@@ -2936,19 +2715,12 @@ public void OnTankRockEaten(int attacker, int victim)
 		return; 
 	}
 
-	int vicIndex = GetPlayerIndexForClient(victim);
-	if (vicIndex == -1) { 
+	int index = GetPlayerIndexForClient(victim);
+	if (index == -1) { 
 		return; 
 	}
 
-	g_strRoundPlayerData[vicIndex][g_iCurTeam][plyRockEats]++;
-	
-	int attIndex = GetPlayerIndexForClient(attacker);
-	if (attIndex == -1) { 
-		return; 
-	}
-
-	g_strRoundPlayerInfData[attIndex][g_iCurTeam][infTankRockHits]++;
+	g_strRoundPlayerData[index][g_iCurTeam][plyRockEats]++;
 }
 
 public void OnTankRockSkeeted(int attacker, int victim)
@@ -2991,57 +2763,15 @@ public void OnJockeyHighPounce(int attacker, int victim, float height, bool bRep
 	g_strRoundPlayerInfData[index][g_iCurTeam][infJockeyDPs]++;
 }
 
-public void OnCarAlarmTriggered(int victim, int attacker, int reason)
-{
-	int vicIndex = GetPlayerIndexForClient(victim);
-	if (vicIndex == -1) { 
-		return; 
-	}
-
-	g_strRoundPlayerData[vicIndex][g_iCurTeam][plyCarsTriggered]++;
-
-	int attIndex = GetPlayerIndexForClient(attacker);
-	if (attIndex == -1) { 
-		return; 
-	}
-
-	g_strRoundPlayerInfData[attIndex][g_iCurTeam][infCarsTriggered]++;
-}
-
-public void OnBoomerVomitLanded(int attacker, int boomCount)
-{
-	int attIndex = GetPlayerIndexForClient(attacker);
-	if (attIndex == -1) { 
-		return; 
-	}
-
-	if (boomCount == 1) {
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infBoomsSingle]++;
-	} else if ( boomCount == 2) {
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infBoomsDouble]++;
-	} else if ( boomCount == 3) {
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infBoomsTriple]++;
-	} else if ( boomCount >= 4) {
-		g_strRoundPlayerInfData[attIndex][g_iCurTeam][infBoomsQuad]++;
-	}
-}
-
 // deathcharges
 public void OnDeathCharge(int attacker, int victim, float height, float distance, bool bCarried)
 {
-	int attIndex = GetPlayerIndexForClient(attacker);
-	if (attIndex == -1) { 
+	int index = GetPlayerIndexForClient(attacker);
+	if (index == -1) { 
 		return; 
 	}
 
-	g_strRoundPlayerInfData[attIndex][g_iCurTeam][infDeathCharges]++;
-
-	int vicIndex = GetPlayerIndexForClient(victim);
-	if (vicIndex == -1) { 
-		return; 
-	}
-
-	g_strRoundPlayerData[vicIndex][g_iCurTeam][plyDeathCharges]++;
+	g_strRoundPlayerInfData[index][g_iCurTeam][infDeathCharges]++;
 }
 
 // clears
@@ -3067,7 +2797,7 @@ public void OnSpecialClear(int clearer, int pinner, int pinvictim, int zombieCla
 			(float(g_strRoundPlayerData[index][g_iCurTeam][plyAvgClearTime] * g_strRoundPlayerData[index][g_iCurTeam][plyClears]) + fClearTime * 1000.0) /
 			float(g_strRoundPlayerData[index][g_iCurTeam][plyClears] + 1)
 	);
-
+	
 	g_strRoundPlayerData[index][g_iCurTeam][plyClears]++;
 }
 
@@ -3111,7 +2841,7 @@ void ResetStats(bool bCurrentRoundOnly = false, int iTeam = -1, bool bFailedRoun
 				}
 			}
 		}
-
+		
 		for (j = 0; j < 2; j++) {
 			for (k = 0; k <= MAXRNDSTATS; k++) {
 				g_strAllRoundData[j][k] = 0;
@@ -3127,7 +2857,7 @@ void ResetStats(bool bCurrentRoundOnly = false, int iTeam = -1, bool bFailedRoun
 			for (j = 0; j <= MAXINFSTATS; j++) {
 				g_strPlayerInfData[i][j] = 0;
 			}
-
+			
 			// clear all-game teams
 			for (j = 0; j < 2; j++) {
 				g_iPlayerGameTeam[j][i] = -1;
@@ -3155,7 +2885,7 @@ void ResetStats(bool bCurrentRoundOnly = false, int iTeam = -1, bool bFailedRoun
 			}
 		}
 	}
-	
+
 	// other round data
 	if (iTeam == -1) { // both
 		// round data for players
@@ -3168,11 +2898,6 @@ void ResetStats(bool bCurrentRoundOnly = false, int iTeam = -1, bool bFailedRoun
 				for (k = 0; k <= MAXPLYSTATS; k++) {
 					g_strRoundPlayerInfData[i][j][k] = 0;
 				}
-
-				for (k = 0; k < MAXTRACKED; k++) {
-					g_strRoundPvPFFData[i][j][k] = 0;
-					g_strRoundPvPInfDmgData[i][j][k] = 0;
-				}
 			}
 		}
 	} else {
@@ -3184,11 +2909,6 @@ void ResetStats(bool bCurrentRoundOnly = false, int iTeam = -1, bool bFailedRoun
 			
 			for (k = 0; k <= MAXINFSTATS; k++) {
 				g_strRoundPlayerInfData[i][iTeam][k] = 0;
-			}
-
-			for (k = 0; k < MAXTRACKED; k++) {
-				g_strRoundPvPFFData[i][iTeam][k] = 0;
-				g_strRoundPvPInfDmgData[i][iTeam][k] = 0;
 			}
 		}
 	}
@@ -3242,7 +2962,7 @@ void UpdatePlayerCurrentTeam()
 			} else if (!g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartPresent]) {
 				g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartPresent] = time;
 			}
-
+			
 			g_strRoundPlayerData[index][g_iCurTeam][plyTimeStopPresent] = 0;
 			
 			if (g_bPaused) { 
@@ -3256,7 +2976,7 @@ void UpdatePlayerCurrentTeam()
 				} else if (!g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartAlive]) {
 					g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartAlive] = time;
 				}
-
+				
 				g_strRoundPlayerData[index][g_iCurTeam][plyTimeStopAlive] = 0;
 				if (g_bPaused)  { 
 					g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartAlive] -= time - g_iPauseStart;
@@ -3274,7 +2994,7 @@ void UpdatePlayerCurrentTeam()
 				} else if (!g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartUpright]) {
 					g_strRoundPlayerData[index][g_iCurTeam][plyTimeStartUpright] = time;
 				}
-
+				
 				g_strRoundPlayerData[index][g_iCurTeam][plyTimeStopUpright] = 0;
 				
 				if (g_bPaused) { 
@@ -3449,7 +3169,6 @@ void SetStartSurvivorTime(bool bGame = false, bool bRestart = false)
 		}
 	}
 }
-
 /*
 	Display
 	-------
@@ -4194,15 +3913,6 @@ void DisplayStatsFunFactChat(int client, bool bRound = true, bool bTeam = true, 
 
 	if (client == -1) {
 		PrintToServer("\x01%s", printBuffer);
-
-
-		if (g_bDiscordScoreboardAvailable) {
-			char strippedBuffer[1024];
-			strcopy(strippedBuffer, sizeof(strippedBuffer), printBuffer);
-			FilterColorCode(strippedBuffer, sizeof(strippedBuffer));
-			ReplaceString(strippedBuffer, sizeof(strippedBuffer), "\n", "");
-			AddEmbed("Fun Fact", strippedBuffer, "", 1815868);
-		}
 	}
 
 	// PrintToChatAll has a max length. Split it in to individual lines to output separately
@@ -6787,11 +6497,8 @@ void SaveFurthestFlows()
 		chr = GetPlayerCharacter(i);
 		fTmp = L4D2Direct_GetFlowDistance(i);
 
-		g_strRoundPlayerData[i][g_iCurTeam][plyCurFlowDist] = RoundFloat(fTmp);
-
 		if (fTmp > g_fHighestFlow[chr]) {
 			g_fHighestFlow[chr] = fTmp;
-			g_strRoundPlayerData[i][g_iCurTeam][plyFarFlowDist] = RoundFloat(fTmp);
 		}
 	}
 }
@@ -7423,7 +7130,6 @@ int GetUprightSurvivors()
 public Action Timer_WriteStats(Handle hTimer, any iTeam)
 {
 	WriteStatsToFile(iTeam, true);
-	WriteStatsToDB(iTeam, true);
 
 	return Plugin_Stop;
 }
@@ -7431,8 +7137,6 @@ public Action Timer_WriteStats(Handle hTimer, any iTeam)
 // write round stats to a text file
 void WriteStatsToFile(int iTeam, bool bSecondHalf)
 {
-	PrintDebug( 1, "[Stats] saving stats to file...");
-
 	if (g_bModeCampaign) { 
 		return;
 	}
@@ -7454,7 +7158,8 @@ void WriteStatsToFile(int iTeam, bool bSecondHalf)
 		FormatTime(sTmpTime, sizeof(sTmpTime), "%Y-%m-%d_%H-%M");
 		IntToString(g_iRound, sTmpRoundNo, sizeof(sTmpRoundNo));
 		LeftPadString(sTmpRoundNo, sizeof(sTmpRoundNo), 4, true);
-		GetCurrentMapLower(sTmpMap, sizeof(sTmpMap));
+		GetCurrentMap(sTmpMap, sizeof(sTmpMap));
+
 		FormatEx(g_sStatsFile, sizeof(g_sStatsFile), "%s_%s_%s.txt", sTmpTime, sTmpRoundNo, sTmpMap);
 	}
 
@@ -7530,7 +7235,7 @@ void WriteStatsToFile(int iTeam, bool bSecondHalf)
 				curFlowDist[i]
 		);
 	}
-
+	
 	Format(strTmpLine, sizeof(strTmpLine), "%s\n\n", strTmpLine);
 	StrCat(sStats, sizeof(sStats), strTmpLine);
 
@@ -7556,7 +7261,7 @@ void WriteStatsToFile(int iTeam, bool bSecondHalf)
 		Format(strTmpLine, sizeof(strTmpLine), "%s\n", strTmpLine);
 		StrCat(sStats, sizeof(sStats), strTmpLine);
 	}
-
+	
 	StrCat(sStats, sizeof(sStats), "\n");
 
 	// infected player data
@@ -7653,8 +7358,6 @@ void WriteStatsToFile(int iTeam, bool bSecondHalf)
 
 		CloseHandle(g_hStatsFile);
 	}
-	
-	PrintDebug( 1, "[Stats] saved stats to file");
 }
 
 /*
@@ -7684,7 +7387,7 @@ void InitTries()
 	for (int i = 0; i < 4; i++) {
 		g_sPlayerNameSafe[i] = g_sPlayerName[i];
 	}
-	
+
 	// weapon recognition
 	g_hTrieWeapons = CreateTrie();
 	SetTrieValue(g_hTrieWeapons, "weapon_pistol",			   WPTYPE_PISTOL);
@@ -7715,28 +7418,19 @@ void InitTries()
 
 	// finales
 	g_hTrieMaps = CreateTrie();
-
-	char sFile[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, sFile, sizeof(sFile), "configs/finalemaps.ini");
-	hFileFinaleMaps = OpenFile(sFile, "r");
-
-	if (hFileFinaleMaps == INVALID_HANDLE)
-	{
-		SetFailState("[IsMissionFinalMap] \"%s\" not found!", sFile);
-	}
-	else {
-		char sBuffer[256];
-		while(ReadFileLine(hFileFinaleMaps, sBuffer, sizeof(sBuffer)))
-		{
-			TrimString(sBuffer);
-			StrToLower(sBuffer);
-			if((StrContains(sBuffer, "//") == -1) && (!StrEqual(sBuffer, "")))
-			{
-				SetTrieValue(g_hTrieMaps, sBuffer, MP_FINALE);
-			}
-		}
-
-	}
+	SetTrieValue(g_hTrieMaps, "c1m4_atrium",					MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c2m5_concert",				   MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c3m4_plantation",				MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",		   MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c5m5_bridge",					MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c6m3_port",					  MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c7m3_port",					  MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c8m5_rooftop",				   MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c9m2_lots",					  MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c10m5_houseboat",				MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c11m5_runway",				   MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c12m5_cornfield",				MP_FINALE);
+	SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",		   MP_FINALE);
 }
 
 /*
@@ -7947,28 +7641,6 @@ void PrintDebug(int debugLevel, const char[] Message, any ...)
 	}
 }
 
-void FilterColorCode(char[] text, int maxlength)
-{
-	ReplaceString(text, maxlength, "\x01", "");
-	ReplaceString(text, maxlength, "\x03", "");
-	ReplaceString(text, maxlength, "\x04", "");
-	ReplaceString(text, maxlength, "\x05", "");
-	PrintDebug(2, "[FilterColorCode] text: %s", text);
-}
-
-void StrToLower(char[] arg) {
-	for (int i = 0; i < strlen(arg); i++) {
-		arg[i] = CharToLower(arg[i]);
-	}
-}
-
-int GetCurrentMapLower(char[] buffer, int buflen)
-{
-	int iBytesWritten = GetCurrentMap(buffer, buflen);
-	StrToLower(buffer);
-	return iBytesWritten;
-}
-
 // --------------------------------
 //		Natives
 // --------------------------------
@@ -8003,896 +7675,4 @@ public int Native_BroadcastGameStats(Handle plugin, int numParams)
 		}
 	}
 	return 1;
-}
-
-// --------------------------------
-//		Database
-// --------------------------------
-
-void InitDatabase()
-{
-	GetConVarString(g_hCvarDatabaseConfig, g_sDatabaseConfig, sizeof(g_sDatabaseConfig));
-	if (db != INVALID_HANDLE) {
-		CloseHandle(db);
-		db = INVALID_HANDLE;
-	}
-	db = SQL_Connect(g_sDatabaseConfig, false, errorBuffer, sizeof(errorBuffer));
-	PrintDebug( 1, "[InitDatabase] g_sDatabaseConfig: %s", g_sDatabaseConfig );
-	if (db == INVALID_HANDLE) {
-		PrintToServer("Could not connect: %s", errorBuffer);
-	}
-	else {
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `round` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`round` INT, \
-		`team` INT, \
-		`map` varchar(64), \
-		`deleted` BOOLEAN, \
-		`isSecondHalf` BOOLEAN, \
-		`teamIsA` BOOLEAN, \
-		`teamARound` INT, \
-		`teamATotal` INT, \
-		`teamBRound` INT, \
-		`teamBTotal` INT, \
-		`survivorCount` INT, \
-		`maxCompletionScore` INT, \
-		`maxFlowDist` INT, \
-		`rndRestarts` INT, \
-		`rndPillsUsed` INT, \
-		`rndKitsUsed` INT, \
-		`rndDefibsUsed` INT, \
-		`rndCommon` INT, \
-		`rndSIKilled` INT, \
-		`rndSIDamage` INT, \
-		`rndSISpawned` INT, \
-		`rndWitchKilled` INT, \
-		`rndTankKilled` INT, \
-		`rndIncaps` INT, \
-		`rndDeaths` INT, \
-		`rndFFDamageTotal` INT, \
-		`rndStartTime` INT, \
-		`rndEndTime` INT, \
-		`rndStartTimePause` INT, \
-		`rndStopTimePause` INT, \
-		`rndStartTimeTank` INT, \
-		`rndStopTimeTank` INT, \
-		`configName` varchar(64), \
-		PRIMARY KEY  (`id`) \
-		);");
-		
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `survivor` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`round` INT, \
-		`team` INT, \
-		`map` varchar(64), \
-		`steamid` varchar(32), \
-		`deleted` BOOLEAN, \
-		`isSecondHalf` BOOLEAN, \
-		`plyShotsShotgun` INT, \
-		`plyShotsSmg` INT, \
-		`plyShotsSniper` INT, \
-		`plyShotsPistol` INT, \
-		`plyHitsShotgun` INT, \
-		`plyHitsSmg` INT, \
-		`plyHitsSniper` INT, \
-		`plyHitsPistol` INT, \
-		`plyHeadshotsSmg` INT, \
-		`plyHeadshotsSniper` INT, \
-		`plyHeadshotsPistol` INT, \
-		`plyHeadshotsSISmg` INT, \
-		`plyHeadshotsSISniper` INT, \
-		`plyHeadshotsSIPistol` INT, \
-		`plyHitsSIShotgun` INT, \
-		`plyHitsSISmg` INT, \
-		`plyHitsSISniper` INT, \
-		`plyHitsSIPistol` INT, \
-		`plyHitsTankShotgun` INT, \
-		`plyHitsTankSmg` INT, \
-		`plyHitsTankSniper` INT, \
-		`plyHitsTankPistol` INT, \
-		`plyCommon` INT, \
-		`plyCommonTankUp` INT, \
-		`plySIKilled` INT, \
-		`plySIKilledTankUp` INT, \
-		`plySIDamage` INT, \
-		`plySIDamageTankUp` INT, \
-		`plyIncaps` INT, \
-		`plyDied` INT, \
-		`plySkeets` INT, \
-		`plySkeetsHurt` INT, \
-		`plySkeetsMelee` INT, \
-		`plyLevels` INT, \
-		`plyLevelsHurt` INT, \
-		`plyPops` INT, \
-		`plyCrowns` INT, \
-		`plyCrownsHurt` INT, \
-		`plyShoves` INT, \
-		`plyDeadStops` INT, \
-		`plyTongueCuts` INT, \
-		`plySelfClears` INT, \
-		`plyFallDamage` INT, \
-		`plyDmgTaken` INT, \
-		`plyDmgTakenBoom` INT, \
-		`plyDmgTakenCommon` INT, \
-		`plyDmgTakenTank` INT, \
-		`plyBowls` INT, \
-		`plyCharges` INT, \
-		`plyDeathCharges` INT, \
-		`plyFFGiven` INT, \
-		`plyFFTaken` INT, \
-		`plyFFHits` INT, \
-		`plyTankDamage` INT, \
-		`plyWitchDamage` INT, \
-		`plyMeleesOnTank` INT, \
-		`plyRockSkeets` INT, \
-		`plyRockEats` INT, \
-		`plyFFGivenPellet` INT, \
-		`plyFFGivenBullet` INT, \
-		`plyFFGivenSniper` INT, \
-		`plyFFGivenMelee` INT, \
-		`plyFFGivenFire` INT, \
-		`plyFFGivenIncap` INT, \
-		`plyFFGivenOther` INT, \
-		`plyFFGivenSelf` INT, \
-		`plyFFTakenPellet` INT, \
-		`plyFFTakenBullet` INT, \
-		`plyFFTakenSniper` INT, \
-		`plyFFTakenMelee` INT, \
-		`plyFFTakenFire` INT, \
-		`plyFFTakenIncap` INT, \
-		`plyFFTakenOther` INT, \
-		`plyFFGivenTotal` INT, \
-		`plyFFTakenTotal` INT, \
-		`plyCarsTriggered` INT, \
-		`plyJockeyRideDuration` INT, \
-		`plyJockeyRideTotal` INT, \
-		`plyClears` INT, \
-		`plyAvgClearTime` INT, \
-		`plyTimeStartPresent` INT, \
-		`plyTimeStopPresent` INT, \
-		`plyTimeStartAlive` INT, \
-		`plyTimeStopAlive` INT, \
-		`plyTimeStartUpright` INT, \
-		`plyTimeStopUpright` INT, \
-		`plyCurFlowDist` INT, \
-		`plyFarFlowDist` INT, \
-		`plyProtectAwards` INT, \
-		PRIMARY KEY  (`id`) \
-		);");
-		
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `infected` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`round` INT, \
-		`team` INT, \
-		`map` varchar(64), \
-		`steamid` varchar(32), \
-		`deleted` BOOLEAN, \
-		`isSecondHalf` BOOLEAN, \
-		`infDmgTotal` INT, \
-		`infDmgUpright` INT, \
-		`infDmgTank` INT, \
-		`infDmgTankIncap` INT, \
-		`infDmgScratch` INT, \
-		`infDmgScratchSmoker` INT, \
-		`infDmgScratchBoomer` INT, \
-		`infDmgScratchHunter` INT, \
-		`infDmgScratchCharger` INT, \
-		`infDmgScratchSpitter` INT, \
-		`infDmgScratchJockey` INT, \
-		`infDmgSpit` INT, \
-		`infDmgBoom` INT, \
-		`infDmgTankUp` INT, \
-		`infHunterDPs` INT, \
-		`infHunterDPDmg` INT, \
-		`infJockeyDPs` INT, \
-		`infDeathCharges` INT, \
-		`infCharges` INT, \
-		`infMultiCharges` INT, \
-		`infBoomsSingle` INT, \
-		`infBoomsDouble` INT, \
-		`infBoomsTriple` INT, \
-		`infBoomsQuad` INT, \
-		`infBooms` INT, \
-		`infBoomerPops` INT, \
-		`infLedged` INT, \
-		`infCommon` INT, \
-		`infSpawns` INT, \
-		`infSpawnSmoker` INT, \
-		`infSpawnBoomer` INT, \
-		`infSpawnHunter` INT, \
-		`infSpawnCharger` INT, \
-		`infSpawnSpitter` INT, \
-		`infSpawnJockey` INT, \
-		`infTankPasses` INT, \
-		`infTankRockHits` INT, \
-		`infCarsTriggered` INT, \
-		`infJockeyRideDuration` INT, \
-		`infJockeyRideTotal` INT, \
-		`infTimeStartPresent` INT, \
-		`infTimeStopPresent` INT, \
-		PRIMARY KEY  (`id`) \
-		);");
-		
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `matchlog` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`map` varchar(64), \
-		`deleted` BOOLEAN, \
-		`result` INT, \
-		`steamid` varchar(32), \
-		`startedAt` INT, \
-		`endedAt` INT, \
-		`team` INT, \
-		`configName` varchar(64), \
-		PRIMARY KEY  (`id`) \
-		);");
-		
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `pvp_ff` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`round` INT, \
-		`team` INT, \
-		`map` varchar(64), \
-		`steamid` varchar(32), \
-		`deleted` BOOLEAN, \
-		`isSecondHalf` BOOLEAN, \
-		`victim` varchar(32), \
-		`damage` INT, \
-		PRIMARY KEY  (`id`) \
-		);");
-		
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS `pvp_infdmg` ( \
-		`id` INT NOT NULL auto_increment, \
-		`createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-		`matchId` INT, \
-		`round` INT, \
-		`team` INT, \
-		`map` varchar(64), \
-		`steamid` varchar(32), \
-		`deleted` BOOLEAN, \
-		`isSecondHalf` BOOLEAN, \
-		`victim` varchar(32), \
-		`damage` INT, \
-		PRIMARY KEY  (`id`) \
-		);");
-	}
-}
-
-void InitQueries()
-{
-	if (hRoundStmt != INVALID_HANDLE) {
-		CloseHandle(hRoundStmt);
-		hRoundStmt = INVALID_HANDLE;
-	}
-	if ( hRoundStmt == INVALID_HANDLE ) {
-		hRoundStmt = SQL_PrepareQuery(db, "INSERT INTO round ( \
-		id, \
-		createdAt, \
-		matchId, \
-		round, \
-		team, \
-		map, \
-		deleted, \
-		isSecondHalf, \
-		teamIsA, \
-		teamARound, \
-		teamATotal, \
-		teamBRound, \
-		teamBTotal, \
-		survivorCount, \
-		maxCompletionScore, \
-		maxFlowDist, \
-		configName, \
-		rndRestarts, \
-		rndPillsUsed, \
-		rndKitsUsed, \
-		rndDefibsUsed, \
-		rndCommon, \
-		rndSIKilled, \
-		rndSIDamage, \
-		rndSISpawned, \
-		rndWitchKilled, \
-		rndTankKilled, \
-		rndIncaps, \
-		rndDeaths, \
-		rndFFDamageTotal, \
-		rndStartTime, \
-		rndEndTime, \
-		rndStartTimePause, \
-		rndStopTimePause, \
-		rndStartTimeTank, \
-		rndStopTimeTank \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hRoundStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare round query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare round query success." );
-		}
-	}
-	
-	if (hSurvivorStmt != INVALID_HANDLE) {
-		CloseHandle(hSurvivorStmt);
-		hSurvivorStmt = INVALID_HANDLE;
-	}
-	if ( hSurvivorStmt == INVALID_HANDLE ) {
-		hSurvivorStmt = SQL_PrepareQuery(db, "INSERT INTO survivor ( \
-		id, \
-		createdAt, \
-		matchId, \
-		round, \
-		team, \
-		map, \
-		steamid, \
-		deleted, \
-		isSecondHalf, \
-		plyShotsShotgun, \
-		plyShotsSmg, \
-		plyShotsSniper, \
-		plyShotsPistol, \
-		plyHitsShotgun, \
-		plyHitsSmg, \
-		plyHitsSniper, \
-		plyHitsPistol, \
-		plyHeadshotsSmg, \
-		plyHeadshotsSniper, \
-		plyHeadshotsPistol, \
-		plyHeadshotsSISmg, \
-		plyHeadshotsSISniper, \
-		plyHeadshotsSIPistol, \
-		plyHitsSIShotgun, \
-		plyHitsSISmg, \
-		plyHitsSISniper, \
-		plyHitsSIPistol, \
-		plyHitsTankShotgun, \
-		plyHitsTankSmg, \
-		plyHitsTankSniper, \
-		plyHitsTankPistol, \
-		plyCommon, \
-		plyCommonTankUp, \
-		plySIKilled, \
-		plySIKilledTankUp, \
-		plySIDamage, \
-		plySIDamageTankUp, \
-		plyIncaps, \
-		plyDied, \
-		plySkeets, \
-		plySkeetsHurt, \
-		plySkeetsMelee, \
-		plyLevels, \
-		plyLevelsHurt, \
-		plyPops, \
-		plyCrowns, \
-		plyCrownsHurt, \
-		plyShoves, \
-		plyDeadStops, \
-		plyTongueCuts, \
-		plySelfClears, \
-		plyFallDamage, \
-		plyDmgTaken, \
-		plyDmgTakenBoom, \
-		plyDmgTakenCommon, \
-		plyDmgTakenTank, \
-		plyBowls, \
-		plyCharges, \
-		plyDeathCharges, \
-		plyFFGiven, \
-		plyFFTaken, \
-		plyFFHits, \
-		plyTankDamage, \
-		plyWitchDamage, \
-		plyMeleesOnTank, \
-		plyRockSkeets, \
-		plyRockEats, \
-		plyFFGivenPellet, \
-		plyFFGivenBullet, \
-		plyFFGivenSniper, \
-		plyFFGivenMelee, \
-		plyFFGivenFire, \
-		plyFFGivenIncap, \
-		plyFFGivenOther, \
-		plyFFGivenSelf, \
-		plyFFTakenPellet, \
-		plyFFTakenBullet, \
-		plyFFTakenSniper, \
-		plyFFTakenMelee, \
-		plyFFTakenFire, \
-		plyFFTakenIncap, \
-		plyFFTakenOther, \
-		plyFFGivenTotal, \
-		plyFFTakenTotal, \
-		plyCarsTriggered, \
-		plyJockeyRideDuration, \
-		plyJockeyRideTotal, \
-		plyClears, \
-		plyAvgClearTime, \
-		plyTimeStartPresent, \
-		plyTimeStopPresent, \
-		plyTimeStartAlive, \
-		plyTimeStopAlive, \
-		plyTimeStartUpright, \
-		plyTimeStopUpright, \
-		plyCurFlowDist, \
-		plyFarFlowDist, \
-		plyProtectAwards \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hSurvivorStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare survivor query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare survivor query success." );
-		}
-	}
-
-	if (hInfectedStmt != INVALID_HANDLE) {
-		CloseHandle(hInfectedStmt);
-		hInfectedStmt = INVALID_HANDLE;
-	}
-	if ( hInfectedStmt == INVALID_HANDLE ) {
-		hInfectedStmt = SQL_PrepareQuery(db, "INSERT INTO infected ( \
-		id, \
-		createdAt, \
-		matchId, \
-		round, \
-		team, \
-		map, \
-		steamid, \
-		deleted, \
-		isSecondHalf, \
-		infDmgTotal, \
-		infDmgUpright, \
-		infDmgTank, \
-		infDmgTankIncap, \
-		infDmgScratch, \
-		infDmgScratchSmoker, \
-		infDmgScratchBoomer, \
-		infDmgScratchHunter, \
-		infDmgScratchCharger, \
-		infDmgScratchSpitter, \
-		infDmgScratchJockey, \
-		infDmgSpit, \
-		infDmgBoom, \
-		infDmgTankUp, \
-		infHunterDPs, \
-		infHunterDPDmg, \
-		infJockeyDPs, \
-		infDeathCharges, \
-		infCharges, \
-		infMultiCharges, \
-		infBoomsSingle, \
-		infBoomsDouble, \
-		infBoomsTriple, \
-		infBoomsQuad, \
-		infBooms, \
-		infBoomerPops, \
-		infLedged, \
-		infCommon, \
-		infSpawns, \
-		infSpawnSmoker, \
-		infSpawnBoomer, \
-		infSpawnHunter, \
-		infSpawnCharger, \
-		infSpawnSpitter, \
-		infSpawnJockey, \
-		infTankPasses, \
-		infTankRockHits, \
-		infCarsTriggered, \
-		infJockeyRideDuration, \
-		infJockeyRideTotal, \
-		infTimeStartPresent, \
-		infTimeStopPresent \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,?, \
-			?,?,?,?,?,?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hInfectedStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare infected query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare infected query success." );
-		}
-	}
-
-	if (hMatchStmt != INVALID_HANDLE) {
-		CloseHandle(hMatchStmt);
-		hMatchStmt = INVALID_HANDLE;
-	}
-	if ( hMatchStmt == INVALID_HANDLE ) {
-		hMatchStmt = SQL_PrepareQuery(db, "INSERT INTO matchlog ( \
-		id, \
-		createdAt, \
-		matchId, \
-		map, \
-		deleted, \
-		result, \
-		steamid, \
-		startedAt, \
-		endedAt, \
-		team, \
-		configName \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hMatchStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare match query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare match query success." );
-		}
-	}
-
-	if (hPvPFFStmt != INVALID_HANDLE) {
-		CloseHandle(hPvPFFStmt);
-		hPvPFFStmt = INVALID_HANDLE;
-	}
-	if ( hPvPFFStmt == INVALID_HANDLE ) {
-		hPvPFFStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_ff ( \
-		id, \
-		createdAt, \
-		matchId, \
-		round, \
-		team, \
-		map, \
-		steamid, \
-		deleted, \
-		isSecondHalf, \
-		victim, \
-		damage \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hPvPFFStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare pvp ff query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare pvp ff query success." );
-		}
-	}
-
-	if (hPvPInfDmgStmt != INVALID_HANDLE) {
-		CloseHandle(hPvPInfDmgStmt);
-		hPvPInfDmgStmt = INVALID_HANDLE;
-	}
-	if ( hPvPInfDmgStmt == INVALID_HANDLE ) {
-		hPvPInfDmgStmt = SQL_PrepareQuery(db, "INSERT INTO pvp_infdmg ( \
-		id, \
-		createdAt, \
-		matchId, \
-		round, \
-		team, \
-		map, \
-		steamid, \
-		deleted, \
-		isSecondHalf, \
-		victim, \
-		damage \
-		) VALUES ( NULL, \
-			?,?,?,?,?,?,?,?,?,? \
-		)", errorBuffer, sizeof(errorBuffer));
-
-		if ( hPvPInfDmgStmt == INVALID_HANDLE ) {
-			PrintDebug( 1, "[Stats] Prepare pvp ff query failed. %s", errorBuffer );
-		}
-		else {
-			PrintDebug( 1, "[Stats] Prepare pvp ff query success." );
-		}
-	}
-}
-
-// write round stats to database
-void WriteStatsToDB(int iTeam, bool bSecondHalf)
-{
-	if ( g_bModeCampaign ) { return; }
-
-	if (db == INVALID_HANDLE) {
-		PrintToServer("[Stats] DB is null");
-		PrintDebug( 1, "[Stats] DB is null" );
-		return;
-	}
-	PrintToServer("[Stats] Saving to database");
-	PrintDebug( 1, "[Stats] Saving to database" );
-
-	char sTmpMap[64];
-	GetCurrentMapLower( sTmpMap, sizeof(sTmpMap) );
-	PrintDebug( 1, "[Stats] Map %s", sTmpMap );
-	char sTmpTime[20];
-	FormatTime( sTmpTime, sizeof(sTmpTime), "%Y-%m-%d %H:%M:%S" );
-	PrintDebug( 1, "[Stats] Time %s", sTmpTime );
-	PrintDebug( 1, "[Stats] IsMissionFinalMap %i", IsMissionFinalMap() );
-	PrintDebug( 1, "[Stats] bSecondHalf %i", bSecondHalf );
-
-	char cfgString[64];
-	cfgString[0] = '\0';
-	GetConVarString(g_hCvarCustomConfig, cfgString, sizeof(cfgString));
-	PrintDebug( 1, "[Stats] g_hCvarCustomConfig %s", cfgString );
-	
-	int matchId = g_strGameData[gmStartTime];
-	PrintDebug( 1, "[Stats] matchId %i", matchId);
-	int startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );
-	int endedAt = MAX( g_strRoundData[g_iRound][0][rndEndTime], g_strRoundData[g_iRound][1][rndEndTime] );
-	int result = 0;
-	
-	// round data
-	int i;
-	if ( hRoundStmt == INVALID_HANDLE ) {
-		PrintDebug( 1, "[Stats] Round query invalid." );
-	}
-
-	SQL_BindParamString(hRoundStmt, 0, sTmpTime, false);
-	SQL_BindParamInt(hRoundStmt, 1, matchId, true);
-	SQL_BindParamInt(hRoundStmt, 2, g_iRound, true);
-	SQL_BindParamInt(hRoundStmt, 3, iTeam, true);
-	SQL_BindParamString(hRoundStmt, 4, sTmpMap, false);
-	SQL_BindParamInt(hRoundStmt, 5, 0, true);
-	SQL_BindParamInt(hRoundStmt, 6, g_bSecondHalf, true);
-	SQL_BindParamInt(hRoundStmt, 7, iTeam == LTEAM_A, true);
-	SQL_BindParamInt(hRoundStmt, 8, g_iScores[LTEAM_A] - g_iFirstScoresSet[((g_bCMTSwapped)?1:0)], true);
-	SQL_BindParamInt(hRoundStmt, 9, g_iScores[LTEAM_A], true);
-	SQL_BindParamInt(hRoundStmt, 10, g_iScores[LTEAM_B] - g_iFirstScoresSet[((g_bCMTSwapped)?0:1)], true);
-	SQL_BindParamInt(hRoundStmt, 11, g_iScores[LTEAM_B], true);
-	SQL_BindParamInt(hRoundStmt, 12, g_iSurvived[iTeam], true);
-	SQL_BindParamInt(hRoundStmt, 13, L4D_GetVersusMaxCompletionScore(), true);
-	SQL_BindParamInt(hRoundStmt, 14, RoundFloat(L4D2Direct_GetMapMaxFlowDistance()), true);
-	SQL_BindParamString(hRoundStmt, 15, cfgString, false);
-
-	for ( i = 0; i <= MAXRNDSTATS; i++ ) {
-		SQL_BindParamInt(hRoundStmt, i+16, g_strRoundData[g_iRound][iTeam][i], true);
-	}
-	if (!SQL_Execute(hRoundStmt)) {
-		PrintToChatAll("[Stats] Failed to save round stats.");
-	}
-	PrintDebug( 1, "[Stats] saved round stats");
-	
-	// player data
-	int j;
-	int iPlayerCount = 0;
-	for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
-		if ( g_iPlayerRoundTeam[iTeam][j] != iTeam ) { continue; }
-		iPlayerCount++;
-
-		SQL_BindParamString(hSurvivorStmt, 0, sTmpTime, false);
-		SQL_BindParamInt(hSurvivorStmt, 1, matchId, true);
-		SQL_BindParamInt(hSurvivorStmt, 2, g_iRound, true);
-		SQL_BindParamInt(hSurvivorStmt, 3, iTeam, true);
-		SQL_BindParamString(hSurvivorStmt, 4, sTmpMap, false);
-		SQL_BindParamString(hSurvivorStmt, 5, g_sPlayerId[j], false);
-		SQL_BindParamInt(hSurvivorStmt, 6, 0, true);
-		SQL_BindParamInt(hSurvivorStmt, 7, g_bSecondHalf, true);
-
-		for ( i = 0; i <= MAXPLYSTATS; i++ ) {
-			SQL_BindParamInt(hSurvivorStmt, i+8, g_strRoundPlayerData[j][iTeam][i], true);
-		}
-		if (!SQL_Execute(hSurvivorStmt)) {
-			PrintToChatAll("[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
-			PrintDebug(1, "[Stats] Failed to save survivor stats for %s.", g_sPlayerId[j]);
-		}
-		PrintDebug( 1, "[Stats] saved survivor stats %i of %i", j, g_iPlayers);
-		
-		if (IsMissionFinalMap() && bSecondHalf) {
-			if (g_iScores[iTeam] > g_iScores[(iTeam) ? 0 : 1]) {
-				result = 1;
-			}
-			else if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
-				result = -1;
-			}
-			else {
-				result = 0;
-			}
-			WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, iTeam, cfgString);
-		}
-	}
-
-	// infected player data
-	iPlayerCount = 0;
-	for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
-		// opposite team!
-		if ( g_iPlayerRoundTeam[iTeam][j] != (iTeam) ? 0 : 1 ) { continue; }
-
-		// leave out players that were actually specs...
-		if (	g_strRoundPlayerInfData[j][iTeam][infTimeStartPresent] == 0 && g_strRoundPlayerInfData[j][iTeam][infTimeStopPresent] == 0 ||
-				g_strRoundPlayerInfData[j][iTeam][infSpawns] == 0 && g_strRoundPlayerInfData[j][iTeam][infTankPasses] == 0
-		) {
-			continue;
-		}
-		iPlayerCount++;
-
-		SQL_BindParamString(hInfectedStmt, 0, sTmpTime, false);
-		SQL_BindParamInt(hInfectedStmt, 1, matchId, true);
-		SQL_BindParamInt(hInfectedStmt, 2, g_iRound, true);
-		SQL_BindParamInt(hInfectedStmt, 3, iTeam, true);
-		SQL_BindParamString(hInfectedStmt, 4, sTmpMap, false);
-		SQL_BindParamString(hInfectedStmt, 5, g_sPlayerId[j], false);
-		SQL_BindParamInt(hInfectedStmt, 6, 0, true);
-		SQL_BindParamInt(hInfectedStmt, 7, g_bSecondHalf, true);
-		
-		for ( i = 0; i <= MAXINFSTATS; i++ ) {
-			SQL_BindParamInt(hInfectedStmt, i+8, g_strRoundPlayerInfData[j][iTeam][i], true);
-		}
-		if (!SQL_Execute(hInfectedStmt)) {
-			PrintToChatAll("[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
-			PrintDebug(1, "[Stats] Failed to save infected stats for %s.", g_sPlayerId[j]);
-		}
-		PrintDebug( 1, "[Stats] saved infected stats %i of %i", j, g_iPlayers);
-		
-		if (IsMissionFinalMap() && bSecondHalf) {
-			if (g_iScores[iTeam] < g_iScores[(iTeam) ? 0 : 1]) {
-				result = 1;
-			}
-			else if (g_iScores[iTeam] > g_iScores[(iTeam) ? 0 : 1]) {
-				result = -1;
-			}
-			else {
-				result = 0;
-			}
-			WriteMatchLogToDB(sTmpTime, matchId, sTmpMap, result, g_sPlayerId[j], startedAt, endedAt, (iTeam) ? 0 : 1, cfgString);
-		}
-	}
-
-	// player ff data
-	iPlayerCount = 0;
-	for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
-		if ( g_iPlayerRoundTeam[iTeam][j] != iTeam ) { continue; }
-		iPlayerCount++;
-
-		SQL_BindParamString(hPvPFFStmt, 0, sTmpTime, false);
-		SQL_BindParamInt(hPvPFFStmt, 1, matchId, true);
-		SQL_BindParamInt(hPvPFFStmt, 2, g_iRound, true);
-		SQL_BindParamInt(hPvPFFStmt, 3, iTeam, true);
-		SQL_BindParamString(hPvPFFStmt, 4, sTmpMap, false);
-		SQL_BindParamString(hPvPFFStmt, 5, g_sPlayerId[j], false);
-		SQL_BindParamInt(hPvPFFStmt, 6, 0, true);
-		SQL_BindParamInt(hPvPFFStmt, 7, g_bSecondHalf, true);
-
-		for ( i = FIRST_NON_BOT; i < g_iPlayers; i++ ) {
-			SQL_BindParamString(hPvPFFStmt, 8, g_sPlayerId[i], false);
-			SQL_BindParamInt(hPvPFFStmt, 9, g_strRoundPvPFFData[j][iTeam][i], true);
-			if (!SQL_Execute(hPvPFFStmt)) {
-				PrintToChatAll("[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
-				PrintDebug(1, "[Stats] Failed to save player ff stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
-			}
-			PrintDebug( 1, "[Stats] saved ff stats %i, %i", j, i);
-		}
-	}
-
-	// player infdmg data
-	iPlayerCount = 0;
-	for ( j = FIRST_NON_BOT; j < g_iPlayers; j++ ) {
-		// opposite team!
-		if ( g_iPlayerRoundTeam[iTeam][j] != (iTeam) ? 0 : 1 ) { continue; }
-
-		// leave out players that were actually specs...
-		if (	g_strRoundPlayerInfData[j][iTeam][infTimeStartPresent] == 0 && g_strRoundPlayerInfData[j][iTeam][infTimeStopPresent] == 0 ||
-				g_strRoundPlayerInfData[j][iTeam][infSpawns] == 0 && g_strRoundPlayerInfData[j][iTeam][infTankPasses] == 0
-		) {
-			continue;
-		}
-		iPlayerCount++;
-
-		SQL_BindParamString(hPvPInfDmgStmt, 0, sTmpTime, false);
-		SQL_BindParamInt(hPvPInfDmgStmt, 1, matchId, true);
-		SQL_BindParamInt(hPvPInfDmgStmt, 2, g_iRound, true);
-		SQL_BindParamInt(hPvPInfDmgStmt, 3, iTeam, true);
-		SQL_BindParamString(hPvPInfDmgStmt, 4, sTmpMap, false);
-		SQL_BindParamString(hPvPInfDmgStmt, 5, g_sPlayerId[j], false);
-		SQL_BindParamInt(hPvPInfDmgStmt, 6, 0, true);
-		SQL_BindParamInt(hPvPInfDmgStmt, 7, g_bSecondHalf, true);
-		
-		for ( i = FIRST_NON_BOT; i < g_iPlayers; i++ ) {
-			SQL_BindParamString(hPvPInfDmgStmt, 8, g_sPlayerId[i], false);
-			SQL_BindParamInt(hPvPInfDmgStmt, 9, g_strRoundPvPInfDmgData[j][iTeam][i], true);
-			if (!SQL_Execute(hPvPInfDmgStmt)) {
-				PrintToChatAll("[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
-				PrintDebug(1, "[Stats] Failed to save pvp inf dmg stats for %s to %s.", g_sPlayerId[j], g_sPlayerId[i]);
-			}
-			PrintDebug( 1, "[Stats] saved infdmg stats %i, %i", j, i);
-		}
-	}
-
-	if (IsMissionFinalMap() && bSecondHalf) {
-		if (g_bSystem2Loaded) {
-			char cmd[256];
-			char fCmd[256];
-			if (GetMatchEndScriptCmd(cmd, sizeof(cmd))) {
-				Format(fCmd, sizeof(fCmd), cmd, matchId);
-				PrintDebug(1, "[Stats] Executing match end cmd: %s.", fCmd);
-				System2_ExecuteThreaded(ExecuteCallback, fCmd);
-			}
-			else {
-				PrintDebug(1, "[Stats] Match end cmd not found.");
-			}
-		}
-		else {
-			PrintDebug( 1, "[Stats] system2 library not loaded. Match end cmd won't execute." );
-		}
-	}
-}
-
-public void ExecuteCallback(bool success, const char[] command, System2ExecuteOutput output, any data)
-{
-	if (!success || output.ExitStatus != 0) {
-		PrintToServer("[Stats] Couldn't execute commands %s successfully", command);
-		PrintDebug(1, "[Stats] Couldn't execute commands %s successfully", command);
-	} else {
-		char outputString[128];
-		output.GetOutput(outputString, sizeof(outputString));
-		PrintToServer("[Stats] Output of the command %s: %s", command, outputString);
-		PrintDebug(1, "[Stats] Output of the command %s: %s", command, outputString);
-	}
-}
-
-bool GetMatchEndScriptCmd(char[] cmd, int iLength)
-{
-	KeyValues kv = new KeyValues("l4d2_playstats");
-
-	char sFile[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, sFile, sizeof(sFile), "configs/l4d2_playstats.cfg");
-
-	if (!FileExists(sFile))
-	{
-		PrintDebug(1, "[Stats] GetMatchEndScriptCmd \"%s\" not found!", sFile);
-		return false;
-	}
-
-	kv.ImportFromFile(sFile);
-
-	if (!kv.JumpToKey("match_end_script_cmd", false))
-	{
-		PrintDebug(1, "[Stats] GetMatchEndScriptCmd Can't find \"match_end_script_cmd\" in \"%s\"!", sFile);
-		delete kv;
-		return false;
-	}
-	kv.GetString(NULL_STRING, cmd, iLength);
-	delete kv;
-	return true;
-}
-
-void WriteMatchLogToDB(const char[] sTmpTime, int matchId, const char[] sTmpMap, int result, const char[] sSteamId, int startedAt, int endedAt, int iTeam, const char[] sConfigName)
-{
-	SQL_BindParamString(hMatchStmt, 0, sTmpTime, false);
-	SQL_BindParamInt(hMatchStmt, 1, matchId, true);
-	SQL_BindParamString(hMatchStmt, 2, sTmpMap, false);
-	SQL_BindParamInt(hMatchStmt, 3, 0, true);
-	SQL_BindParamInt(hMatchStmt, 4, result, true);
-	SQL_BindParamString(hMatchStmt, 5, sSteamId, false);
-	SQL_BindParamInt(hMatchStmt, 6, startedAt, true);
-	SQL_BindParamInt(hMatchStmt, 7, endedAt, true);
-	SQL_BindParamInt(hMatchStmt, 8, iTeam, true);
-	SQL_BindParamString(hMatchStmt, 9, sConfigName, false);
-
-	if (!SQL_Execute(hMatchStmt)) {
-		PrintToChatAll("[Stats] Failed to save matchlog stats.");
-		PrintDebug(1, "[Stats] Failed to save matchlog stats.");
-	}
 }

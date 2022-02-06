@@ -6,7 +6,7 @@
  * Web         http://dordnung.de
  * -----------------------------------------------------
  * 
- * Copyright (C) 2013-2018 David Ordnung
+ * Copyright (C) 2013-2020 David Ordnung
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -333,7 +333,7 @@ native bool System2_GetFileCRC32(const char[] file, char[] buffer, int maxlength
 
 
 // Include legacy stuff
-#include <system2/legacy>
+//#include <system2/legacy>
 
 
 public Extension __ext_system2 =

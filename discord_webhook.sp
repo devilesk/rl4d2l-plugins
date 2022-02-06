@@ -34,7 +34,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public int Native_FormatEmbed(Handle plugin, int numParams)
 {
     int bufferLen = GetNativeCell(2);
-    if (bufferLen < 1) { return; }
+    if (bufferLen < 1) { return 0; }
 
     char[] buffer = new char[bufferLen+1];
 
@@ -63,12 +63,12 @@ public int Native_FormatEmbed(Handle plugin, int numParams)
     {
         // field name
         GetNativeStringLength(i, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i, name, len+1);
         
         // field value
         GetNativeStringLength(i+1, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i+1, value, len+1);
         
         inline = GetNativeCellRef(i+2);
@@ -86,12 +86,14 @@ public int Native_FormatEmbed(Handle plugin, int numParams)
     InternalFormatEmbed(buffer, bufferLen, title, description, url, color, fields);
     
     SetNativeString(1, buffer, bufferLen+1, false);
+
+    return 0;
 }
 
 public int Native_FormatEmbed2(Handle plugin, int numParams)
 {
     int bufferLen = GetNativeCell(2);
-    if (bufferLen < 1) { return; }
+    if (bufferLen < 1) { return 0; }
 
     char[] buffer = new char[bufferLen+1];
 
@@ -117,25 +119,29 @@ public int Native_FormatEmbed2(Handle plugin, int numParams)
 
     InternalFormatEmbed(buffer, bufferLen+1, title, description, url, color, fields);
     SetNativeString(1, buffer, bufferLen+1, false);
+
+    return 0;
 }
 
 public int Native_FormatEmbedRequest(Handle plugin, int numParams)
 {
     int bufferLen = GetNativeCell(2);
-    if (bufferLen < 1) { return; }
+    if (bufferLen < 1) { return 0; }
 
     char[] buffer = new char[bufferLen+1];
 
     int len;
 
     GetNativeStringLength(3, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] message = new char[len+1];
     GetNativeString(3, message, len+1);
 
     InternalFormatEmbedRequest(buffer, bufferLen+1, message);
     
     SetNativeString(1, buffer, bufferLen+1, false);
+
+    return 0;
 }
 
 public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
@@ -143,7 +149,7 @@ public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
     int len;
 
     GetNativeStringLength(1, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] webhook = new char[len+1];
     GetNativeString(1, webhook, len+1);
 
@@ -170,12 +176,12 @@ public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
     {
         // field name
         GetNativeStringLength(i, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i, name, len+1);
         
         // field value
         GetNativeStringLength(i+1, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i+1, value, len+1);
         
         inline = GetNativeCellRef(i+2);
@@ -191,6 +197,8 @@ public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
     }
 
     InternalSendEmbedToDiscord(webhook, title, description, url, color, fields);
+
+    return 0;
 }
 
 public int Native_SendMessageToDiscord(Handle plugin, int numParams)
@@ -198,16 +206,18 @@ public int Native_SendMessageToDiscord(Handle plugin, int numParams)
     int len;
 
     GetNativeStringLength(1, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] webhook = new char[len+1];
     GetNativeString(1, webhook, len+1);
 
     GetNativeStringLength(2, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] message = new char[len+1];
     GetNativeString(2, message, len+1);
 
     InternalSendMessageToDiscord(webhook, message);
+
+    return 0;
 }
 
 public int Native_SendToDiscord(Handle plugin, int numParams)
@@ -215,16 +225,18 @@ public int Native_SendToDiscord(Handle plugin, int numParams)
     int len;
 
     GetNativeStringLength(1, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] webhook = new char[len+1];
     GetNativeString(1, webhook, len+1);
 
     GetNativeStringLength(2, len);
-    if (len <= 0) { return; }
+    if (len <= 0) { return 0; }
     char[] message = new char[len+1];
     GetNativeString(2, message, len+1);
 
     InternalSendToDiscord(webhook, message);
+
+    return 0;
 }
 
 void InternalFormatEmbed(char[] buffer, int bufferLen, const char[] title, const char[] description, const char[] url, int color, const char[] fields)
@@ -278,7 +290,7 @@ void InternalSendToDiscord(const char[] sWebhook, const char[] message) {
 public void Discord_Callback(Handle hRequest, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode) {
     if(!bFailure && bRequestSuccessful) {
         switch (eStatusCode) {
-            case 200:{
+            case k_EHTTPStatusCode200OK:{
                 //all gud
             }
             default: {

@@ -3,8 +3,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
-#define L4D2UTIL_STOCKS_ONLY
-#include <l4d2util>
 #include <discord_webhook>
 #include "includes/finalemaps"
 
@@ -257,4 +255,9 @@ void InternalAddEmbed(const char[] title, const char[] description, const char[]
         Format(sEmbedRequest, sizeof(sEmbedRequest), "%s,%s", sEmbedRequest, sEmbed);
     }
     iEmbedCount++;
+}
+
+int InSecondHalfOfRound()
+{
+    return GameRules_GetProp("m_bInSecondHalfOfRound");
 }
