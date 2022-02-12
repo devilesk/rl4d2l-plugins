@@ -1,12 +1,11 @@
 #pragma semicolon 1
+#pragma newdecls required
 
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
 #include <discord_webhook>
 #include "includes/finalemaps"
-
-#pragma newdecls required
 
 #define DEBUG 1
 
@@ -35,16 +34,12 @@ int iEmbedCount = 0;
 Handle  g_hCvarWebhookConfig = INVALID_HANDLE;
 char g_sWebhookName[64];
 
-enum strMapType {
-    MP_FINALE
-};
-
 public Plugin myinfo =
 {
     name = "Discord Scoreboard",
     author = "devilesk",
     description = "Reports round end stats to discord",
-    version = "1.4.5",
+    version = "1.4.6",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -59,8 +54,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     g_hCvarWebhookConfig = CreateConVar("discord_scoreboard_webhook_cfg", "discord_scoreboard", "Name of webhook keyvalue entry to use in discord_webhook.cfg", FCVAR_NONE);
-    HookEvent("round_start",                Event_RoundStart,				EventHookMode_PostNoCopy);
-    HookEvent("round_end",                  Event_RoundEnd,				EventHookMode_PostNoCopy);
+    HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
+    HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
 }
 
 public void OnMapStart()
@@ -69,7 +64,7 @@ public void OnMapStart()
     iEmbedCount = 0;
 }
 
-public Action Event_RoundStart(Handle hEvent, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Handle hEvent, const char[] name, bool dontBroadcast)
 {
     g_bInRound = true;
     int indexSurvivor = GameRules_GetProp("m_bAreTeamsFlipped");
@@ -81,32 +76,33 @@ public Action Event_RoundStart(Handle hEvent, const char[] name, bool dontBroadc
 
 public Action SaveBossFlows(Handle timer)
 {
-	if (!InSecondHalfOfRound())
-	{
-		iTankPercent = 0;
+    if (!InSecondHalfOfRound())
+    {
+        iTankPercent = 0;
 
-		if (L4D2Direct_GetVSTankToSpawnThisRound(0))
-		{
-			iTankPercent = RoundToNearest(GetTankFlow(0)*100.0);
-		}
-	}
-	else
-	{
-		if (iTankPercent != 0)
-		{
-			iTankPercent = RoundToNearest(GetTankFlow(1)*100.0);
-		}
-	}
+        if (L4D2Direct_GetVSTankToSpawnThisRound(0))
+        {
+            iTankPercent = RoundToNearest(GetTankFlow(0)*100.0);
+        }
+    }
+    else
+    {
+        if (iTankPercent != 0)
+        {
+            iTankPercent = RoundToNearest(GetTankFlow(1)*100.0);
+        }
+    }
+    return Plugin_Stop;
 }
 
-public Action Event_RoundEnd(Handle hEvent, const char[] name, bool dontBroadcast)
+public void Event_RoundEnd(Handle hEvent, const char[] name, bool dontBroadcast)
 {
     if ( !g_bInRound ) { return; }
     g_bInRound = false;
     CreateTimer( ROUNDEND_DELAY, Timer_RoundEnd, _, TIMER_FLAG_NO_MAPCHANGE );
 }
 
-public Action Timer_RoundEnd ( Handle timer )
+public Action Timer_RoundEnd(Handle timer)
 {
     char sMap[64];
     char description[512];
@@ -161,6 +157,7 @@ public Action Timer_RoundEnd ( Handle timer )
             scoreTotals[1] = 0;
         }
     }
+    return Plugin_Stop;
 }
 
 bool GetMapName(const char[] mapId, char[] mapName, int iLength)
@@ -221,12 +218,12 @@ public int Native_AddEmbed(Handle plugin, int numParams)
     {
         // field name
         GetNativeStringLength(i, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i, name, len+1);
         
         // field value
         GetNativeStringLength(i+1, len);
-        if (len <= 0) { return; }
+        if (len <= 0) { return 0; }
         GetNativeString(i+1, value, len+1);
         
         inline = GetNativeCellRef(i+2);
@@ -242,6 +239,7 @@ public int Native_AddEmbed(Handle plugin, int numParams)
     }
     
     InternalAddEmbed(title, description, url, color, fields);
+    return 1;
 }
 
 void InternalAddEmbed(const char[] title, const char[] description, const char[] url, int color, const char[] fields)

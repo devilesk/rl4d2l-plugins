@@ -1,10 +1,9 @@
 #pragma semicolon 1
+#pragma newdecls required
 
 #include <sourcemod>
 #include <discord_webhook>
 #include <SteamWorks>
-
-#pragma newdecls required
 
 #define CONBUFSIZELARGE         (1 << 12)       // 4k
 
@@ -12,7 +11,7 @@ public Plugin myinfo =
 {
     name = "Discord Webhook",
     author = "devilesk",
-    version = "1.1.0",
+    version = "1.2.0",
     description = "Discord webhook functions.",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
@@ -87,7 +86,7 @@ public int Native_FormatEmbed(Handle plugin, int numParams)
     
     SetNativeString(1, buffer, bufferLen+1, false);
 
-    return 0;
+    return 1;
 }
 
 public int Native_FormatEmbed2(Handle plugin, int numParams)
@@ -120,7 +119,7 @@ public int Native_FormatEmbed2(Handle plugin, int numParams)
     InternalFormatEmbed(buffer, bufferLen+1, title, description, url, color, fields);
     SetNativeString(1, buffer, bufferLen+1, false);
 
-    return 0;
+    return 1;
 }
 
 public int Native_FormatEmbedRequest(Handle plugin, int numParams)
@@ -141,7 +140,7 @@ public int Native_FormatEmbedRequest(Handle plugin, int numParams)
     
     SetNativeString(1, buffer, bufferLen+1, false);
 
-    return 0;
+    return 1;
 }
 
 public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
@@ -198,7 +197,7 @@ public int Native_SendEmbedToDiscord(Handle plugin, int numParams)
 
     InternalSendEmbedToDiscord(webhook, title, description, url, color, fields);
 
-    return 0;
+    return 1;
 }
 
 public int Native_SendMessageToDiscord(Handle plugin, int numParams)
@@ -217,7 +216,7 @@ public int Native_SendMessageToDiscord(Handle plugin, int numParams)
 
     InternalSendMessageToDiscord(webhook, message);
 
-    return 0;
+    return 1;
 }
 
 public int Native_SendToDiscord(Handle plugin, int numParams)
@@ -236,7 +235,7 @@ public int Native_SendToDiscord(Handle plugin, int numParams)
 
     InternalSendToDiscord(webhook, message);
 
-    return 0;
+    return 1;
 }
 
 void InternalFormatEmbed(char[] buffer, int bufferLen, const char[] title, const char[] description, const char[] url, int color, const char[] fields)
@@ -272,17 +271,11 @@ void InternalSendToDiscord(const char[] sWebhook, const char[] message) {
 
     Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodPOST, sUrl);
 
-    //SteamWorks_SetHTTPRequestGetOrPostParameter(request, "content", message);
-    //SteamWorks_SetHTTPRequestHeaderValue(request, "Content-Type", "application/x-www-form-urlencoded");
-
-    //char sMessage[4096];
-    //Format(sMessage, sizeof(sMessage), "{\"content\":\"%s\"}", message);
-    //Format(sMessage, sizeof(sMessage), "{\"embeds\": [{\"title\": \"Hello!\",\"description\": \"%s\"}]}", message);
     SteamWorks_SetHTTPRequestRawPostBody(request, "application/json", message, strlen(message));
-    LogMessage("%s", message);
+    PrintDebug("[InternalSendToDiscord] request %s", message);
     
     if(request == null || !SteamWorks_SetHTTPCallbacks(request, Discord_Callback) || !SteamWorks_SendHTTPRequest(request)) {
-        PrintToServer("[SendToSlack] SendToDiscord failed to fire");
+        PrintDebug("[InternalSendToDiscord] failed to fire");
         delete request;
     }
 }
@@ -290,11 +283,11 @@ void InternalSendToDiscord(const char[] sWebhook, const char[] message) {
 public void Discord_Callback(Handle hRequest, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode) {
     if(!bFailure && bRequestSuccessful) {
         switch (eStatusCode) {
-            case k_EHTTPStatusCode200OK:{
+            case k_EHTTPStatusCode200OK, k_EHTTPStatusCode204NoContent:{
                 //all gud
             }
             default: {
-                PrintToServer("[Send To Discord] failed with code [%i]", eStatusCode);
+                PrintDebug("[Discord_Callback] failed with code [%i]", eStatusCode);
                 SteamWorks_GetHTTPResponseBodyCallback(hRequest, Print_Response);
             }
         }
@@ -304,7 +297,7 @@ public void Discord_Callback(Handle hRequest, bool bFailure, bool bRequestSucces
 
 public void Print_Response(const char[] sData)
 {
-    PrintToServer("[Print_Response] %s", sData);
+    PrintDebug("[Print_Response] %s", sData);
 }
 
 bool GetWebHook(const char[] sWebhook, char[] sUrl, int iLength)
@@ -346,4 +339,10 @@ bool GetWebHook(const char[] sWebhook, char[] sUrl, int iLength)
     delete kv;
 
     return false;
+}
+
+stock void PrintDebug(const char[] Message, any ...) {
+    char DebugBuff[256];
+    VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
+    LogMessage(DebugBuff);
 }
