@@ -545,7 +545,7 @@ public Plugin myinfo =
 	name = "Player Statistics",
 	author = "Tabun, A1m`, devilesk",
 	description = "Tracks statistics, even when clients disconnect. MVP, Skills, Accuracy, etc. Modified for RL4D2L",
-	version = "1.1.1-rl4d2l-1.0.0",
+	version = "1.1.1-rl4d2l-1.0.1",
 	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -8130,7 +8130,7 @@ void WriteStatsToDB(int iTeam, bool bSecondHalf)
 	
 	int matchId = g_strGameData[gmStartTime];
 	PrintDebug( 1, "[Stats] matchId %i", matchId);
-	int startedAt = MIN( g_strRoundData[0][0][rndStartTime], g_strRoundData[0][1][rndStartTime] );
+	int startedAt = matchId;
 	int endedAt = MAX( g_strRoundData[g_iRound][0][rndEndTime], g_strRoundData[g_iRound][1][rndEndTime] );
 	int result = 0;
 	
