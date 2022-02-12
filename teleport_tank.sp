@@ -4,8 +4,6 @@
 #include <sdktools>
 #include <builtinvotes>
 #include <left4dhooks>
-#define L4D2UTIL_STOCKS_ONLY
-#include <l4d2util>
 
 #pragma newdecls required
 
@@ -60,11 +58,11 @@ public void OnMapStart() {
     Reset();
 }
 
-public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast) {
+public void Event_RoundStart(Handle event, const char[] name, bool dontBroadcast) {
     Reset();
 }
 
-public Action Event_TankSpawn(Handle event, const char[] name, bool dontBroadcast) {
+public void Event_TankSpawn(Handle event, const char[] name, bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     g_iTankClient = client;
     
@@ -85,11 +83,11 @@ public Action Timer_SaveTankLocation ( Handle timer ) {
     return Plugin_Handled;
 }
 
-public Action Event_TankKilled(Handle event, const char[] name, bool dontBroadcast) {
+public void Event_TankKilled(Handle event, const char[] name, bool dontBroadcast) {
     Reset();
 }
 
-public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
+public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
     int victimId = GetEventInt(event, "userid");
     int victim = GetClientOfUserId(victimId);
     
@@ -213,7 +211,7 @@ public void StartVote(int client, const char[] sVoteHeader, VoteType voteType) {
     DisplayBuiltinVote(hVote, players, iNumPlayers, 20);
 }
 
-public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
+public void VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
     switch (action) {
         case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
@@ -225,7 +223,7 @@ public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, 
     }
 }
 
-public int VoteResultHandler(Handle vote, int num_votes, int num_clients, const client_info[][2], int num_items, const item_info[][2]) {
+public void VoteResultHandler(Handle vote, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info) {
     for (int i = 0; i < num_items; i++) {
         if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
@@ -308,8 +306,8 @@ int GetTankClient() {
     int tankclient = g_iTankClient;
  
     if (!IsClientInGame(tankclient)) {  // If tank somehow is no longer in the game (kicked, hence events didn't fire)
-        tankclient = FindTankClient(-1); // find the tank client
-        if (tankclient != -1) return 0;
+        tankclient = FindTankClient(); // find the tank client
+        if (tankclient != 0) return 0;
         g_iTankClient = tankclient;
     }
  
@@ -328,4 +326,23 @@ stock void PrintDebug(const char[] Message, any ...) {
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
         LogMessage(DebugBuff);
     }
+}
+
+int InSecondHalfOfRound() {
+    return GameRules_GetProp("m_bInSecondHalfOfRound");
+}
+
+int FindTankClient()
+{
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client) ||
+            GetClientTeam(client) != TEAM_INFECTED ||
+            !IsPlayerAlive(client) ||
+            GetEntProp(client, Prop_Send, "m_zombieClass") != ZOMBIECLASS_TANK)
+            continue;
+
+        return client;
+    }
+    return 0;
 }

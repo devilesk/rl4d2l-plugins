@@ -3,14 +3,14 @@
 #endif
 #define _rl4d2l_util_
 
-stock StrToLower(String:arg[]) {
-    for (new i = 0; i < strlen(arg); i++) {
+stock void StrToLower(char[] arg) {
+    for (int i = 0; i < strlen(arg); i++) {
         arg[i] = CharToLower(arg[i]);
     }
 }
 
-stock GetCurrentMapLower(String:buffer[], buflen) {
-    new iBytesWritten = GetCurrentMap(buffer, buflen);
+stock int GetCurrentMapLower(char[] buffer, int buflen) {
+    int iBytesWritten = GetCurrentMap(buffer, buflen);
     StrToLower(buffer);
     return iBytesWritten;
 }

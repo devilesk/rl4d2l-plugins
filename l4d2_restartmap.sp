@@ -33,7 +33,7 @@ public Plugin myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.7.0",
+    version = "0.7.2",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -53,7 +53,7 @@ public void OnPluginStart() {
     }
 
     StartPrepSDKCall(SDKCall_GameRules);
-    if (PrepSDKCall_SetFromConf(gConf, SDKConf_Signature, "SetCampaignScores")) {
+    if (PrepSDKCall_SetFromConf(gConf, SDKConf_Signature, "CTerrorGameRules::SetCampaignScores")) {
         PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
         PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
         fSetCampaignScores = EndPrepSDKCall();
@@ -115,6 +115,8 @@ public Action CheckFlowBroken(Handle timer) {
     else {
         g_iMapRestarts = 0;
     }
+
+    return Plugin_Continue;
 }
 
 public void RestartMap() {
@@ -193,7 +195,7 @@ bool StartVote(int client, const char[] sVoteHeader) {
     return false;
 }
 
-public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
+public void VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
     switch (action) {
         case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
@@ -205,7 +207,7 @@ public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, 
     }
 }
 
-public int VoteResultHandler(Handle vote, int num_votes, int num_clients, const client_info[][2], int num_items, const item_info[][2]) {
+public void VoteResultHandler(Handle vote, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info) {
     for (int i = 0; i < num_items; i++) {
         if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
