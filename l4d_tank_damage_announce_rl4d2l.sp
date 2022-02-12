@@ -3,6 +3,7 @@
 */        
 
 #pragma semicolon 1
+#pragma newdecls required
 
 #include <sourcemod>
 #include <sdktools>
@@ -10,8 +11,6 @@
 #undef REQUIRE_PLUGIN
 #include <discord_scoreboard>
 #define REQUIRE_PLUGIN
-
-#pragma newdecls required
 
 #define TANK_CHECK_DELAY        0.5
 
@@ -22,13 +21,13 @@ bool g_bEnabled                  = true;
 bool g_bAnnounceTankDamage       = false;            // Whether or not tank damage should be announced
 bool g_bIsTankInPlay             = false;            // Whether or not the tank is active
 bool bPrintedHealth              = false;        	// Is Remaining Health showed?
-int g_iWasTank[MAXPLAYERS + 1]  = 0;            	// Was Player Tank before he died.
+int g_iWasTank[MAXPLAYERS + 1]  = {0, ...};            	// Was Player Tank before he died.
 int g_iWasTankAI                = 0;
 int g_iOffset_Incapacitated     = 0;                // Used to check if tank is dying
 int g_iTankClient               = 0;                // Which client is currently playing as tank
 int g_iLastTankHealth           = 0;                // Used to award the killing blow the exact right amount of damage
 int g_iSurvivorLimit            = 4;                // For survivor array in damage print
-int g_iDamage[MAXPLAYERS + 1];
+int g_iDamage[MAXPLAYERS + 1]   = {0, ...};
 float g_fMaxTankHealth            = 6000.0;
 Handle g_hCvarEnabled              = INVALID_HANDLE;
 Handle g_hCvarTankHealth           = INVALID_HANDLE;
@@ -54,7 +53,7 @@ public Plugin myinfo =
 	name = "Tank Damage Announce L4D2",
 	author = "Griffin and Blade, Sir, devilesk",
 	description = "Announce damage dealt to tanks by survivors",
-	version = "0.6.10"
+	version = "0.6.6-rl4d2l"
 }
 
 public void OnPluginStart()
@@ -138,7 +137,7 @@ void CalculateTankHealth()
 	if (g_fMaxTankHealth <= 0.0) g_fMaxTankHealth = 1.0; // No dividing by 0!
 }
 
-public Action Event_PlayerHurt(Handle event, const char[] name, bool dontBroadcast)
+public void Event_PlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bIsTankInPlay) return; // No tank in play; no damage to record
 	
@@ -159,7 +158,7 @@ public Action Event_PlayerHurt(Handle event, const char[] name, bool dontBroadca
 	g_iLastTankHealth = GetEventInt(event, "health");
 }
 
-public Action Event_PlayerKilled(Handle event, const char[] name, bool dontBroadcast)
+public void Event_PlayerKilled(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bIsTankInPlay) return; // No tank in play; no damage to record
 	
@@ -180,7 +179,7 @@ public Action Event_PlayerKilled(Handle event, const char[] name, bool dontBroad
 	CreateTimer(TANK_CHECK_DELAY, Timer_CheckTank, victim); // Use a delayed timer due to bugs where the tank passes to another player
 }
 
-public Action Event_TankSpawn(Handle event, const char[] name, bool dontBroadcast)
+public void Event_TankSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	g_iTankClient = client;
@@ -196,7 +195,7 @@ public Action Event_TankSpawn(Handle event, const char[] name, bool dontBroadcas
 	g_iLastTankHealth = GetClientHealth(client);
 }
 
-public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	bPrintedHealth = false;
 	g_bIsTankInPlay = false;
@@ -205,7 +204,7 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 }
 
 // When survivors wipe or juke tank, announce damage
-public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)
+public void Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	PrintDebug("[Event_RoundEnd] g_bAnnounceTankDamage: %i", g_bAnnounceTankDamage);
 	// But only if a tank that hasn't been killed exists
@@ -220,7 +219,7 @@ public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast
 public Action Timer_CheckTank(Handle timer, int oldtankclient)
 {
 	PrintDebug("[Timer_CheckTank] oldtankclient: %i", oldtankclient);
-	if (g_iTankClient != oldtankclient) return; // Tank passed
+	if (g_iTankClient != oldtankclient) return Plugin_Stop; // Tank passed
 	
 	int tankclient = FindTankClient();
 	PrintDebug("[Timer_CheckTank] tankclient: %i", tankclient);
@@ -228,7 +227,7 @@ public Action Timer_CheckTank(Handle timer, int oldtankclient)
 	{
 		g_iTankClient = tankclient;
 		
-		return; // Found tank, done
+		return Plugin_Stop; // Found tank, done
 	}
 	
 	if (g_bAnnounceTankDamage) PrintTankDamage();
@@ -236,6 +235,8 @@ public Action Timer_CheckTank(Handle timer, int oldtankclient)
 	g_bIsTankInPlay = false; // No tank in play
 	Call_StartForward(fwdOnTankDeath);
 	Call_Finish();
+
+	return Plugin_Stop;
 }
 
 bool IsTankDying()
