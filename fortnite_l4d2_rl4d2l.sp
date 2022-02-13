@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU General Public License along with 
  * this program. If not, see http://www.gnu.org/licenses/.
  */
- 
-/*
- * Camera code from [L4D1 & L4D2] Selfie Camera [v1.0.0 | 06-June-2021] by Marttt
+
+/* [CS:GO|CSS|L4D] Fortnite Emotes Extended version (dances and emotes)[25-Sep-2021]
+ * https://forums.alliedmods.net/showthread.php?t=318981
+ */
+
+/* Camera code from [L4D1 & L4D2] Selfie Camera [v1.0.0 | 06-June-2021] by Marttt
  * https://forums.alliedmods.net/showthread.php?t=332884
-*/
+ */
 
 #pragma semicolon 1
 #include <sourcemod>
@@ -61,6 +64,7 @@ int g_iEmoteEnt[MAXPLAYERS + 1] = {INVALID_ENT_REFERENCE, ...};
 int g_EmotesTarget[MAXPLAYERS + 1] = {0, ...};
 
 bool g_bClientDancing[MAXPLAYERS + 1] = {false, ...};
+bool g_bRoundLive = false;
 
 
 Handle CooldownTimers[MAXPLAYERS + 1];
@@ -84,8 +88,8 @@ public Plugin myinfo = {
     name = "SM Fortnite Emotes Extended - L4D2 Version",
     author = "Kodua, Franc1sco franug, TheBO$$, Foxhound, Marttt, devilesk",
     description = "This plugin is for demonstration of some animations from Fortnite in L4D2",
-    version = "1.4.3-rl4d2l",
-    url = "https://forums.alliedmods.net/showthread.php?t=318981"
+    version = "1.0.0",
+    url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
 public void OnPluginStart() {
@@ -108,6 +112,7 @@ public void OnPluginStart() {
     HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
     HookEvent("player_hurt", Event_PlayerHurt, EventHookMode_Pre);
     HookEvent("player_team", PlayerTeam_Event, EventHookMode_Post);
+    HookEvent("round_end", Event_RoundEnd, EventHookMode_Pre);
 
     /**
     	Convars
@@ -167,7 +172,9 @@ public void OnMapStart() {
     AddFileToDownloadsTable("models/player/custom_player/foxhound/fortnite_dances_emotes_ok.dx90.vtx");
 
     // this dont touch
-    PrecacheModel("models/player/custom_player/foxhound/fortnite_dances_emotes_ok.mdl", true);    
+    PrecacheModel("models/player/custom_player/foxhound/fortnite_dances_emotes_ok.mdl", true);
+
+    g_bRoundLive = false;
 }
 
 public void OnClientPutInServer(int client) {
@@ -264,7 +271,12 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
     return Plugin_Continue;
 }
 
+public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) {
+    g_bRoundLive = false;
+}
+
 public void OnRoundLiveCountdownPre() {
+    g_bRoundLive = true;
     for (int i = 1; i <= MaxClients; i++) {
         if (IsValidClient(i) && g_bClientDancing[i]) {
             ResetCamera(i);
@@ -605,7 +617,7 @@ void OnPostThinkPost(int client) {
 }
 
 public Action SetTransmit(int entity, int client) {
-    if (g_bClientDancing[client] && IsPlayerAlive(client) && GetClientTeam(client) != GetClientTeam(entity)) return Plugin_Handled;
+    if (g_bRoundLive && g_bClientDancing[client] && IsPlayerAlive(client) && GetClientTeam(client) != GetClientTeam(entity)) return Plugin_Handled;
 
     return Plugin_Continue;
 }
