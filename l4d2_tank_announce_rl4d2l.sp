@@ -11,28 +11,42 @@
 #include <l4d_tank_control_eq>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.4"
+#define PLUGIN_VERSION "1.4.1"
 #define DANG "ui/pickup_secret01.wav"
+
+int tankCount = 0;
 
 public Plugin myinfo = 
 {
-	name = "L4D2 Tank Announcer",
-	author = "Visor, Forgetest, xoxo",
+	name = "L4D2 Tank Announcer - RL4D2L",
+	author = "Visor, Forgetest, xoxo, devilesk",
 	description = "Announce in chat and via a sound when a Tank has spawned",
 	version = PLUGIN_VERSION,
-	url = "https://github.com/SirPlease/L4D2-Competitive-Rework"
+	url = "https://github.com/devilesk/rl4d2l-plugins"
 };
+
+public void OnPluginStart()
+{
+	HookEvent("round_start", Event_RoundEnd, EventHookMode_PostNoCopy);
+}
 
 public void OnMapStart()
 {
 	PrecacheSound(DANG);
 }
 
+public void Event_RoundEnd(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	tankCount = 0;
+}
+
 public void L4D_OnSpawnTank_Post(int client, const float vecPos[3], const float vecAng[3])
 {
 	int tankClient = client;
 	char nameBuf[MAX_NAME_LENGTH];
-	
+	tankCount++;
+	if (tankCount > 2) return;
+
 	if (IsTankSelection())
 	{
 		if (IsTank(tankClient) && !IsFakeClient(tankClient)) 
@@ -84,7 +98,7 @@ public void Event_PlayerSpawn(Event event, char[] name, bool dontBroadcast)
  */
 bool IsTank(int client)
 {
-	return (IsClientInGame(client)
+	return (client > 0 && client <= MaxClients && IsClientInGame(client)
 		&& GetClientTeam(client) == L4D2Team_Infected
 		&& GetEntProp(client, Prop_Send, "m_zombieClass") == L4D2Infected_Tank);
 }
