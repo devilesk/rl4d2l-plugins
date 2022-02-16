@@ -5,6 +5,7 @@
 #include <left4dhooks>
 #include <builtinvotes>
 #undef REQUIRE_PLUGIN
+#include <team_consistency>
 #include <l4d2_changelevel>
 #define REQUIRE_PLUGIN
 #include "includes/rl4d2l_util"
@@ -28,12 +29,13 @@ int g_iSurvivorScore;
 int g_iInfectedScore;
 char g_sMapName[MAXMAP] = "";
 bool g_L4D2ChangeLevelAvailable = false;
+bool g_bTeamConsistencyAvailable = false;
 
 public Plugin myinfo = {
     name = "L4D2 Restart Map",
     author = "devilesk",
     description = "Adds sm_restartmap to restart the current map and keep current scores. Automatically restarts map when broken flow detected.",
-    version = "0.7.2",
+    version = "0.8.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -68,12 +70,15 @@ public void OnPluginStart() {
 
 public void OnAllPluginsLoaded() {
     g_L4D2ChangeLevelAvailable = LibraryExists("l4d2_changelevel");
+    g_bTeamConsistencyAvailable = LibraryExists("team_consistency");
 }
 public void OnLibraryRemoved(const char[] name) {
     if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = false; }
+    else if ( StrEqual(name, "team_consistency") ) { g_bTeamConsistencyAvailable = false; }
 }
 public void OnLibraryAdded(const char[] name) {
     if ( StrEqual(name, "l4d2_changelevel") ) { g_L4D2ChangeLevelAvailable = true; }
+    else if ( StrEqual(name, "team_consistency") ) { g_bTeamConsistencyAvailable = true; }
 }
 
 public void OnMapStart() {
@@ -133,6 +138,9 @@ public void RestartMap() {
     PrintDebug("[RestartMap] Restarting map. Attempt: %i of %i...  survivor: %i, score %i, infected: %i, score %i", g_iMapRestarts, GetConVarInt(g_hCvarAutofixMaxTries), iSurvivorTeamIndex, g_iSurvivorScore, iInfectedTeamIndex, g_iInfectedScore);
     
     GetCurrentMapLower(g_sMapName, sizeof(g_sMapName));
+
+    if (g_bTeamConsistencyAvailable)
+        ClearTeamConsistency();
 
     if (g_L4D2ChangeLevelAvailable)
         L4D2_ChangeLevel(g_sMapName);
