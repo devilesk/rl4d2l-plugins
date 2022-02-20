@@ -2,7 +2,6 @@
 
 #include <sourcemod>
 #include <sdktools>
-//#include <l4d2util>
 #include <left4dhooks>
 #include <colors>
 #include <readyup>
@@ -34,7 +33,7 @@ public Plugin myinfo = {
     name = "Static Tank Control",
     author = "devilesk",
     description = "Predetermined tank control distribution.",
-    version = "0.6.0",
+    version = "0.7.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -43,6 +42,7 @@ public void OnPluginStart() {
         g_hStaticTankPlayers[i] = new StringMap();
     }
     
+    HookEvent("round_start", RoundStart_Event, EventHookMode_PostNoCopy);
     HookEvent("round_end", RoundEnd_Event, EventHookMode_PostNoCopy);
     HookEvent("player_team", PlayerTeam_Event, EventHookMode_PostNoCopy);
     
@@ -58,7 +58,7 @@ public void OnPluginStart() {
 public Action StaticTankControlTankNum_Command(int args) {
     if (args < 1) {
         LogError("[StaticTankControlTankNum_Command] Missing args");
-        return;
+        return Plugin_Handled;
     }
     
     char sTankNum[16];
@@ -66,33 +66,35 @@ public Action StaticTankControlTankNum_Command(int args) {
     int iTankNum = StringToInt(sTankNum);
     if (iTankNum < 1 || iTankNum > MAXTANKS) {
         LogError("[StaticTankControlTankNum_Command] Invalid tank num arg");
-        return;
+        return Plugin_Handled;
     }
     
     g_iTankCount = iTankNum - 1;
     PrintDebug("[StaticTankControlTankNum_Command] iTankNum: %i, g_iTankCount: %i", iTankNum, g_iTankCount);
+
+    return Plugin_Handled;
 }
 
 public Action StaticTankControl_Command(int args) {
     if (args < 2) {
         LogError("[StaticTankControl_Command] Missing args");
-        return;
+        return Plugin_Handled;
     }
-    
+
     char sTankNum[16];
     GetCmdArg(1, sTankNum, sizeof(sTankNum));
     int iTankNum = StringToInt(sTankNum);
     if (iTankNum < 1 || iTankNum > MAXTANKS) {
         LogError("[StaticTankControl_Command] Invalid tank num arg");
-        return;
+        return Plugin_Handled;
     }
-    
+
     char sMapName[MAXMAP];
     GetCmdArg(2, sMapName, sizeof(sMapName));
     StrToLower(sMapName);
     ArrayList hSteamIds = new ArrayList(MAXSTEAMID);
     g_hStaticTankPlayers[iTankNum-1].SetValue(sMapName, hSteamIds);
-    
+
     char steamId[MAXSTEAMID];
     for ( int i = 3; i <= args; i++ ) {
         GetCmdArg(i, steamId, sizeof(steamId));
@@ -101,6 +103,8 @@ public Action StaticTankControl_Command(int args) {
             PrintDebug("[StaticTankControl_Command] Added iTankNum: %i, sMapName: %s steamId: %s", iTankNum, sMapName, steamId);
         }
     }
+
+    return Plugin_Handled;
 }
 
 /**
@@ -112,13 +116,13 @@ public void TankControlEQ_OnTankControlReset() {
     g_iTankCount = 0;
 }
 
-public void OnRoundStart() {
+public void RoundStart_Event(Handle event, const char[] name, bool dontBroadcast) {
     g_bRoundStarted = true;
     g_iTankCount = 0;
     g_sQueuedTankSteamId[0] = '\0';
 }
 
-public Action RoundEnd_Event(Handle event, const char[] name, bool dontBroadcast) {
+public void RoundEnd_Event(Handle event, const char[] name, bool dontBroadcast) {
     g_bRoundStarted = false;
 }
 
@@ -140,7 +144,7 @@ public void OnClientConnected(int client)  {
 /**
  * When the queued tank switches to infected, check if they are the static tank player
  */
-public Action PlayerTeam_Event(Handle event, const char[] name, bool dontBroadcast) {
+public void PlayerTeam_Event(Handle event, const char[] name, bool dontBroadcast) {
     if (!g_bRoundStarted) return;
     char steamId[MAXSTEAMID];
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
