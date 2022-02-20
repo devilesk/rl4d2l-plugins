@@ -30,7 +30,7 @@ native int GetTankSelection();
 
 public SharedPlugin __pl_l4d_tank_control_eq =
 {
-    name = "l4d_tank_control_eq_rl4d2l",
+    name = "l4d_tank_control_eq",
     file = "l4d_tank_control_eq_rl4d2l.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
