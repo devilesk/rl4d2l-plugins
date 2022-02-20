@@ -26,6 +26,7 @@ ConVar g_hCvarTankPrint = null;
 ConVar g_hCvarDebug = null;
 Handle g_hChooseTankForward = INVALID_HANDLE;
 Handle g_hTankGivenForward = INVALID_HANDLE;
+Handle g_hTankChosenForward = INVALID_HANDLE;
 Handle g_hTankControlResetForward = INVALID_HANDLE;
 bool g_bRoundStarted = false;
 bool casterSystemAvailable;
@@ -34,7 +35,7 @@ public Plugin myinfo = {
     name = "L4D2 Tank Control - RL4D2L",
     author = "arti, Sir, devilesk",
     description = "Distributes the role of the tank evenly throughout the team",
-    version = "1.0.0",
+    version = "1.0.2",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -59,6 +60,7 @@ public void OnPluginStart() {
     // Forwards
     g_hChooseTankForward = CreateGlobalForward("TankControlEQ_OnChooseTank", ET_Event, Param_String);
     g_hTankGivenForward = CreateGlobalForward("TankControlEQ_OnTankGiven", ET_Ignore, Param_String);
+    g_hTankChosenForward = CreateGlobalForward("TankControlEQ_OnTankChosen", ET_Ignore, Param_String);
     g_hTankControlResetForward = CreateGlobalForward("TankControlEQ_OnTankControlReset", ET_Ignore, Param_String);
 
     // Load translations (for targeting player)
@@ -66,6 +68,7 @@ public void OnPluginStart() {
 
     // Event hooks
     HookEvent("player_left_start_area", PlayerLeftStartArea_Event, EventHookMode_PostNoCopy);
+    HookEvent("round_start", RoundStart_Event, EventHookMode_PostNoCopy);
     HookEvent("round_end", RoundEnd_Event, EventHookMode_PostNoCopy);
     HookEvent("player_team", PlayerTeam_Event, EventHookMode_PostNoCopy);
     HookEvent("tank_killed", TankKilled_Event, EventHookMode_PostNoCopy);
@@ -207,7 +210,7 @@ public void OnClientDisconnect(int client)  {
 /**
  * When a new game starts, reset the tank pool.
  */
-public void OnRoundStart() {
+public void RoundStart_Event(Handle event, const char[] name, bool dontBroadcast) {
     g_bRoundStarted = true;
     g_sQueuedTankSteamId[0] = '\0';
     CreateTimer(10.0, newGame, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -522,6 +525,11 @@ public void ChooseTank() {
     infectedPool.GetString(rndIndex, g_sQueuedTankSteamId, sizeof(g_sQueuedTankSteamId));
     delete infectedPool;
     PrintDebug("[ChooseTank] maxIndex: %i, rndIndex: %i, queued tank: %s.", maxIndex, rndIndex, g_sQueuedTankSteamId);
+
+    PrintDebug("[ChooseTank] Calling g_hTankChosenForward forward. g_sQueuedTankSteamId: %s", g_sQueuedTankSteamId);
+    Call_StartForward(g_hTankChosenForward);
+    Call_PushString(g_sQueuedTankSteamId);
+    Call_Finish();
 }
 
 /**
@@ -530,6 +538,11 @@ public void ChooseTank() {
 public Action L4D_OnTryOfferingTankBot(int tank_index, bool &enterStatis) {
     // Reset the tank's frustration if need be
     PrintDebug("[L4D_OnTryOfferingTankBot] tank_index: %i %L", tank_index, tank_index);
+    if (!IS_VALID_INGAME(tank_index)) {
+        PrintDebug("[L4D_OnTryOfferingTankBot] tank_index: %i %L not valid ingame", tank_index, tank_index);
+        return Plugin_Continue;
+    }
+
     if (!IsFakeClient(tank_index)) {
         PrintHintText(tank_index, "Rage Meter Refilled");
         for (int i = 1; i <= MaxClients; i++) {
@@ -572,6 +585,7 @@ public Action L4D_OnTryOfferingTankBot(int tank_index, bool &enterStatis) {
         Call_StartForward(g_hTankGivenForward);
         Call_PushString(g_sQueuedTankSteamId);
         Call_Finish();
+        g_sQueuedTankSteamId[0] = '\0';
     }
 
     return Plugin_Continue;
