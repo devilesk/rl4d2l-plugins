@@ -41,7 +41,7 @@ public Plugin myinfo = {
     name = "MMR Tank Control",
     author = "devilesk",
     description = "MMR based tank control distribution.",
-    version = "0.3.0",
+    version = "0.3.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -281,7 +281,8 @@ bool ChooseTank(char[] buffer, int size) {
     ArrayList hTankPool = TankControlEQ_GetTankPool();
     char sSteamId[MAXSTEAMID];
 
-    if (g_iRound >= 0 && g_iRound < 4) {
+    // for the first 3 rounds and first tank of round 4, use the tank order
+    if ((g_iRound >= 0 && g_iRound < 3) || (g_iRound == 3 && g_iTankCount == 0)) {
         int tankIndex = tankOrder[g_iRound];
         if (infectedPool.Length > tankIndex) {
             infectedPool.GetString(tankIndex, sSteamId, sizeof(sSteamId));
@@ -299,9 +300,10 @@ bool ChooseTank(char[] buffer, int size) {
             PrintDebug("[ChooseTank] Infected pool size %i <= tankIndex %i.", infectedPool.Length, tankIndex);
         }
     }
-    else if (g_iRound >= 4 && g_iTankCount < 2) {
+    // tank choosing logic for the second tank of round 4 and rounds 5+
+    else if ((g_iRound >= 4 && g_iTankCount < 2) || (g_iRound == 3 && g_iTankCount > 0)) {
         PrintDebug("[ChooseTank] round %i g_iTankCount %i InSecondHalfOfRound %i", g_iRound, g_iTankCount, InSecondHalfOfRound());
-        
+
         ArrayList hNotTankPool = TankControlEQ_GetWhosNotHadTank();
         char matchupSteamId[MAXSTEAMID] = "";
 
