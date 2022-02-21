@@ -92,7 +92,7 @@ public Plugin myinfo = {
     name = "Team Generator",
     author = "devilesk",
     description = "Balance teams based on rating.",
-    version = "0.2.0",
+    version = "0.2.1",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -286,13 +286,14 @@ public Action Teams_Command(int client, int args) {
     }
     else {
         int index = 1;
+        int teamIndex = g_iTeamCombinationSortOrder[index - 1];
         char arg2[3];
         GetCmdArg(1, arg2, sizeof(arg2));
         if (StringToIntEx(arg2, index) < 1 || StringToIntEx(arg2, index) > 35) {
             CPrintToChat(client, "Team # must be between 1 and 35");
             return Plugin_Handled;
         }
-        PrintTeam(index - 1);
+        PrintTeam(teamIndex);
 
         bool bIsAdmin = CheckCommandAccess(client, "sm_goto", ADMFLAG_KICK, true);
         
@@ -314,10 +315,10 @@ public Action Teams_Command(int client, int args) {
         }
 
         if (bIsAdmin) {
-            SetTeams(index - 1);
+            SetTeams(teamIndex);
         }
         else {
-            g_iVoteTeamIndex = index - 1;
+            g_iVoteTeamIndex = teamIndex;
             char prompt[100];
             Format(prompt, sizeof(prompt), "Use team %i?", index);
             StartVote(client, prompt, VoteType_Teams);
@@ -339,6 +340,16 @@ void SetMmmr(int target, float value) {
 }
 
 void PrintTeam(int i) {
+    PrintDebug("[PrintTeam] %i %N %N %N %N %.2f %.2f %.2f %N %N %N %N",
+            i,
+            g_iTeamCombinationClients[i][0],
+            g_iTeamCombinationClients[i][1],
+            g_iTeamCombinationClients[i][2],
+            g_iTeamCombinationClients[i][3],
+            g_fTeamCombinationRatingTotals[i][0],
+            g_fTeamCombinationRatingDiff[i],
+            g_fTeamCombinationRatingTotals[i][1]);
+
     if (g_fTeamCombinationRatingDiff[i] >= 0) {
         CPrintToChatAll("{blue}%.2f{default} | {green}%N{default}, {green}%N{default}, {green}%N{default}, {green}%N",
             g_fTeamCombinationRatingTotals[i][0],
@@ -352,7 +363,7 @@ void PrintTeam(int i) {
             g_iTeamCombinationClients[i][5],
             g_iTeamCombinationClients[i][6],
             g_iTeamCombinationClients[i][7]);
-        CPrintToChatAll("{blue}%.2f", g_fTeamCombinationRatingDiff[i]);
+        CPrintToChatAll("{blue}%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
     }
     else {
         CPrintToChatAll("{blue}%.2f{default} | {green}%N{default}, {green}%N{default}, {green}%N{default}, {green}%N",
@@ -367,8 +378,9 @@ void PrintTeam(int i) {
             g_iTeamCombinationClients[i][1],
             g_iTeamCombinationClients[i][2],
             g_iTeamCombinationClients[i][3]);
-        CPrintToChatAll("{blue}%.2f", g_fTeamCombinationRatingDiff[i]);
+        CPrintToChatAll("{blue}%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
     }
+    CPrintToChatAll("------------------------------------------------------");
 }
 
 void SetTeams(int teamIndex) {
@@ -422,24 +434,34 @@ bool GenerateTeams() {
     ArrayList steamIds = new ArrayList(MAXSTEAMID);
     int clients[8];
     float ratings[8];
+    char names[8][MAX_NAME_LENGTH];
     char steamId[MAXSTEAMID];
 
     AddTeamSteamIdsToArray(steamIds, TEAM_INFECTED);
     AddTeamSteamIdsToArray(steamIds, TEAM_SURVIVOR);
-
-    if (steamIds.Length != 8) {
-        return false;
-    }
 
     // create cache of steamIds to clients, and steamIds to ratings
     for (int i = 0; i < steamIds.Length; i++) {
         steamIds.GetString(i, steamId, sizeof(steamId));
         int client = GetValidClientBySteamId(steamId);
         clients[i] = client;
+        Format(names[i], MAX_NAME_LENGTH, "%N", client);
 
         float fRating = 0.0;
         GetTrieValue(g_hTriePlayerRating, steamId, fRating);
         ratings[i] = fRating;
+
+        PrintDebug("[GenerateTeams] cache %i %s %s %.2f", client, steamId, names[i], fRating);
+    }
+
+    return DoGenerateTeams(steamIds, clients, ratings, names);
+}
+
+bool DoGenerateTeams(ArrayList steamIds, const int clients[8], const float ratings[8], const char[][] names) {
+    char steamId[MAXSTEAMID];
+
+    if (steamIds.Length != 8) {
+        return false;
     }
 
     // map player steamids, clients, and ratings to team combinations
@@ -461,16 +483,46 @@ bool GenerateTeams() {
     }
 
     // generate team combination sort order by rating difference
+    for (int i = 0; i < 35; i++) {
+        g_iTeamCombinationSortOrder[i] = i;
+    }
     for (int i = 0; i < 35 - 1; i++) {
-        for (int j = 0; j < 35 - i - 1; i++) {
+        for (int j = 0; j < 35 - i - 1; j++) {
             float ratingA = g_fTeamCombinationRatingDiff[g_iTeamCombinationSortOrder[j]];
             float ratingB = g_fTeamCombinationRatingDiff[g_iTeamCombinationSortOrder[j+1]];
+            PrintDebug("[GenerateTeams] comparing i: %i, j: %i j+1: %i, order1: %i, order2: %i, ratingA: %.2f, ratingB: %.2f, swapping: %i",
+                i,
+                j,
+                j+1,
+                g_iTeamCombinationSortOrder[j],
+                g_iTeamCombinationSortOrder[j+1],
+                ratingA,
+                ratingB,
+                FloatAbs(ratingA) > FloatAbs(ratingB));
             if (FloatAbs(ratingA) > FloatAbs(ratingB)) {
                 int tmp = g_iTeamCombinationSortOrder[j];
                 g_iTeamCombinationSortOrder[j] = g_iTeamCombinationSortOrder[j+1];
                 g_iTeamCombinationSortOrder[j+1] = tmp;
             }
         }
+    }
+
+    for (int j = 0; j < 35; j++) {
+        int i = g_iTeamCombinationSortOrder[j];
+        PrintDebug("[GenerateTeams] team %i, sort %i, %.2f %.2f %.2f, %s %s %s %s %s %s %s %s",
+            i,
+            j,
+            g_fTeamCombinationRatingDiff[i],
+            g_fTeamCombinationRatingTotals[i][0],
+            g_fTeamCombinationRatingTotals[i][1],
+            names[g_iTeamCombinations[i][0]],
+            names[g_iTeamCombinations[i][1]],
+            names[g_iTeamCombinations[i][2]],
+            names[g_iTeamCombinations[i][3]],
+            names[g_iTeamCombinations[i][4]],
+            names[g_iTeamCombinations[i][5]],
+            names[g_iTeamCombinations[i][6]],
+            names[g_iTeamCombinations[i][7]]);
     }
 
     delete steamIds;
