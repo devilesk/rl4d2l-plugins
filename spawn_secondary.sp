@@ -62,7 +62,7 @@ public void OnMapStart() {
     g_bSpawnNotAllowed = false;
 }
 
-public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast) {
+public void Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast) {
     g_bSpawnNotAllowed = false;
 }
 
@@ -76,6 +76,7 @@ public Action L4D_OnFirstSurvivorLeftSafeArea( int client ) {
     if ( !g_bReadyUpAvailable ) {
         g_bSpawnNotAllowed = true;
     }
+    return Plugin_Continue;
 }
 
 bool SpawnPistol(const float vecPosition[3]) {
@@ -331,7 +332,7 @@ bool StartVote(int client, const char[] sVoteHeader, int wepType, int target_cou
     return false;
 }
 
-public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
+public void VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
     switch (action) {
         case BuiltinVoteAction_End: {
             hVote = INVALID_HANDLE;
@@ -343,7 +344,7 @@ public int VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, 
     }
 }
 
-public int VoteResultHandler(Handle vote, int num_votes, int num_clients, const client_info[][2], int num_items, const item_info[][2]) {
+public void VoteResultHandler(Handle vote, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info) {
     for (int i = 0; i < num_items; i++) {
         if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
