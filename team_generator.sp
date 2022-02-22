@@ -279,6 +279,8 @@ public Action Teams_Command(int client, int args) {
         return Plugin_Handled;
     }
 
+    PrintDebug("[Teams_Command] args %i", args);
+
     if (args == 0) {
         for (int i = 0; i < 5; i++) {
             PrintTeam(g_iTeamCombinationSortOrder[i]);
@@ -286,16 +288,18 @@ public Action Teams_Command(int client, int args) {
     }
     else {
         int index = 1;
-        int teamIndex = g_iTeamCombinationSortOrder[index - 1];
         char arg2[3];
         GetCmdArg(1, arg2, sizeof(arg2));
         if (StringToIntEx(arg2, index) < 1 || StringToIntEx(arg2, index) > 35) {
             CPrintToChat(client, "Team # must be between 1 and 35");
             return Plugin_Handled;
         }
+        int teamIndex = g_iTeamCombinationSortOrder[index - 1];
         PrintTeam(teamIndex);
 
-        bool bIsAdmin = CheckCommandAccess(client, "sm_goto", ADMFLAG_KICK, true);
+        bool bIsAdmin = CheckCommandAccess(client, "sm_teams", ADMFLAG_KICK, true);
+
+        PrintDebug("[Teams_Command] teamIndex %i bIsAdmin %i", teamIndex, bIsAdmin);
         
         if (!bIsAdmin) {
             if (IsSpectator(client)) {
@@ -340,16 +344,6 @@ void SetMmmr(int target, float value) {
 }
 
 void PrintTeam(int i) {
-    PrintDebug("[PrintTeam] %i %N %N %N %N %.2f %.2f %.2f %N %N %N %N",
-            i,
-            g_iTeamCombinationClients[i][0],
-            g_iTeamCombinationClients[i][1],
-            g_iTeamCombinationClients[i][2],
-            g_iTeamCombinationClients[i][3],
-            g_fTeamCombinationRatingTotals[i][0],
-            g_fTeamCombinationRatingDiff[i],
-            g_fTeamCombinationRatingTotals[i][1]);
-
     if (g_fTeamCombinationRatingDiff[i] >= 0) {
         CPrintToChatAll("{blue}%.2f{default} | {green}%N{default}, {green}%N{default}, {green}%N{default}, {green}%N",
             g_fTeamCombinationRatingTotals[i][0],
@@ -364,6 +358,20 @@ void PrintTeam(int i) {
             g_iTeamCombinationClients[i][6],
             g_iTeamCombinationClients[i][7]);
         CPrintToChatAll("{blue}%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
+
+        PrintDebug("%.2f | %N, %N, %N, %N",
+            g_fTeamCombinationRatingTotals[i][0],
+            g_iTeamCombinationClients[i][0],
+            g_iTeamCombinationClients[i][1],
+            g_iTeamCombinationClients[i][2],
+            g_iTeamCombinationClients[i][3]);
+        PrintDebug("%.2f | %N, %N, %N, %N",
+            g_fTeamCombinationRatingTotals[i][1],
+            g_iTeamCombinationClients[i][4],
+            g_iTeamCombinationClients[i][5],
+            g_iTeamCombinationClients[i][6],
+            g_iTeamCombinationClients[i][7]);
+        PrintDebug("%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
     }
     else {
         CPrintToChatAll("{blue}%.2f{default} | {green}%N{default}, {green}%N{default}, {green}%N{default}, {green}%N",
@@ -379,11 +387,27 @@ void PrintTeam(int i) {
             g_iTeamCombinationClients[i][2],
             g_iTeamCombinationClients[i][3]);
         CPrintToChatAll("{blue}%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
+
+        PrintDebug("%.2f | %N, %N, %N, %N",
+            g_fTeamCombinationRatingTotals[i][1],
+            g_iTeamCombinationClients[i][4],
+            g_iTeamCombinationClients[i][5],
+            g_iTeamCombinationClients[i][6],
+            g_iTeamCombinationClients[i][7]);
+        PrintDebug("%.2f | %N, %N, %N, %N",
+            g_fTeamCombinationRatingTotals[i][0],
+            g_iTeamCombinationClients[i][0],
+            g_iTeamCombinationClients[i][1],
+            g_iTeamCombinationClients[i][2],
+            g_iTeamCombinationClients[i][3]);
+        PrintDebug("%.2f", FloatAbs(g_fTeamCombinationRatingDiff[i]));
     }
     CPrintToChatAll("------------------------------------------------------");
+    PrintDebug("------------------------------------------------------");
 }
 
 void SetTeams(int teamIndex) {
+    PrintDebug("[SetTeams] %i %i", teamIndex, g_bMatchLive);
     if (g_bMatchLive) return;
 
     bool bTeamsFlipped = g_fTeamCombinationRatingDiff[teamIndex] < 0;
@@ -395,6 +419,9 @@ void SetTeams(int teamIndex) {
         if (clientTeam == TEAM_SPECTATOR) {
             continue;
         }
+
+        PrintDebug("[SetTeams] %i moving client %i clientTeam %i to spectator bTeamsFlipped %i", i, client, clientTeam, bTeamsFlipped);
+
         if (!bTeamsFlipped && i < 4 && clientTeam == TEAM_INFECTED) {
             ChangeClientTeam(client, TEAM_SPECTATOR);
         }
@@ -413,13 +440,16 @@ void SetTeams(int teamIndex) {
         int client = g_iTeamCombinationClients[teamIndex][i];
         if (!IsClientInGame(client) || IsFakeClient(client)) continue;
         int clientTeam = GetClientTeam(client);
+        PrintDebug("[SetTeams] %i moving client %i clientTeam %i bTeamsFlipped %i", i, client, clientTeam, bTeamsFlipped);
         if (clientTeam != TEAM_SURVIVOR && ((!bTeamsFlipped && i < 4) || (bTeamsFlipped && i >= 4))) {
+            PrintDebug("[SetTeams] %i moving client %i clientTeam %i to survivor", i, client, clientTeam);
             int flags = GetCommandFlags("sb_takecontrol");
             SetCommandFlags("sb_takecontrol", flags & ~FCVAR_CHEAT);
             FakeClientCommand(client, "sb_takecontrol");
             SetCommandFlags("sb_takecontrol", flags);
         }
         else if (clientTeam != TEAM_INFECTED && ((!bTeamsFlipped && i >= 4) || (bTeamsFlipped && i < 4))) {
+            PrintDebug("[SetTeams] %i moving client %i clientTeam %i to infected", i, client, clientTeam);
             ChangeClientTeam(client, TEAM_INFECTED);
         }
     }
@@ -490,7 +520,7 @@ bool DoGenerateTeams(ArrayList steamIds, const int clients[8], const float ratin
         for (int j = 0; j < 35 - i - 1; j++) {
             float ratingA = g_fTeamCombinationRatingDiff[g_iTeamCombinationSortOrder[j]];
             float ratingB = g_fTeamCombinationRatingDiff[g_iTeamCombinationSortOrder[j+1]];
-            PrintDebug("[GenerateTeams] comparing i: %i, j: %i j+1: %i, order1: %i, order2: %i, ratingA: %.2f, ratingB: %.2f, swapping: %i",
+            /*PrintDebug("[GenerateTeams] comparing i: %i, j: %i j+1: %i, order1: %i, order2: %i, ratingA: %.2f, ratingB: %.2f, swapping: %i",
                 i,
                 j,
                 j+1,
@@ -498,7 +528,7 @@ bool DoGenerateTeams(ArrayList steamIds, const int clients[8], const float ratin
                 g_iTeamCombinationSortOrder[j+1],
                 ratingA,
                 ratingB,
-                FloatAbs(ratingA) > FloatAbs(ratingB));
+                FloatAbs(ratingA) > FloatAbs(ratingB));*/
             if (FloatAbs(ratingA) > FloatAbs(ratingB)) {
                 int tmp = g_iTeamCombinationSortOrder[j];
                 g_iTeamCombinationSortOrder[j] = g_iTeamCombinationSortOrder[j+1];
