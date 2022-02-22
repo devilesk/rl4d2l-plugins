@@ -433,7 +433,12 @@ Action CreateEmote(int client, const char[] anim1, const char[] anim2, bool isLo
 
         if (g_cvSpeed.FloatValue != 1.0) SetEntPropFloat(EmoteEnt, Prop_Send, "m_flPlaybackRate", g_cvSpeed.FloatValue);
 
-        CreateCamera(client);
+        if (GetClientTeam(client) == 2) {
+            SetCam(client);
+        }
+        else {
+            CreateCamera(client);
+        }
 
         g_bClientDancing[client] = true;
 
@@ -632,6 +637,9 @@ void SetCam(int client) {
 }
 
 void ResetCam(int client) {
+    if (!IsValidClient(client))
+        return;
+
     SetEntPropFloat(client, Prop_Send, "m_TimeForceExternalView", 0.0);
 
     SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") & ~HIDEHUD_CROSSHAIR);
@@ -709,8 +717,11 @@ public void MoveCamera(int client)
 
 public void ResetCamera(int client)
 {
+
     if (!IsValidClientIndex(client))
         return;
+
+    ResetCam(client);
 
     if (gc_iCameraEntRef[client] == INVALID_ENT_REFERENCE)
         return;
