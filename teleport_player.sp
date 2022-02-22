@@ -149,7 +149,7 @@ public Action Command_Bring(int client, int args)
 
     GetClientName(target, g_Name, sizeof(g_Name));
 
-    bool bIsAdmin = CheckCommandAccess(client, "sm_goto", ADMFLAG_KICK, true);
+    bool bIsAdmin = CheckCommandAccess(client, "sm_bring", ADMFLAG_KICK, true);
     
     if (!bIsAdmin) {
         if (IsSpectator(client)) {
