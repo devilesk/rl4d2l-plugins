@@ -88,7 +88,7 @@ public Plugin myinfo = {
     name = "SM Fortnite Emotes Extended - L4D2 Version",
     author = "Kodua, Franc1sco franug, TheBO$$, Foxhound, Marttt, devilesk",
     description = "This plugin is for demonstration of some animations from Fortnite in L4D2",
-    version = "1.0.0",
+    version = "1.1.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 };
 
@@ -257,10 +257,6 @@ public void FixClient(any data) {
 public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast) {
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
     int client = GetClientOfUserId(event.GetInt("userid"));
-
-    if (!IsSurvivor(client)) {
-        return Plugin_Continue;
-    }
 
     if (attacker != client) {
         PrintDebug("[Event_PlayerHurt] client: %i %N", client, client);
@@ -628,17 +624,22 @@ public Action SetTransmit(int entity, int client) {
 }
 
 void SetCam(int client) {
+    if (GetClientTeam(client) != 2) {
+        return;
+    }
+
     SetEntPropFloat(client, Prop_Send, "m_TimeForceExternalView", 99999.3);
 
     SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDEHUD_CROSSHAIR);
-    
-    //SendConVarValue(client, FindConVar("sv_cheats"), "1");
-
 }
 
 void ResetCam(int client) {
     if (!IsValidClient(client))
         return;
+
+    if (GetClientTeam(client) != 2) {
+        return;
+    }
 
     SetEntPropFloat(client, Prop_Send, "m_TimeForceExternalView", 0.0);
 
