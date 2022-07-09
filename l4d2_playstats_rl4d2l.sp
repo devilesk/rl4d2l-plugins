@@ -2241,11 +2241,13 @@ public void Event_PlayerDeath(Event hEvent, const char[] eName, bool dontBroadca
 				return; 
 			}
 
-			g_strRoundData[g_iRound][g_iCurTeam][rndCommon]++;
-			g_strRoundPlayerData[index][g_iCurTeam][plyCommon]++;
+			if (g_bPlayersLeftStart) {
+				g_strRoundData[g_iRound][g_iCurTeam][rndCommon]++;
+				g_strRoundPlayerData[index][g_iCurTeam][plyCommon]++;
 
-			if (g_bTankInGame) {
-				g_strRoundPlayerData[index][g_iCurTeam][plyCommonTankUp]++;
+				if (g_bTankInGame) {
+					g_strRoundPlayerData[index][g_iCurTeam][plyCommonTankUp]++;
+				}
 			}
 		} else if (IS_VALID_INFECTED(attacker)) {
 			index = GetPlayerIndexForClient(attacker);
