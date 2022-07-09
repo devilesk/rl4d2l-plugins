@@ -5,6 +5,7 @@
 #include <sdktools>
 #include <colors>
 #include <readyup>
+#include <builtinvotes>
 
 #define ROUNDEND_DELAY          3.0
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
@@ -18,6 +19,14 @@
 #define TEAM_SURVIVOR           2
 #define TEAM_INFECTED           3
 
+enum VoteType
+{
+    VoteType_Clear
+}
+
+Handle hVote = INVALID_HANDLE;
+VoteType g_VoteType;
+
 bool g_bRoundLive = false;
 
 Handle g_hCvarDebug = null;
@@ -28,7 +37,7 @@ public Plugin myinfo =
     name = "Team Consistency",
     author = "devilesk",
     description = "Maintain consistent teams throughout a match.",
-    version = "1.1.0",
+    version = "1.2.0",
     url = "https://github.com/devilesk/rl4d2l-plugins"
 }
 
@@ -51,6 +60,7 @@ public void OnPluginStart()
     g_hCvarDebug = CreateConVar("team_consistency_debug", "1", "Whether or not to debug to console", 0);
 
     RegAdminCmd("sm_swap", Swap_Cmd, ADMFLAG_KICK, "");
+    RegConsoleCmd("sm_untrackteamreset", Reset_Cmd, "Clear tracked teams.");
     RegConsoleCmd("sm_untrackteam", UntrackTeam_Cmd, "");
 
     HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
@@ -149,6 +159,74 @@ public Action Swap_Cmd(int client, int args) {
     return Plugin_Continue;
 }
 
+void ClearTrackedTeams() {
+    PrintDebug("[ClearTrackedTeams] Clearing tracked teams");
+    ClearTrie(g_hTriePlayerTeam);
+    CPrintToChatAll("{default}[{green}Team Consistency{default}] Cleared tracked teams.");
+}
+
+public Action Reset_Cmd(int client, int args) {
+    bool bIsAdmin = CheckCommandAccess(client, "sm_untrackteamreset", ADMFLAG_KICK, true);
+
+    if (bIsAdmin) {
+        ClearTrackedTeams();
+    }
+    else {
+        char prompt[100];
+        Format(prompt, sizeof(prompt), "Clear tracked teams?");
+        StartVote(client, prompt, VoteType_Clear);
+        FakeClientCommand(client, "Vote Yes");
+    }
+
+    return Plugin_Handled;
+}
+
+public void StartVote(int client, const char[] sVoteHeader, VoteType voteType) {
+    int iNumPlayers;
+    int[] players = new int[MaxClients];
+    for (int i = 1; i <= MaxClients; i++) {
+        if (!IsClientConnected(i) || !IsClientInGame(i)) continue;
+        if (IsSpectator(i) || IsFakeClient(i)) continue;
+        
+        players[iNumPlayers++] = i;
+    }
+
+    g_VoteType = voteType;
+    hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
+    SetBuiltinVoteArgument(hVote, sVoteHeader);
+    SetBuiltinVoteInitiator(hVote, client);
+    SetBuiltinVoteResultCallback(hVote, VoteResultHandler);
+    DisplayBuiltinVote(hVote, players, iNumPlayers, 20);
+}
+
+public void VoteActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2) {
+    switch (action) {
+        case BuiltinVoteAction_End: {
+            hVote = INVALID_HANDLE;
+            delete vote;
+        }
+        case BuiltinVoteAction_Cancel: {
+            DisplayBuiltinVoteFail(vote, view_as<BuiltinVoteFailReason>(param1));
+        }
+    }
+}
+
+public void VoteResultHandler(Handle vote, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info) {
+    for (int i = 0; i < num_items; i++) {
+        if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES) {
+            if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2)) {
+                DisplayBuiltinVotePass(vote, "Clearing tracked teams...");
+                PrintToChatAll("\x01[\x04Team Consistency\x01] Vote passed! Clearing tracked teams...");
+                PrintDebug("[VoteResultHandler] Vote passed! Clearing tracked teams...");
+                if (g_VoteType == VoteType_Clear)
+                    ClearTrackedTeams();
+                return;
+            }
+        }
+    }
+    DisplayBuiltinVoteFail(vote, BuiltinVoteFail_Loses);
+}
+
 // Trigger team consistency check whenever a tracked player joins survivor or infected
 public void PlayerTeam_Event(Handle event, const char[] name, bool dontBroadcast) {
     // No check while round is live
@@ -238,6 +316,10 @@ void SetTeams() {
             PrintDebug("[SetTeams] Player not found %N %s", client, sSteamId);
         }
     }
+}
+
+bool IsSpectator(int client) {
+    return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SPECTATOR;
 }
 
 stock void PrintDebug(const char[] Message, any ...) {
